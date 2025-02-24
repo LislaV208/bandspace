@@ -38,6 +38,21 @@
       loading = false;
     }
   }
+
+  async function handleGoogleLogin() {
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/projects`
+        }
+      });
+
+      if (error) throw error;
+    } catch (error) {
+      errorMsg = error instanceof Error ? error.message : 'An error occurred during Google login';
+    }
+  }
 </script>
 
 <div class="min-h-screen flex items-center justify-center bg-gray-900">
@@ -105,6 +120,7 @@
       <div class="mt-4">
         <button
           type="button"
+          on:click={handleGoogleLogin}
           class="w-full flex items-center justify-center px-4 py-2 border border-gray-700 shadow-sm text-sm font-medium rounded-md text-gray-300 bg-gray-800 hover:bg-gray-700"
         >
           <img src="https://www.google.com/favicon.ico" alt="Google" class="h-5 w-5 mr-2" />
