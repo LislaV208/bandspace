@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ArrowLeft, Mic, Square } from 'lucide-svelte';
+  import { Mic, Square } from 'lucide-svelte';
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
 
@@ -44,74 +44,57 @@
   }
 </script>
 
-<div class="min-h-screen bg-gray-900 text-white">
-  <!-- Header -->
-  <header class="bg-gray-800 px-4 py-4 flex items-center space-x-4 shadow-lg">
-    <button
-      on:click={() => goto('/projects/1')}
-      class="p-2 hover:bg-gray-700 rounded-full transition-colors"
-      title="Back to project"
+<div class="max-w-xl mx-auto px-4 py-12 flex flex-col items-center">
+  {#if !recordingName}
+    <div
+      class="w-32 h-32 rounded-full border-4 {isRecording ? 'border-red-500 animate-pulse' : 'border-gray-600'} flex items-center justify-center mb-8"
     >
-      <ArrowLeft size={24} />
+      <Mic size={48} class={isRecording ? 'text-red-500' : 'text-gray-400'} />
+    </div>
+
+    <div class="text-4xl font-mono mb-8">
+      {formatTimer(timer)}
+    </div>
+
+    <button
+      class="w-16 h-16 rounded-full {isRecording ? 'bg-red-500' : 'bg-green-500'} hover:opacity-90 transition-colors flex items-center justify-center"
+      on:click={isRecording ? stopRecording : startRecording}
+    >
+      {#if isRecording}
+        <Square size={24} />
+      {:else}
+        <Mic size={24} />
+      {/if}
     </button>
-    <h1 class="text-2xl font-bold">New Recording</h1>
-  </header>
-
-  <!-- Recording Interface -->
-  <div class="max-w-xl mx-auto px-4 py-12 flex flex-col items-center">
-    {#if !recordingName}
-      <div
-        class="w-32 h-32 rounded-full border-4 {isRecording ? 'border-red-500 animate-pulse' : 'border-gray-600'} flex items-center justify-center mb-8"
-      >
-        <Mic size={48} class={isRecording ? 'text-red-500' : 'text-gray-400'} />
+  {:else}
+    <div class="w-full max-w-md space-y-6">
+      <div>
+        <label for="name" class="block text-sm font-medium text-gray-300 mb-2">Recording Name</label>
+        <input
+          id="name"
+          type="text"
+          bind:value={recordingName}
+          class="w-full p-2 rounded bg-gray-700 border border-gray-600 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none"
+        />
       </div>
 
-      <div class="text-4xl font-mono mb-8">
-        {formatTimer(timer)}
+      <div class="flex space-x-4">
+        <button
+          class="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded font-medium"
+          on:click={() => {
+            recordingName = '';
+            timer = 0;
+          }}
+        >
+          Record Again
+        </button>
+        <button
+          class="flex-1 px-4 py-2 bg-green-500 hover:bg-green-600 rounded font-medium"
+          on:click={saveRecording}
+        >
+          Save
+        </button>
       </div>
-
-      <button
-        class="w-16 h-16 rounded-full {isRecording ? 'bg-red-500' : 'bg-green-500'} hover:opacity-90 transition-colors flex items-center justify-center"
-        on:click={isRecording ? stopRecording : startRecording}
-      >
-        {#if isRecording}
-          <Square size={24} />
-        {:else}
-          <Mic size={24} />
-        {/if}
-        
-      </button>
-    {:else}
-      <div class="w-full max-w-md space-y-6">
-        <div>
-          <label for="name" class="block text-sm font-medium text-gray-300 mb-2">Recording Name</label>
-          <input
-            id="name"
-            type="text"
-            bind:value={recordingName}
-            class="w-full p-2 rounded bg-gray-700 border border-gray-600 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none"
-          />
-        </div>
-
-        <div class="flex space-x-4">
-          <button
-            class="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded font-medium"
-            on:click={() => {
-              recordingName = '';
-              timer = 0;
-            }}
-          >
-            Record Again
-          </button>
-          <button
-            class="flex-1 px-4 py-2 bg-green-500 hover:bg-green-600 rounded font-medium"
-            on:click={saveRecording}
-          >
-            Save
-          </button>
-        </div>
-      </div>
-    {/if}
-    
-  </div>
+    </div>
+  {/if}
 </div>

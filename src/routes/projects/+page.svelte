@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Plus, Play, Pause, User } from 'lucide-svelte';
+  import { Plus, Play, Pause } from 'lucide-svelte';
   import { fade, slide } from 'svelte/transition';
   import { goto } from '$app/navigation';
 
@@ -42,68 +42,45 @@
       isCreateModalOpen = false;
     }
   }
-
-  function logout() {
-    // Mock logout functionality
-    console.log('Logging out...');
-    goto('/login');
-  }
 </script>
 
-<div class="min-h-screen bg-gray-900 text-white">
-  <!-- Header -->
-  <header class="bg-gray-800 px-4 py-4 flex items-center justify-between shadow-lg">
-    <h1 class="text-2xl font-bold">BandSpace</h1>
-    <button
-      on:click={logout}
-      class="p-2 hover:bg-gray-700 rounded-full transition-colors"
-      title="User menu"
-    >
-      <User size={24} />
-    </button>
-  </header>
-
-  <!-- Project List -->
-  <div class="max-w-3xl mx-auto px-4 py-6">
-    <div class="space-y-4">
-      {#each projects as project (project.id)}
-        <div
-          role="button"
-          tabindex="0"
-          on:keydown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              goto(`/projects/${project.id}`);
-            }
-          }}
-          class="bg-gray-800 rounded-lg p-4 flex items-center justify-between hover:bg-gray-700 transition-colors cursor-pointer"
-          transition:slide
-          on:click={() => goto(`/projects/${project.id}`)}
-        >
-          <div class="flex items-center space-x-4">
-            <button
-              class="p-2 rounded-full {project.isPlaying ? 'bg-green-500' : 'bg-gray-600 hover:bg-gray-500'} transition-colors"
-              on:click|stopPropagation={() => togglePlay(project)}
-              title={project.isPlaying ? 'Pause' : 'Play'}
-            >
-              {#if project.isPlaying}
-                <Pause size={20} />
-              {:else}
-                <Play size={20} />
-              {/if}
-              
-            </button>
-            <div>
-              <h2 class="font-semibold text-lg">{project.name}</h2>
-              {#if project.lastRecording}
-                <p class="text-sm text-gray-400">Latest: {project.lastRecording}</p>
-              {/if}
-              
-            </div>
+<!-- Project List -->
+<div class="max-w-3xl mx-auto px-4 py-6">
+  <div class="space-y-4">
+    {#each projects as project (project.id)}
+      <div
+        role="button"
+        tabindex="0"
+        on:keydown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            goto(`/projects/${project.id}`);
+          }
+        }}
+        class="bg-gray-800 rounded-lg p-4 flex items-center justify-between hover:bg-gray-700 transition-colors cursor-pointer"
+        transition:slide
+        on:click={() => goto(`/projects/${project.id}`)}
+      >
+        <div class="flex items-center space-x-4">
+          <button
+            class="p-2 rounded-full {project.isPlaying ? 'bg-green-500' : 'bg-gray-600 hover:bg-gray-500'} transition-colors"
+            on:click|stopPropagation={() => togglePlay(project)}
+            title={project.isPlaying ? 'Pause' : 'Play'}
+          >
+            {#if project.isPlaying}
+              <Pause size={20} />
+            {:else}
+              <Play size={20} />
+            {/if}
+          </button>
+          <div>
+            <h2 class="font-semibold text-lg">{project.name}</h2>
+            {#if project.lastRecording}
+              <p class="text-sm text-gray-400">Latest: {project.lastRecording}</p>
+            {/if}
           </div>
         </div>
-      {/each}
-      
-    </div>
+      </div>
+    {/each}
   </div>
 
   <!-- New Project Button -->
@@ -152,5 +129,4 @@
       </div>
     </div>
   {/if}
-  
 </div>
