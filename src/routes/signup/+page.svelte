@@ -39,7 +39,7 @@
   }
 </script>
 
-<div class="min-h-screen flex items-center justify-center bg-gray-900">
+<div class="fixed inset-0 flex items-center justify-center bg-gray-900 overflow-hidden">
   <div class="w-full max-w-md p-8">
     <div class="text-center mb-8">
       <h1 class="text-3xl font-bold text-white">Create Account</h1>
