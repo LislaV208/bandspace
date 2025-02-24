@@ -1,45 +1,32 @@
 <script lang="ts">
   import '../app.css';
   import { onMount } from 'svelte';
-  import { supabase } from '$lib/supabase';
-  import { User, ArrowLeft, Share2 } from 'lucide-svelte';
+  import { ArrowLeft, Share2 } from 'lucide-svelte';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
-  import { fade, slide } from 'svelte/transition';
+  import { auth } from '$lib/stores/auth';
+  import ProfileMenu from '$lib/components/ProfileMenu.svelte';
+  import ShareModal from '$lib/components/ShareModal.svelte';
 
-  let isAuthenticated = false;
   let isShareModalOpen = false;
-  let shareEmail = '';
+  let isProfileMenuOpen = false;
 
-  onMount(async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    isAuthenticated = !!session;
-
-    supabase.auth.onAuthStateChange((event, session) => {
-      isAuthenticated = !!session;
-    });
+  onMount(() => {
+    auth.initialize();
   });
 
-  async function handleLogout() {
-    await supabase.auth.signOut();
-    goto('/login');
-  }
 
-  function handleShare() {
-    if (shareEmail.trim()) {
-      console.log('Sharing project with:', shareEmail);
-      isShareModalOpen = false;
-      shareEmail = '';
-    }
+  function handleShare(email: string) {
+    console.log('Sharing project with:', email);
+    isShareModalOpen = false;
   }
 
   $: currentProjectId = $page.params.id;
-  $: isProjectPage = $page.url.pathname.startsWith('/projects');
   $: isProjectDetailPage = currentProjectId !== undefined;
 </script>
 
 <div class="min-h-screen bg-gray-900 text-white">
-  {#if isAuthenticated}
+  {#if $auth.isAuthenticated}
     <header class="bg-gray-800 shadow-lg">
       <nav class="container mx-auto px-4 py-4">
         <div class="flex items-center justify-between">
@@ -71,13 +58,10 @@
                 <Share2 size={24} />
               </button>
             {/if}
-            <button
-              on:click={handleLogout}
-              class="p-2 hover:bg-gray-700 rounded-full transition-colors"
-              title="Logout"
-            >
-              <User size={24} />
-            </button>
+            <ProfileMenu
+              isOpen={isProfileMenuOpen}
+              onToggle={() => isProfileMenuOpen = !isProfileMenuOpen}
+            />
           </div>
         </div>
       </nav>
@@ -88,40 +72,9 @@
     <slot />
   </main>
 
-  {#if isShareModalOpen}
-    <div
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
-      transition:fade
-    >
-      <div
-        class="bg-gray-800 rounded-lg p-6 w-full max-w-md"
-        transition:slide
-      >
-        <h2 class="text-xl font-bold mb-4">Share Project</h2>
-        <form on:submit|preventDefault={handleShare}>
-          <input
-            type="email"
-            bind:value={shareEmail}
-            placeholder="Enter email address"
-            class="w-full p-2 rounded bg-gray-700 border border-gray-600 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none"
-          />
-          <div class="flex justify-end space-x-3 mt-6">
-            <button
-              type="button"
-              class="px-4 py-2 text-gray-300 hover:text-white"
-              on:click={() => isShareModalOpen = false}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              class="px-4 py-2 bg-green-500 hover:bg-green-600 rounded font-medium"
-            >
-              Share
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  {/if}
+  <ShareModal
+    isOpen={isShareModalOpen}
+    onClose={() => isShareModalOpen = false}
+    onShare={handleShare}
+  />
 </div>
