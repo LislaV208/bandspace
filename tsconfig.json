@@ -12,7 +12,9 @@
     "moduleResolution": "bundler",
     "baseUrl": ".", // Dodajemy baseUrl dla relatywnych ścieżek
     "paths": { // Explicitne mapowanie dla $app/*
-      "$app/*": [".svelte-kit/types/$app/*"]
+      "$app/*": [".svelte-kit/types/$app/*"],
+      "$lib": ["./src/lib"],
+      "$lib/*": ["./src/lib/*"]
     }
   },
   "include": [
