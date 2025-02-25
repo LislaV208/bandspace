@@ -15,18 +15,21 @@ export type Database = {
           id: number
           name: string
           updated_at: string
+          users: string[] | null
         }
         Insert: {
           created_at?: string
           id?: number
           name?: string
           updated_at?: string
+          users?: string[] | null
         }
         Update: {
           created_at?: string
           id?: number
           name?: string
           updated_at?: string
+          users?: string[] | null
         }
         Relationships: []
       }
@@ -49,6 +52,38 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "projects_users_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tracks: {
+        Row: {
+          created_at: string
+          id: number
+          name: string
+          project_id: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          name?: string
+          project_id: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          name?: string
+          project_id?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tracks_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"

@@ -1,48 +1,45 @@
 <script lang="ts">
-  import { Play, Pause, Plus, Mic, Upload } from 'lucide-svelte';
+  import { Play, Pause, Plus, Mic, Upload, Loader2 } from 'lucide-svelte';
   import { fade, slide } from 'svelte/transition';
   import { goto } from '$app/navigation';
+  import { page } from '$app/stores';
+  import { tracksService } from '$lib/services/tracks';
+  import type { Track } from '$lib/services/tracks';
+  import { onMount } from 'svelte';
 
-  interface Recording {
-    id: number;
-    name: string;
-    duration: string;
-    isPlaying: boolean;
-  }
-
-  let recordings: Recording[] = [
-    { id: 1, name: 'riff_intro', duration: '0:45', isPlaying: false },
-    { id: 2, name: 'drums_1', duration: '1:20', isPlaying: false },
-    { id: 3, name: 'vocal_take2', duration: '2:15', isPlaying: false }
-  ];
-
-  let currentlyPlaying: Recording | null = null;
+  let recordings: Track[] = [];
   let isAddModalOpen = false;
   let audioProgress = 0;
+  let isLoading = true;
+  let isCreating = false;
 
-  function togglePlay(recording: Recording | null) {
-    if (!recording) return;
+  onMount(async () => {
+    await loadTracks();
+  });
 
-    if (currentlyPlaying && currentlyPlaying.id !== recording.id) {
-      currentlyPlaying.isPlaying = false;
+  async function loadTracks() {
+    try {
+      isLoading = true;
+      recordings = await tracksService.getTracks(parseInt($page.params.id));
+    } catch (error) {
+      console.error('Error loading tracks:', error);
+    } finally {
+      isLoading = false;
     }
-    recording.isPlaying = !recording.isPlaying;
-    currentlyPlaying = recording.isPlaying ? recording : null;
+  }
+
+  async function createTrack() {
+    if (isCreating) return;
     
-    // Mock audio progress
-    if (recording.isPlaying) {
-      audioProgress = 0;
-      const interval = setInterval(() => {
-        audioProgress += 1;
-        if (audioProgress >= 100 || !recording.isPlaying) {
-          clearInterval(interval);
-          if (audioProgress >= 100) {
-            recording.isPlaying = false;
-            currentlyPlaying = null;
-            audioProgress = 0;
-          }
-        }
-      }, 100);
+    try {
+      isCreating = true;
+      const defaultName = `Track ${recordings.length + 1}`;
+      const newTrack = await tracksService.createTrack(defaultName, parseInt($page.params.id));
+      recordings = [...recordings, { ...newTrack }];
+    } catch (error) {
+      console.error('Error creating track:', error);
+    } finally {
+      isCreating = false;
     }
   }
 
@@ -55,47 +52,51 @@
 
   <!-- Recording List -->
   <div class="max-w-3xl mx-auto px-4 py-6">
-    <div class="space-y-4">
-      {#each recordings as recording (recording.id)}
-        <div
-          class="bg-gray-800 rounded-lg p-4 flex items-center justify-between hover:bg-gray-700 transition-colors"
-          transition:slide
-        >
-          <div class="flex items-center space-x-4 flex-1">
-            <button
-              class="p-2 rounded-full {recording.isPlaying ? 'bg-green-500' : 'bg-gray-600 hover:bg-gray-500'} transition-colors"
-              on:click={() => togglePlay(recording)}
-              title={recording.isPlaying ? 'Pause' : 'Play'}
-            >
-              {#if recording.isPlaying}
-                <Pause size={20} />
-              {:else}
-                <Play size={20} />
-              {/if}
-            </button>
-            <div class="flex-1">
-              <h2 class="font-semibold text-lg">{recording.name}</h2>
-            </div>
-            <span class="text-sm text-gray-400">{recording.duration}</span>
+    {#if isLoading}
+      <div class="flex items-center justify-center h-[calc(100vh-12rem)]">
+        <Loader2 class="animate-spin" size={32} />
+      </div>
+    {:else}
+      <div class="space-y-4">
+        {#each recordings as recording (recording.id)}
+          <div
+            class="bg-gray-800 rounded-lg p-4 flex items-center justify-between hover:bg-gray-700 transition-colors"
+            transition:slide
+          >
+            <h2 class="font-semibold text-lg">{recording.name}</h2>
           </div>
-        </div>
-      {/each}
+        {/each}
 
-      {#if recordings.length === 0}
-        <div class="text-center text-gray-400 py-8">
-          No recordings yet - add your first!
-        </div>
-      {/if}
-    </div>
+        {#if recordings.length === 0}
+          <div class="flex items-center justify-center h-[calc(100vh-12rem)]">
+            <div class="text-gray-400">
+              No recordings yet - add your first!
+            </div>
+          </div>
+        {/if}
+      </div>
+    {/if}
 
   <!-- Add Recording Button -->
   <button
+    class="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+    on:click={createTrack}
+    disabled={isCreating}
+    title="Add recording"
+  >
+    {#if isCreating}
+      <Loader2 size={24} class="animate-spin" />
+    {:else}
+      <Plus size={24} />
+    {/if}
+  </button>
+  <!-- <button
     class="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-colors"
     on:click={() => isAddModalOpen = true}
     title="Add recording"
   >
     <Plus size={24} />
-  </button>
+  </button> -->
 
   <!-- Add Recording Modal -->
   {#if isAddModalOpen}
@@ -140,7 +141,7 @@
   {/if}
 
   <!-- Audio Player -->
-  {#if currentlyPlaying}
+  <!-- {#if currentlyPlaying}
     <div
       class="fixed bottom-0 inset-x-0 bg-gray-800 border-t border-gray-700 p-4"
       transition:slide={{ duration: 200 }}
@@ -168,5 +169,5 @@
         </div>
       </div>
     </div>
-  {/if}
+  {/if} -->
 </div>
