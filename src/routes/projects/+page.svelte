@@ -1,86 +1,92 @@
 <script lang="ts">
-  import { Plus, Play, Pause } from 'lucide-svelte';
+  import { Plus, Loader2 } from 'lucide-svelte';
   import { fade, slide } from 'svelte/transition';
   import { goto } from '$app/navigation';
+  import { onMount } from 'svelte';
+  import { type Project, projectsService } from '$lib/services/projects';
 
-  type Project = {
-    id: number;
-    name: string;
-    lastRecording: string | null;
-    isPlaying: boolean;
-  };
   
-  let projects: Project[] = [
-    { id: 1, name: 'Rehearsal #3', lastRecording: 'guitar_solo.mp3', isPlaying: false },
-    { id: 2, name: 'Jazz Session', lastRecording: 'piano_take2.mp3', isPlaying: false },
-    { id: 3, name: 'Band Practice', lastRecording: 'full_band.mp3', isPlaying: false }
-  ];
-
+  let projects: Project[] = [];
   let isCreateModalOpen = false;
   let newProjectName = '';
+  let error: string | null = null;
+  let isLoading = true;
+  let isCreating = false;
 
-  function togglePlay(project: Project) {
-    projects = projects.map(p => ({
-      ...p,
-      isPlaying: p.id === project.id ? !p.isPlaying : false
-    }));
-  }
+  onMount(async () => {
+    try {
+      projects = await projectsService.getProjects();
+    } catch (e) {
+      error = 'Failed to load projects';
+      console.error('Error loading projects:', e);
+    } finally {
+      isLoading = false;
+    }
+  });
 
   function openCreateModal() {
     isCreateModalOpen = true;
   }
 
-  function createProject() {
-    if (newProjectName.trim()) {
-      projects = [...projects, {
-        id: projects.length + 1,
-        name: newProjectName,
-        lastRecording: null,
-        isPlaying: false
-      }];
-      newProjectName = '';
-      isCreateModalOpen = false;
+  async function createProject() {
+    if (newProjectName.trim() && !isCreating) {
+      isCreating = true;
+      try {
+        const newProject = await projectsService.createProject(newProjectName);
+        projects = [...projects, newProject];
+        
+        newProjectName = '';
+        isCreateModalOpen = false;
+      } catch (e) {
+        error = 'Failed to create project';
+        console.error('Error creating project:', e);
+      } finally {
+        isCreating = false;
+      }
     }
   }
 </script>
 
-<!-- Project List -->
-<div class="max-w-3xl mx-auto px-4 py-6">
-  <div class="space-y-4">
-    {#each projects as project (project.id)}
-      <div
-        role="button"
-        tabindex="0"
-        on:keydown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            goto(`/projects/${project.id}`);
-          }
-        }}
-        class="bg-gray-800 rounded-lg p-4 flex items-center justify-between hover:bg-gray-700 transition-colors cursor-pointer"
-        transition:slide
-        on:click={() => goto(`/projects/${project.id}`)}
-      >
-        <div class="flex items-center space-x-4">
-          <button
-            class="p-2 rounded-full {project.isPlaying ? 'bg-green-500' : 'bg-gray-600 hover:bg-gray-500'} transition-colors"
-            on:click|stopPropagation={() => togglePlay(project)}
-            title={project.isPlaying ? 'Pause' : 'Play'}
-          >
-            {#if project.isPlaying}
-              <Pause size={20} />
-            {:else}
-              <Play size={20} />
-            {/if}
-          </button>
+  <!-- Project List -->
+  <div class="max-w-3xl mx-auto px-4 py-6">
+    {#if error}
+      <div class="bg-red-500 text-white p-4 rounded-lg mb-4">
+        {error}
+      </div>
+    {/if}
+
+    {#if isLoading}
+      <div class="flex items-center justify-center h-[calc(100vh-12rem)]">
+        <Loader2 class="animate-spin" size={32} />
+      </div>
+    {:else}
+      <div class="space-y-4">
+      {#each projects as project (project.id)}
+        <div
+          role="button"
+          tabindex="0"
+          on:keydown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              goto(`/projects/${project.id}`);
+            }
+          }}
+          class="bg-gray-800 rounded-lg p-4 flex items-center justify-between hover:bg-gray-700 transition-colors cursor-pointer"
+          transition:slide
+          on:click={() => goto(`/projects/${project.id}`)}
+        >
           <div>
             <h2 class="font-semibold text-lg">{project.name}</h2>
-            {#if project.lastRecording}
-              <p class="text-sm text-gray-400">Latest: {project.lastRecording}</p>
-            {/if}
           </div>
         </div>
+      {/each}
+
+      {#if projects.length === 0 && !error}
+        <div class="flex items-center justify-center h-[calc(100vh-12rem)] text-gray-400">
+          No projects yet - create your first one!
+        </div>
+      {/if}
       </div>
-    {/each}
+    {/if}
   </div>
 
   <!-- New Project Button -->
@@ -120,13 +126,17 @@
             </button>
             <button
               type="submit"
-              class="px-4 py-2 bg-green-500 hover:bg-green-600 rounded font-medium"
+              class="px-4 py-2 bg-green-500 hover:bg-green-600 rounded font-medium flex items-center justify-center min-w-[80px] disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isCreating}
             >
-              Create
+              {#if isCreating}
+                <Loader2 class="animate-spin" size={18} />
+              {:else}
+                Create
+              {/if}
             </button>
           </div>
         </form>
       </div>
     </div>
   {/if}
-</div>
