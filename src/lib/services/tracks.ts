@@ -26,5 +26,14 @@ export const tracksService = {
 
     if (error) throw error;
     return data;
+  },
+
+  async deleteTrack(trackId: number): Promise<void> {
+    const { error } = await supabase
+      .from('tracks')
+      .delete()
+      .eq('id', trackId);
+
+    if (error) throw error;
   }
 };
