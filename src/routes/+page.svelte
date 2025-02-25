@@ -1,10 +1,7 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
-  import { onMount } from 'svelte';
-  
-  onMount(() => {
-    goto('/login');
-  });
+  // Pusty komponent – wszystko obsługuje +page.server.ts
 </script>
 
-<div>Redirecting...</div>
+<div class="hidden">
+  <!-- Pusty div lub brak treści, bo użytkownicy są przekierowywani -->
+</div>

@@ -5,6 +5,8 @@ export type Project = Database['public']['Tables']['projects']['Row'];
 
 export const projectsService = {
   async getProjects(): Promise<Project[]> {
+    const { data: { session} } = await supabase.auth.getSession();
+    console.log('projectsService session', session != null);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Not authenticated');
 
