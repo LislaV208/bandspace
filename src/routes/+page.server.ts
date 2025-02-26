@@ -1,7 +1,7 @@
 // /src/routes/+page.server.ts
+import { supabase } from '$lib/supabase';
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { supabase } from '$lib/supabase';
 
 export const load: PageServerLoad = async ({ locals }) => {
 
