@@ -1,9 +1,7 @@
 <script lang="ts">
+  import { enhance } from "$app/forms";
   import { page } from "$app/stores";
-  import { supabase } from "$lib/supabase";
   import { Lock, LogIn, Mail } from "lucide-svelte";
-
-  // export let data: PageData;
 
   let email = "";
   let password = "";
@@ -12,31 +10,6 @@
 
   $: if ($page.form?.error) {
     errorMsg = $page.form.error;
-  }
-
-  async function handleGoogleLogin() {
-    loading = true;
-    errorMsg = "";
-
-    try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/projects`, // Powrót po logowaniu
-        },
-      });
-
-      if (error) {
-        throw error;
-      }
-    } catch (error) {
-      errorMsg =
-        error instanceof Error
-          ? error.message
-          : "An error occurred during Google login";
-    } finally {
-      loading = false;
-    }
   }
 </script>
 
@@ -48,7 +21,37 @@
       <h1 class="text-3xl font-bold text-white">BandSpace</h1>
     </div>
 
-    <form action="?/login" method="POST" class="space-y-6">
+    <form
+      method="POST"
+      action="?/login"
+      class="space-y-6"
+      use:enhance={({ formElement, formData, action, cancel, submitter }) => {
+        console.log("Form submitted");
+        loading = true;
+        // `formElement` is this `<form>` element
+        // `formData` is its `FormData` object that's about to be submitted
+        // `action` is the URL to which the form is posted
+        // calling `cancel()` will prevent the submission
+        // `submitter` is the `HTMLElement` that caused the form to be submitted
+
+        return async ({ result, update }) => {
+          // console.log("Form submitted kozaczek");
+          // // `result` is an `ActionResult` object
+          // // `update` is a function which triggers the default logic that would be triggered if this callback wasn't set
+
+          // if (result.type === "success") {
+          //   const user = result.data?.user;
+          //   console.log("user: ", user);
+          //   auth.setAuthenticated(user);
+          //   goto("/projects");
+          // } else {
+          //   errorMsg = result.error?.message || "Login failed";
+          // }
+          loading = false;
+          await update();
+        };
+      }}
+    >
       {#if errorMsg}
         <div
           class="p-3 bg-red-500 bg-opacity-20 border border-red-500 rounded text-red-500 text-sm"
@@ -110,10 +113,9 @@
         {loading ? "Logging in..." : "Log In"}
       </button>
 
-      <!-- <div class="mt-4">
+      <div class="mt-4">
         <button
           type="button"
-          on:click={handleGoogleLogin}
           formnovalidate
           class="w-full flex items-center justify-center px-4 py-2 border border-gray-700 shadow-sm text-sm font-medium rounded-md text-gray-300 bg-gray-800 hover:bg-gray-700"
         >
@@ -124,7 +126,7 @@
           />
           Log in with Google
         </button>
-      </div> -->
+      </div>
 
       <p class="text-center text-sm text-gray-500 mt-4">
         No account? <a

@@ -1,51 +1,31 @@
 import { writable } from 'svelte/store';
-import { supabase } from '$lib/supabase';
-import { goto } from '$app/navigation';
-
-interface UserMetadata {
-  avatar_url?: string;
-  full_name?: string;
-}
-
-interface UserData {
-  email?: string;
-  user_metadata?: UserMetadata;
-}
+import type { User } from '@supabase/supabase-js';
 
 interface AuthState {
   isAuthenticated: boolean;
-  userData: UserData | null;
+  user: User | null;
 }
 
 function createAuthStore() {
   const { subscribe, set, update } = writable<AuthState>({
     isAuthenticated: false,
-    userData: null
+    user: null
   });
 
   return {
     subscribe,
-    initialize: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+    set,
+    setAuthenticated: (user: User | null) => {
       set({
-        isAuthenticated: !!session,
-        userData: session?.user || null
-      });
-
-      supabase.auth.onAuthStateChange((event, session) => {
-        set({
-          isAuthenticated: !!session,
-          userData: session?.user || null
-        });
+        isAuthenticated: !!user,
+        user
       });
     },
-    signOut: async () => {
-      await supabase.auth.signOut();
+    reset: () => {
       set({
         isAuthenticated: false,
-        userData: null
+        user: null
       });
-      goto('/login');
     }
   };
 }

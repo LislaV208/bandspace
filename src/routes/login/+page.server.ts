@@ -1,10 +1,13 @@
-import { supabase } from '$lib/supabase';
+import { authService } from '$lib/services/auth';
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions } from './$types';
 
-export const actions: Actions = {
+
+export const actions = {
   login: async ({ request }) => {
-    console.log('Login action');
+
+
+    // TODO log the user in
     const formData = await request.formData();
     const email = formData.get('email')?.toString();
     const password = formData.get('password')?.toString();
@@ -13,28 +16,50 @@ export const actions: Actions = {
       return fail(400, { error: 'Email and password are required' });
     }
 
-    const { error } =
-      await supabase.auth.signInWithPassword({ email, password });
-
-    if (error) {
-      return fail(401, { error: error.message });
+    try {
+      await authService.signIn(email, password);
+      redirect(303, '/');
+    } catch (error) {
+      return fail(401, { error: error instanceof Error ? error.message : 'Authentication failed' });
     }
-
-    throw redirect(303, '/projects');
   },
-
-  google: async () => {
-    const { data, error } = await supabase.auth.signInWithOAuth(
-      {
-        provider: 'google',
-      });
-
-    if (error) {
-      return fail(400, { error: error.message });
-    }
-
-    throw redirect(303, data.url ?? '/login');
-
-
+  google: async (event) => {
+    // TODO log the user in
+    console.log('GOOGLE');
   }
-};
+} satisfies Actions;
+
+// export const actions: Actions = {
+//   login: async ({ request }) => {
+//     console.log('Zwracamy sukces');
+//     return { success: true };
+//     // console.log('Login action');
+//     // const formData = await request.formData();
+//     // const email = formData.get('email')?.toString();
+//     // const password = formData.get('password')?.toString();
+
+//     // if (!email || !password) {
+//     //   return fail(400, { error: 'Email and password are required' });
+//     // }
+
+//     // try {
+//     //   const user = await authService.signIn(email, password);
+//     //   return { success: true, user };
+//     // } catch (error) {
+//     //   return fail(401, { error: error instanceof Error ? error.message : 'Authentication failed' });
+//     // }
+//   },
+
+//   google: async () => {
+//     const { data, error } = await supabase.auth.signInWithOAuth(
+//       {
+//         provider: 'google',
+//       });
+
+//     if (error) {
+//       return fail(400, { error: error.message });
+//     }
+
+//     throw redirect(303, data.url ?? '/login');
+//   }
+// };
