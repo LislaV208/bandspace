@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { goto } from "$app/navigation";
   import type { User } from "@supabase/supabase-js";
   import { User as UserIcon } from "lucide-svelte";
   import { onMount } from "svelte";

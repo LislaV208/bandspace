@@ -16,12 +16,9 @@ export const actions = {
       return fail(400, { error: 'Email and password are required' });
     }
 
-    try {
-      await authService.signIn(email, password);
-      redirect(303, '/');
-    } catch (error) {
-      return fail(401, { error: error instanceof Error ? error.message : 'Authentication failed' });
-    }
+    await authService.signIn(email, password);
+    redirect(303, '/');
+
   },
   google: async (event) => {
     // TODO log the user in
