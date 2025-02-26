@@ -49,6 +49,7 @@
               </button>
             {/if}
             <ProfileMenu
+              {user}
               isOpen={isProfileMenuOpen}
               onToggle={() => (isProfileMenuOpen = !isProfileMenuOpen)}
             />

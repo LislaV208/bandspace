@@ -6,6 +6,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 
   const user = await authService.getUser();
   console.log('user', user != null);
+  event.locals.user = user;
 
   if (!user) {
     if (!event.url.pathname.startsWith('/login')) {
@@ -15,7 +16,6 @@ export const handle: Handle = async ({ event, resolve }) => {
     }
   }
   else {
-    event.locals.user = user;
     if (event.url.pathname.startsWith('/login')) {
       console.log('event.url.pathname', event.url.pathname);
       console.log('Redirecting to / due to no session');
