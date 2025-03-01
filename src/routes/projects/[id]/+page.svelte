@@ -7,13 +7,13 @@
   import type { Track } from '$lib/services/tracks';
   import { onMount } from 'svelte';
 
-  let recordings: Track[] = [];
+  let recordings: Track[] = $state([]);
   let isAddModalOpen = false;
   let audioProgress = 0;
-  let isLoading = true;
-  let isCreating = false;
-  let isDeleting = false;
-  let trackToDelete: Track | null = null;
+  let isLoading = $state(true);
+  let isCreating = $state(false);
+  let isDeleting = $state(false);
+  let trackToDelete: Track | null = $state(null);
 
   onMount(async () => {
     await loadTracks();
@@ -83,7 +83,7 @@
             <h2 class="font-semibold text-lg">{recording.name}</h2>
             <button
               class="p-2 text-gray-400 hover:text-red-500 transition-colors"
-              on:click={() => trackToDelete = recording}
+              onclick={() => trackToDelete = recording}
               title="Delete track"
             >
               <Trash2 size={20} />
@@ -104,7 +104,7 @@
   <!-- Add Recording Button -->
   <button
     class="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-    on:click={createTrack}
+    onclick={createTrack}
     disabled={isCreating}
     title="Add recording"
   >
@@ -130,7 +130,7 @@
         <div class="flex space-x-4">
           <button
             class="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            on:click={deleteTrack}
+            onclick={deleteTrack}
             disabled={isDeleting}
           >
             {#if isDeleting}
@@ -141,7 +141,7 @@
           </button>
           <button
             class="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
-            on:click={() => trackToDelete = null}
+            onclick={() => trackToDelete = null}
           >
             Cancel
           </button>

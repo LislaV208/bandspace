@@ -1,15 +1,21 @@
 <script lang="ts">
+  import { stopPropagation } from 'svelte/legacy';
+
   import { goto } from "$app/navigation";
   import type { User } from "@supabase/supabase-js";
   import { User as UserIcon } from "lucide-svelte";
   import { onMount } from "svelte";
   import { slide } from "svelte/transition";
 
-  export let user: User;
-  export let isOpen = false;
-  export let onToggle: () => void;
+  interface Props {
+    user: User;
+    isOpen?: boolean;
+    onToggle: () => void;
+  }
 
-  let profileMenuButton: HTMLElement;
+  let { user, isOpen = false, onToggle }: Props = $props();
+
+  let profileMenuButton: HTMLElement = $state();
 
   onMount(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -29,15 +35,15 @@
     };
   });
 
-  $: userAvatar = user.user_metadata?.avatar_url || null;
-  $: userEmail = user.user_metadata?.email || "";
-  $: displayName = user.user_metadata?.full_name || userEmail;
+  let userAvatar = $derived(user.user_metadata?.avatar_url || null);
+  let userEmail = $derived(user.user_metadata?.email || "");
+  let displayName = $derived(user.user_metadata?.full_name || userEmail);
 </script>
 
 <div class="relative">
   <button
     bind:this={profileMenuButton}
-    on:click|stopPropagation={onToggle}
+    onclick={stopPropagation(onToggle)}
     class="p-2 hover:bg-gray-700 rounded-full transition-colors flex items-center justify-center"
     title="User menu"
   >
@@ -61,7 +67,7 @@
         <div class="text-sm text-gray-300 truncate">{userEmail}</div>
       </div>
       <button
-        on:click={async () => {
+        onclick={async () => {
           try {
             await fetch("/api/auth/signout", { method: "POST" });
             goto("/login");

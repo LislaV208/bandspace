@@ -6,19 +6,24 @@
   import type { User } from "@supabase/supabase-js";
   import { ArrowLeft, Share2 } from "lucide-svelte";
   import "../app.css";
+  interface Props {
+    children?: import('svelte').Snippet;
+  }
 
-  $: user = ($page.data.user as User) || null;
+  let { children }: Props = $props();
 
-  let isShareModalOpen = false;
-  let isProfileMenuOpen = false;
+  let user = $derived(($page.data.user as User) || null);
+
+  let isShareModalOpen = $state(false);
+  let isProfileMenuOpen = $state(false);
 
   function handleShare(email: string) {
     console.log("Sharing project with:", email);
     isShareModalOpen = false;
   }
 
-  $: currentProjectId = $page.params.id;
-  $: isProjectDetailPage = currentProjectId !== undefined;
+  let currentProjectId = $derived($page.params.id);
+  let isProjectDetailPage = $derived(currentProjectId !== undefined);
 </script>
 
 <div class="min-h-screen bg-gray-900 text-white">
@@ -29,7 +34,7 @@
           <div class="flex items-center space-x-4">
             {#if isProjectDetailPage}
               <button
-                on:click={() => goto("/projects")}
+                onclick={() => goto("/projects")}
                 class="p-2 hover:bg-gray-700 rounded-full transition-colors"
                 title="Back to projects"
               >
@@ -41,7 +46,7 @@
           <div class="flex items-center space-x-2">
             {#if isProjectDetailPage}
               <button
-                on:click={() => (isShareModalOpen = true)}
+                onclick={() => (isShareModalOpen = true)}
                 class="p-2 hover:bg-gray-700 rounded-full transition-colors"
                 title="Share project"
               >
@@ -60,7 +65,7 @@
   {/if}
 
   <main class="container mx-auto px-4 py-8">
-    <slot />
+    {@render children?.()}
   </main>
 
   <ShareModal

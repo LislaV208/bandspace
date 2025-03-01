@@ -1,16 +1,20 @@
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import { enhance } from "$app/forms";
   import { page } from "$app/stores";
   import { Lock, LogIn, Mail } from "lucide-svelte";
 
-  let email = "";
-  let password = "";
-  let loading = false;
-  let errorMsg = "";
+  let email = $state("");
+  let password = $state("");
+  let loading = $state(false);
+  let errorMsg = $state("");
 
-  $: if ($page.form?.error) {
-    errorMsg = $page.form.error;
-  }
+  run(() => {
+    if ($page.form?.error) {
+      errorMsg = $page.form.error;
+    }
+  });
 </script>
 
 <div

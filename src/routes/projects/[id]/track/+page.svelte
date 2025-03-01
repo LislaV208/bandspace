@@ -3,10 +3,10 @@
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
 
-  let isRecording = false;
-  let timer = 0;
+  let isRecording = $state(false);
+  let timer = $state(0);
   let timerInterval: number;
-  let recordingName = '';
+  let recordingName = $state('');
 
   onMount(() => {
     return () => {
@@ -58,7 +58,7 @@
 
     <button
       class="w-16 h-16 rounded-full {isRecording ? 'bg-red-500' : 'bg-green-500'} hover:opacity-90 transition-colors flex items-center justify-center"
-      on:click={isRecording ? stopRecording : startRecording}
+      onclick={isRecording ? stopRecording : startRecording}
     >
       {#if isRecording}
         <Square size={24} />
@@ -81,7 +81,7 @@
       <div class="flex space-x-4">
         <button
           class="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded font-medium"
-          on:click={() => {
+          onclick={() => {
             recordingName = '';
             timer = 0;
           }}
@@ -90,7 +90,7 @@
         </button>
         <button
           class="flex-1 px-4 py-2 bg-green-500 hover:bg-green-600 rounded font-medium"
-          on:click={saveRecording}
+          onclick={saveRecording}
         >
           Save
         </button>

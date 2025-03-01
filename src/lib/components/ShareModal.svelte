@@ -1,11 +1,17 @@
 <script lang="ts">
+  import { preventDefault } from 'svelte/legacy';
+
   import { fade, slide } from 'svelte/transition';
 
-  export let isOpen = false;
-  export let onClose: () => void;
-  export let onShare: (email: string) => void;
+  interface Props {
+    isOpen?: boolean;
+    onClose: () => void;
+    onShare: (email: string) => void;
+  }
 
-  let shareEmail = '';
+  let { isOpen = false, onClose, onShare }: Props = $props();
+
+  let shareEmail = $state('');
 
   function handleShare() {
     if (shareEmail.trim()) {
@@ -25,7 +31,7 @@
       transition:slide
     >
       <h2 class="text-xl font-bold mb-4">Share Project</h2>
-      <form on:submit|preventDefault={handleShare}>
+      <form onsubmit={preventDefault(handleShare)}>
         <input
           type="email"
           bind:value={shareEmail}
@@ -36,7 +42,7 @@
           <button
             type="button"
             class="px-4 py-2 text-gray-300 hover:text-white"
-            on:click={onClose}
+            onclick={onClose}
           >
             Cancel
           </button>
