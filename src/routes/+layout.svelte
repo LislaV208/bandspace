@@ -6,11 +6,28 @@
   import type { User } from "@supabase/supabase-js";
   import { ArrowLeft, Share2 } from "lucide-svelte";
   import "../app.css";
+
+  import { invalidate } from "$app/navigation";
+  import { onMount } from "svelte";
+
+  let { data, children } = $props();
+  let { session, supabase } = $derived(data);
+
+  onMount(() => {
+    const { data } = supabase.auth.onAuthStateChange((_, newSession) => {
+      if (newSession?.expires_at !== session?.expires_at) {
+        invalidate("supabase:auth");
+      }
+    });
+
+    return () => data.subscription.unsubscribe();
+  });
+
   interface Props {
-    children?: import('svelte').Snippet;
+    children?: import("svelte").Snippet;
   }
 
-  let { children }: Props = $props();
+  // let { children }: Props = $props();
 
   let user = $derived(($page.data.user as User) || null);
 

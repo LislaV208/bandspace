@@ -1,4 +1,4 @@
-import { authService } from '$lib/services/auth';
+// import { authService } from '$lib/services/auth';
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions } from './$types';
 
@@ -16,7 +16,7 @@ export const actions = {
       return fail(400, { error: 'Email and password are required' });
     }
 
-    await authService.signIn(email, password);
+    // await authService.signIn(email, password);
     redirect(303, '/');
 
   },
