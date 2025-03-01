@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { stopPropagation } from 'svelte/legacy';
+  import { stopPropagation } from "svelte/legacy";
 
   import { goto } from "$app/navigation";
   import type { User } from "@supabase/supabase-js";
