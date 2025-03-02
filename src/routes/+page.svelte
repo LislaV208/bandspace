@@ -80,7 +80,7 @@
 
 <!-- <div class="max-w-6xl mx-auto px-4 py-8"> -->
 <div class="flex justify-between items-center mb-8">
-  <h1 class="text-3xl font-bold">Your Projects</h1>
+  <h1 class="text-2xl">Projects</h1>
   {#if hasProjects}
     <div class="flex gap-4">
       <input

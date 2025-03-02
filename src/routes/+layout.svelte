@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Breadcrumbs from "$lib/components/Breadcrumbs.svelte";
   import ProfileMenu from "$lib/components/ProfileMenu.svelte";
   import "../app.css";
 
@@ -81,7 +82,8 @@
     </header>
   {/if}
 
-  <main class="container mx-auto px-4 py-8">
+  <main class="container mx-auto px-6 py-8">
+    <Breadcrumbs />
     {@render children?.()}
   </main>
 </div>
