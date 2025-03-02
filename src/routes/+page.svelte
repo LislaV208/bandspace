@@ -102,39 +102,46 @@
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
   {#each filteredProjects as project (project.id)}
-    <div
-      class="bg-gray-800 rounded-lg p-6 hover:bg-gray-700 transition-all transform hover:-translate-y-1 hover:shadow-xl"
-      transition:slide
-    >
-      <div class="flex justify-between items-start mb-4">
-        <button
-          class="text-xl font-semibold hover:text-blue-400 transition-colors text-left"
-          onclick={() => goto(`/${project.id}`)}
-        >
-          {project.name}
-        </button>
-        <button
-          class="p-2 text-gray-400 hover:text-red-500 transition-colors rounded-full hover:bg-gray-600"
-          onclick={() => (projectToDelete = project)}
-          title="Delete project"
-        >
-          <Trash2 size={18} />
-        </button>
-      </div>
+    <div class="relative" transition:slide>
+      <div
+        role="button"
+        tabindex="0"
+        class="w-full text-left bg-gray-800 rounded-lg p-6 hover:bg-gray-700 transition-all transform hover:-translate-y-1 hover:shadow-xl"
+        onclick={() => goto(`/${project.id}`)}
+        onkeydown={(e) => e.key === "Enter" && goto(`/${project.id}`)}
+      >
+        <div class="flex justify-between items-start mb-4 pr-12">
+          <div
+            class="text-xl font-semibold hover:text-blue-400 transition-colors text-left"
+          >
+            {project.name}
+          </div>
+          <button
+            type="button"
+            class="absolute top-6 right-6 p-2 text-gray-400 hover:text-red-500 transition-colors rounded-full hover:bg-gray-600/50"
+            onclick={(e) => {
+              e.stopPropagation();
+              projectToDelete = project;
+            }}
+            title="Delete project"
+          >
+            <Trash2 size={20} />
+          </button>
+        </div>
 
-      <div class="flex items-center gap-4 text-gray-400 text-sm">
-        <div class="flex items-center gap-1">
-          <Clock size={16} />
-          {formatDate(project.updated_at)}
-        </div>
-        <div class="flex items-center gap-1">
-          <Users size={16} />
-          {project.projects_users?.length}
-        </div>
-        <div class="flex items-center gap-1">
-          <Music size={16} />
-          <!-- {project.tracks} tracks -->
-          No tracks
+        <div class="flex items-center gap-4 text-gray-400 text-sm">
+          <div class="flex items-center gap-1">
+            <Clock size={16} />
+            {formatDate(project.updated_at)}
+          </div>
+          <div class="flex items-center gap-1">
+            <Users size={16} />
+            {project.projects_users?.length}
+          </div>
+          <div class="flex items-center gap-1">
+            <Music size={16} />
+            No tracks
+          </div>
         </div>
       </div>
     </div>
