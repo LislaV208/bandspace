@@ -37,6 +37,8 @@ export const actions = {
         const formData = await request.formData();
         const name = formData.get('name')?.toString();
 
+        console.log('nowy projekt: ', name);
+
         if (!name) {
             return { error: 'Project name is required' };
         }
@@ -49,6 +51,8 @@ export const actions = {
             console.error('Error creating project:', error);
             return { error: error.message };
         }
+
+        console.log('Project created');
         return { success: true };
     },
     delete: async ({ request, locals: { supabase } }) => {

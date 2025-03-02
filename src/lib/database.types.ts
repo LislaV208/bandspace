@@ -14,6 +14,7 @@ export type Database = {
           created_at: string
           id: number
           name: string
+          slug: string
           updated_at: string
           users: string[] | null
         }
@@ -21,6 +22,7 @@ export type Database = {
           created_at?: string
           id?: number
           name?: string
+          slug?: string
           updated_at?: string
           users?: string[] | null
         }
@@ -28,6 +30,7 @@ export type Database = {
           created_at?: string
           id?: number
           name?: string
+          slug?: string
           updated_at?: string
           users?: string[] | null
         }
@@ -65,6 +68,7 @@ export type Database = {
           id: number
           name: string
           project_id: number
+          slug: string
           updated_at: string
         }
         Insert: {
@@ -72,6 +76,7 @@ export type Database = {
           id?: number
           name?: string
           project_id: number
+          slug?: string
           updated_at?: string
         }
         Update: {
@@ -79,6 +84,7 @@ export type Database = {
           id?: number
           name?: string
           project_id?: number
+          slug?: string
           updated_at?: string
         }
         Relationships: [
@@ -96,7 +102,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_unique_slug: {
+        Args: {
+          table_name: string
+          base_name: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

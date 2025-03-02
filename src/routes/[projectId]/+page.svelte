@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
+  import { generateSlug } from "$lib/utils/slug";
   import {
     Calendar,
     Clock,
@@ -157,9 +158,15 @@
           transition:slide
           role="button"
           tabindex="0"
-          onclick={() => goto(`/${project.id}/${recording.id}`)}
+          onclick={() =>
+            goto(
+              `/${generateSlug(project.name)}/${generateSlug(recording.name)}`,
+            )}
           onkeydown={(e) =>
-            e.key === "Enter" && goto(`/${project.id}/track/${recording.id}`)}
+            e.key === "Enter" &&
+            goto(
+              `/${generateSlug(project.name)}/${generateSlug(recording.name)}`,
+            )}
         >
           <div class="flex-1 w-full">
             <div class="flex items-center justify-between mb-2">

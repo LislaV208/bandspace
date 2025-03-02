@@ -6,8 +6,6 @@
   let { data } = $props();
   let projects = data.data;
 
-  $inspect(projects);
-
   // Mock data for demonstration
   // let projects = $state([
   //   {
@@ -63,8 +61,6 @@
 
   const hasProjects = $derived(projects.length > 0);
 
-  $inspect(hasProjects);
-
   function openCreateModal() {
     isCreateModalOpen = true;
   }
@@ -110,8 +106,8 @@
         role="button"
         tabindex="0"
         class="w-full text-left bg-gray-800 rounded-lg p-4 sm:p-6 hover:bg-gray-700 transition-all transform hover:-translate-y-1 hover:shadow-xl"
-        onclick={() => goto(`/${project.id}`)}
-        onkeydown={(e) => e.key === "Enter" && goto(`/${project.id}`)}
+        onclick={() => goto(`/${project.slug}`)}
+        onkeydown={(e) => e.key === "Enter" && goto(`/${project.slug}`)}
       >
         <div class="flex justify-between items-start mb-4 pr-12">
           <div
