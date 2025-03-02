@@ -1,4 +1,3 @@
-// import { authService } from '$lib/services/auth';
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions } from './$types';
 
@@ -30,10 +29,22 @@ export const actions = {
     redirect(303, '/');
 
   },
-  google: async (event) => {
-    // TODO log the user in
-    console.log('GOOGLE');
-  }
+  googleLogin: async ({ locals: { supabase } }) => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `http://localhost:5173/auth/callback`,
+      },
+    });
+
+    if (error) {
+      return fail(400, {
+        message: "Something went wrong with Google login",
+      });
+    }
+
+    redirect(303, data.url);
+  },
 } satisfies Actions;
 
 // export const actions: Actions = {

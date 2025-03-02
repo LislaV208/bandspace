@@ -96,8 +96,9 @@
 
       <div class="mt-4">
         <button
-          type="button"
+          type="submit"
           formnovalidate
+          formaction="?/googleLogin"
           class="w-full flex items-center justify-center px-4 py-2 border border-gray-700 shadow-sm text-sm font-medium rounded-md text-gray-300 bg-gray-800 hover:bg-gray-700"
         >
           <img

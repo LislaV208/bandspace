@@ -69,12 +69,12 @@ const authGuard: Handle = async ({ event, resolve }) => {
 
   const publicPathnames = ['/login', '/signup']
 
-  if (!event.locals.session && !publicPathnames.includes(event.url.pathname)) {
+  if (!event.locals.session && (!publicPathnames.includes(event.url.pathname) && !event.url.pathname.startsWith('/auth'))) {
     console.log('redirecting to login')
     redirect(303, '/login')
   }
 
-  if (event.locals.session && publicPathnames.includes(event.url.pathname)) {
+  if (event.locals.session && (publicPathnames.includes(event.url.pathname) && event.url.pathname.startsWith('/auth'))) {
     console.log('redirecting to /')
     redirect(303, '/')
   }
