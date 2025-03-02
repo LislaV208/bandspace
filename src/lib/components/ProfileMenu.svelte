@@ -68,22 +68,22 @@
   <button
     bind:this={profileMenuButton}
     onclick={stopPropagation(onToggle)}
-    class="p-2 hover:bg-gray-700 rounded-full transition-colors flex items-center justify-center"
+    class="p-3 hover:bg-gray-700/80 rounded-full transition-all duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-500/40 flex items-center justify-center"
     title="User menu"
   >
     {#if userAvatar}
       <img
         src={userAvatar}
         alt="User avatar"
-        class="w-6 h-6 rounded-full object-cover"
+        class="w-8 h-8 rounded-full object-cover"
       />
     {:else}
-      <UserIcon size={24} />
+      <UserIcon size={32} />
     {/if}
   </button>
   {#if isOpen}
     <div
-      class="absolute right-0 mt-2 min-w-[12rem] max-w-xs bg-gray-800 rounded-lg shadow-lg py-2 z-50 border border-gray-600 transition-all duration-200 ease-in-out profile-menu-popup"
+      class="absolute right-0 mt-2 min-w-[12rem] max-w-xs bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-lg py-2 z-50 border border-gray-600/50 transition-all duration-200 ease-in-out profile-menu-popup"
       transition:slide={{ duration: 200 }}
     >
       <div class="px-4 py-3 border-b border-gray-600">
@@ -100,7 +100,7 @@
             console.error("Error signing out:", error);
           }
         }}
-        class="w-full text-left px-4 py-3 text-sm hover:bg-gray-700 transition-colors text-gray-100"
+        class="w-full text-left px-4 py-3 text-sm hover:bg-gray-700/80 transition-all duration-200 ease-in-out text-gray-100 hover:text-white"
       >
         Log out
       </button>

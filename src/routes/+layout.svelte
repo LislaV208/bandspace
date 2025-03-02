@@ -56,15 +56,21 @@
   let isProfileMenuOpen = $state(false);
 </script>
 
-<div class="min-h-screen bg-gray-900 text-white">
+<div class="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
   {#if user != null}
-    <header class="bg-gray-800 shadow-lg">
-      <nav class="container mx-auto px-4 py-4">
+    <header
+      class="bg-gray-800/70 backdrop-blur-sm shadow-lg sticky top-0 z-50 border-b border-gray-600/50"
+    >
+      <nav class="container mx-auto px-6 py-3">
         <div class="flex items-center justify-between">
-          <div class="flex items-center space-x-4">
-            <div class="text-xl font-bold">BandSpace</div>
+          <div class="flex items-center space-x-6">
+            <div
+              class="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-gray-400 to-gray-300"
+            >
+              BandSpace
+            </div>
           </div>
-          <div class="flex items-center space-x-2">
+          <div class="flex items-center space-x-4">
             <ProfileMenu
               isOpen={isProfileMenuOpen}
               onToggle={() => (isProfileMenuOpen = !isProfileMenuOpen)}
