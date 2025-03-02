@@ -61,6 +61,10 @@
     );
   });
 
+  const hasProjects = $derived(projects.length > 0);
+
+  $inspect(hasProjects);
+
   function openCreateModal() {
     isCreateModalOpen = true;
   }
@@ -77,21 +81,23 @@
 <div class="max-w-6xl mx-auto px-4 py-8">
   <div class="flex justify-between items-center mb-8">
     <h1 class="text-3xl font-bold">Your Projects</h1>
-    <div class="flex gap-4">
-      <input
-        type="text"
-        bind:value={searchQuery}
-        placeholder="Search projects..."
-        class="px-4 py-2 bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-      />
-      <button
-        onclick={openCreateModal}
-        class="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
-      >
-        <Plus size={20} />
-        New Project
-      </button>
-    </div>
+    {#if hasProjects}
+      <div class="flex gap-4">
+        <input
+          type="text"
+          bind:value={searchQuery}
+          placeholder="Search projects..."
+          class="px-4 py-2 bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+        />
+        <button
+          onclick={openCreateModal}
+          class="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+        >
+          <Plus size={20} />
+          New Project
+        </button>
+      </div>
+    {/if}
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -136,12 +142,74 @@
 
     {#if filteredProjects.length === 0}
       <div
-        class="col-span-full flex flex-col items-center justify-center py-16 text-gray-400"
+        class="col-span-full flex flex-col items-center justify-center py-16 space-y-6"
+        transition:fade
       >
         {#if searchQuery}
-          <div class="text-lg">No projects found matching "{searchQuery}"</div>
+          <div class="w-48 h-48 text-gray-600 flex items-center justify-center">
+            <svg
+              class="w-full h-full"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+            >
+              <path
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M12 8v4m0 4h.01"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </div>
+          <div class="space-y-2 text-center">
+            <h3 class="text-xl font-semibold text-gray-200">
+              No matching projects
+            </h3>
+            <p class="text-gray-400">
+              We couldn't find any projects matching "{searchQuery}"
+            </p>
+          </div>
+          <button
+            onclick={() => (searchQuery = "")}
+            class="px-4 py-2 text-sm text-blue-400 hover:text-blue-300 transition-colors"
+          >
+            Clear search
+          </button>
         {:else}
-          <div class="text-lg">No projects yet - create your first!</div>
+          <div class="w-48 h-48 text-gray-600 flex items-center justify-center">
+            <svg
+              class="w-full h-full"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+            >
+              <path
+                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </div>
+          <div class="space-y-2 text-center">
+            <h3 class="text-xl font-semibold text-gray-200">No projects yet</h3>
+            <p class="text-gray-400">
+              Start creating your first project and begin your musical journey!
+            </p>
+          </div>
+          <button
+            onclick={openCreateModal}
+            class="px-6 py-3 bg-blue-500 hover:bg-blue-600 rounded-lg flex items-center gap-2 transition-all transform hover:scale-105"
+          >
+            <Plus size={20} />
+            Create Your First Project
+          </button>
         {/if}
       </div>
     {/if}
