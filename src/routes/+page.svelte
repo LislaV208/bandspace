@@ -79,19 +79,22 @@
 </script>
 
 <!-- <div class="max-w-6xl mx-auto px-4 py-8"> -->
-<div class="flex justify-between items-center mb-8">
+<!-- <div class="container mx-auto px-4 py-6 sm:py-8"> -->
+<div
+  class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-6 sm:mb-8"
+>
   <h1 class="text-2xl">Projects</h1>
   {#if hasProjects}
-    <div class="flex gap-4">
+    <div class="flex flex-col sm:flex-row w-full sm:w-auto gap-4">
       <input
         type="text"
         bind:value={searchQuery}
         placeholder="Search projects..."
-        class="px-4 py-2 bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+        class="w-full sm:w-64 px-4 py-2 bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
       />
       <button
         onclick={openCreateModal}
-        class="bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+        class="w-full sm:w-auto bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
       >
         <Plus size={20} />
         New Project
@@ -100,25 +103,25 @@
   {/if}
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
   {#each filteredProjects as project (project.id)}
     <div class="relative" transition:slide>
       <div
         role="button"
         tabindex="0"
-        class="w-full text-left bg-gray-800 rounded-lg p-6 hover:bg-gray-700 transition-all transform hover:-translate-y-1 hover:shadow-xl"
+        class="w-full text-left bg-gray-800 rounded-lg p-4 sm:p-6 hover:bg-gray-700 transition-all transform hover:-translate-y-1 hover:shadow-xl"
         onclick={() => goto(`/${project.id}`)}
         onkeydown={(e) => e.key === "Enter" && goto(`/${project.id}`)}
       >
         <div class="flex justify-between items-start mb-4 pr-12">
           <div
-            class="text-xl font-semibold hover:text-blue-400 transition-colors text-left"
+            class="text-lg sm:text-xl font-semibold hover:text-blue-400 transition-colors text-left"
           >
             {project.name}
           </div>
           <button
             type="button"
-            class="absolute top-6 right-6 p-2 text-gray-400 hover:text-red-500 transition-colors rounded-full hover:bg-gray-600/50"
+            class="absolute top-4 sm:top-6 right-4 sm:right-6 p-2 text-gray-400 hover:text-red-500 transition-colors rounded-full hover:bg-gray-600/50"
             onclick={(e) => {
               e.stopPropagation();
               projectToDelete = project;
@@ -129,7 +132,9 @@
           </button>
         </div>
 
-        <div class="flex items-center gap-4 text-gray-400 text-sm">
+        <div
+          class="flex flex-wrap items-center gap-3 sm:gap-4 text-gray-400 text-sm"
+        >
           <div class="flex items-center gap-1">
             <Clock size={16} />
             {formatDate(project.updated_at)}
@@ -149,11 +154,13 @@
 
   {#if filteredProjects.length === 0}
     <div
-      class="col-span-full flex flex-col items-center justify-center py-16 space-y-6"
+      class="col-span-full flex flex-col items-center justify-center py-12 sm:py-16 space-y-6"
       transition:fade
     >
       {#if searchQuery}
-        <div class="w-48 h-48 text-gray-600 flex items-center justify-center">
+        <div
+          class="w-32 h-32 sm:w-48 sm:h-48 text-gray-600 flex items-center justify-center"
+        >
           <svg
             class="w-full h-full"
             viewBox="0 0 24 24"
@@ -174,8 +181,8 @@
             />
           </svg>
         </div>
-        <div class="space-y-2 text-center">
-          <h3 class="text-xl font-semibold text-gray-200">
+        <div class="space-y-2 text-center px-4">
+          <h3 class="text-lg sm:text-xl font-semibold text-gray-200">
             No matching projects
           </h3>
           <p class="text-gray-400">
@@ -189,7 +196,9 @@
           Clear search
         </button>
       {:else}
-        <div class="w-48 h-48 text-gray-600 flex items-center justify-center">
+        <div
+          class="w-32 h-32 sm:w-48 sm:h-48 text-gray-600 flex items-center justify-center"
+        >
           <svg
             class="w-full h-full"
             viewBox="0 0 24 24"
@@ -204,15 +213,17 @@
             />
           </svg>
         </div>
-        <div class="space-y-2 text-center">
-          <h3 class="text-xl font-semibold text-gray-200">No projects yet</h3>
+        <div class="space-y-2 text-center px-4">
+          <h3 class="text-lg sm:text-xl font-semibold text-gray-200">
+            No projects yet
+          </h3>
           <p class="text-gray-400">
             Start creating your first project and begin your musical journey!
           </p>
         </div>
         <button
           onclick={openCreateModal}
-          class="px-6 py-3 bg-blue-500 hover:bg-blue-600 rounded-lg flex items-center gap-2 transition-all transform hover:scale-105"
+          class="px-4 sm:px-6 py-2 sm:py-3 bg-blue-500 hover:bg-blue-600 rounded-lg flex items-center gap-2 transition-all transform hover:scale-105"
         >
           <Plus size={20} />
           Create Your First Project
