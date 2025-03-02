@@ -2,20 +2,44 @@
   import { stopPropagation } from "svelte/legacy";
 
   import { goto } from "$app/navigation";
-  import type { User } from "@supabase/supabase-js";
+  import { getAuthState } from "$lib/state/auth-state.svelte";
+  import { getTestState } from "$lib/state/test-state.svelte";
   import { User as UserIcon } from "lucide-svelte";
   import { onMount } from "svelte";
   import { slide } from "svelte/transition";
 
   interface Props {
-    user: User;
     isOpen?: boolean;
     onToggle: () => void;
   }
 
-  let { user, isOpen = false, onToggle }: Props = $props();
+  let { isOpen = false, onToggle }: Props = $props();
 
-  let profileMenuButton: HTMLElement = $state();
+  const authState = getAuthState();
+  const user = $derived(authState.user);
+
+  // const user = $derived(authState.user);
+
+  // $inspect(user);
+
+  // const userContext = getContext<() => User | null>("user");
+  // const user = userContext();
+
+  // $inspect(authState());
+
+  // const name = getContext<string>("user");
+
+  // $inspect(name);
+  // const user = $derived(authState.user);
+
+  const testState = getTestState();
+  const name = $derived(testState.name);
+
+  $inspect(user);
+
+  // let user: User | null = null;
+
+  let profileMenuButton: HTMLElement | null = $state(null);
 
   onMount(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -35,9 +59,9 @@
     };
   });
 
-  let userAvatar = $derived(user.user_metadata?.avatar_url || null);
-  let userEmail = $derived(user.user_metadata?.email || "");
-  let displayName = $derived(user.user_metadata?.full_name || userEmail);
+  let userAvatar = $derived(user?.user_metadata?.avatar_url || null);
+  let userEmail = $derived(user?.user_metadata?.email || "");
+  let displayName = $derived(user?.user_metadata?.full_name || userEmail);
 </script>
 
 <div class="relative">
@@ -69,8 +93,9 @@
       <button
         onclick={async () => {
           try {
-            await fetch("/api/auth/signout", { method: "POST" });
+            await authState.signOut();
             goto("/login");
+            // setContext("user", "andrzej");
           } catch (error) {
             console.error("Error signing out:", error);
           }

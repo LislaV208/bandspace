@@ -1,17 +1,17 @@
-// // /src/routes/+page.server.ts
-// import { supabase } from '$lib/supabase';
-// import { redirect } from '@sveltejs/kit';
-// import type { PageServerLoad } from './$types';
+// import { projectsService } from '$lib/services/projects';
+// import type { PageServerLoad } from './projects/$types';
 
-// export const load: PageServerLoad = async ({ locals }) => {
-
-//   // Jeśli użytkownik jest zalogowany, przekieruj na /projects
-//   let { data: { session } } = await supabase.auth.getSession();
-//   console.log('PageServerLoad session', session != null);
-//   if (session) {
-//     throw redirect(303, '/projects');
+// export const load: PageServerLoad = async () => {
+//   try {
+//     const projects = await projectsService.getProjects();
+//     return {
+//       projects
+//     };
+//   } catch (error) {
+//     console.error('Error loading projects:', error);
+//     return {
+//       projects: [],
+//       error: 'Failed to load projects'
+//     };
 //   }
-
-//   // Jeśli użytkownik nie jest zalogowany, przekieruj na /login
-//   throw redirect(303, '/login');
 // };

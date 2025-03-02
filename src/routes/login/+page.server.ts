@@ -4,10 +4,8 @@ import type { Actions } from './$types';
 
 
 export const actions = {
-  login: async ({ request }) => {
+  login: async ({ request, locals: { supabase } }) => {
 
-
-    // TODO log the user in
     const formData = await request.formData();
     const email = formData.get('email')?.toString();
     const password = formData.get('password')?.toString();
@@ -16,7 +14,19 @@ export const actions = {
       return fail(400, { error: 'Email and password are required' });
     }
 
-    // await authService.signIn(email, password);
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    console.log('LOGIN', data, error);
+
+
+
+    if (error) {
+      return fail(401, { error: error.message });
+    }
+
     redirect(303, '/');
 
   },

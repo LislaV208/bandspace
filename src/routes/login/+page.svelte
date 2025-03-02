@@ -1,20 +1,16 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import { enhance } from "$app/forms";
-  import { page } from "$app/stores";
   import { Lock, LogIn, Mail } from "lucide-svelte";
+  import type { PageProps } from "./$types";
 
-  let email = $state("");
-  let password = $state("");
+  const { data, form }: PageProps = $props();
+
+  // $inspect(data);
+  // $inspect(form);
+
   let loading = $state(false);
-  let errorMsg = $state("");
 
-  run(() => {
-    if ($page.form?.error) {
-      errorMsg = $page.form.error;
-    }
-  });
+  const error = $derived(form?.error);
 </script>
 
 <div
@@ -29,38 +25,21 @@
       method="POST"
       action="?/login"
       class="space-y-6"
-      use:enhance={({ formElement, formData, action, cancel, submitter }) => {
-        console.log("Form submitted");
+      use:enhance={() => {
         loading = true;
-        // `formElement` is this `<form>` element
-        // `formData` is its `FormData` object that's about to be submitted
-        // `action` is the URL to which the form is posted
-        // calling `cancel()` will prevent the submission
-        // `submitter` is the `HTMLElement` that caused the form to be submitted
 
         return async ({ result, update }) => {
-          // console.log("Form submitted kozaczek");
-          // // `result` is an `ActionResult` object
-          // // `update` is a function which triggers the default logic that would be triggered if this callback wasn't set
-
-          // if (result.type === "success") {
-          //   const user = result.data?.user;
-          //   console.log("user: ", user);
-          //   auth.setAuthenticated(user);
-          //   goto("/projects");
-          // } else {
-          //   errorMsg = result.error?.message || "Login failed";
-          // }
           loading = false;
+
           await update();
         };
       }}
     >
-      {#if errorMsg}
+      {#if error}
         <div
           class="p-3 bg-red-500 bg-opacity-20 border border-red-500 rounded text-red-500 text-sm"
         >
-          {errorMsg}
+          {error}
         </div>
       {/if}
 
@@ -78,7 +57,6 @@
             id="email"
             type="email"
             name="email"
-            bind:value={email}
             required
             class="block w-full pl-10 pr-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-300 placeholder-gray-500 focus:ring-2 focus:ring-green-500 focus:border-green-500"
             placeholder="Enter your email"
@@ -100,7 +78,6 @@
             id="password"
             type="password"
             name="password"
-            bind:value={password}
             required
             class="block w-full pl-10 pr-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-300 placeholder-gray-500 focus:ring-2 focus:ring-green-500 focus:border-green-500"
             placeholder="Enter your password"
