@@ -1,49 +1,11 @@
-<!-- <script lang="ts">
-  import { preventDefault } from "svelte/legacy";
-
-  import { goto } from "$app/navigation";
-  import { supabase } from "$lib/supabase";
+<script lang="ts">
   import { Lock, Mail, UserPlus } from "lucide-svelte";
+  import type { PageProps } from "./$types";
 
-  let email = $state("");
-  let password = $state("");
-  let confirmPassword = $state("");
+  const { form }: PageProps = $props();
+  const error = $derived(form?.error);
+
   let loading = $state(false);
-  let errorMsg = $state("");
-  let successMsg = $state("");
-
-  async function handleSignup() {
-    loading = true;
-    errorMsg = "";
-    successMsg = "";
-
-    if (password !== confirmPassword) {
-      errorMsg = "Passwords do not match";
-      loading = false;
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-      });
-
-      if (error) throw error;
-
-      goto(
-        "/login?message=Registration successful! Please check your email to confirm your account.",
-      );
-      return;
-    } catch (error) {
-      errorMsg =
-        error instanceof Error
-          ? error.message
-          : "An error occurred during login";
-    } finally {
-      loading = false;
-    }
-  }
 </script>
 
 <div
@@ -54,20 +16,12 @@
       <h1 class="text-3xl font-bold text-white">Create Account</h1>
     </div>
 
-    <form onsubmit={preventDefault(handleSignup)} class="space-y-6">
-      {#if errorMsg}
+    <form method="post" class="space-y-6">
+      {#if error}
         <div
           class="p-3 bg-red-500 bg-opacity-20 border border-red-500 rounded text-red-500 text-sm"
         >
-          {errorMsg}
-        </div>
-      {/if}
-
-      {#if successMsg}
-        <div
-          class="p-3 bg-green-500 bg-opacity-20 border border-green-500 rounded text-green-500 text-sm"
-        >
-          {successMsg}
+          {error}
         </div>
       {/if}
 
@@ -84,7 +38,7 @@
           <input
             id="email"
             type="email"
-            bind:value={email}
+            name="email"
             required
             class="block w-full pl-10 pr-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-300 placeholder-gray-500 focus:ring-2 focus:ring-green-500 focus:border-green-500"
             placeholder="Enter your email"
@@ -105,7 +59,7 @@
           <input
             id="password"
             type="password"
-            bind:value={password}
+            name="password"
             required
             class="block w-full pl-10 pr-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-300 placeholder-gray-500 focus:ring-2 focus:ring-green-500 focus:border-green-500"
             placeholder="Create a password"
@@ -128,7 +82,7 @@
           <input
             id="confirm-password"
             type="password"
-            bind:value={confirmPassword}
+            name="confirm-password"
             required
             class="block w-full pl-10 pr-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-300 placeholder-gray-500 focus:ring-2 focus:ring-green-500 focus:border-green-500"
             placeholder="Confirm your password"
@@ -153,4 +107,4 @@
       </p>
     </form>
   </div>
-</div> -->
+</div>
