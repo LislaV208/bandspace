@@ -64,6 +64,15 @@
   let isDeleting = $state(false);
   let trackToDelete: typeof data.recording | null = $state(null);
   let newSongName = $state("");
+  let selectedFile = $state<File | null>(null);
+
+  function handleFileSelect(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      selectedFile = input.files[0];
+      newSongName = selectedFile.name.replace(/\.[^/.]+$/, "");
+    }
+  }
 
   async function createTrack() {
     isCreating = true;
@@ -110,6 +119,12 @@
 
   function openCreateModal() {
     isCreateModalOpen = true;
+  }
+
+  function closeCreateModal() {
+    isCreateModalOpen = false;
+    newSongName = "";
+    selectedFile = null;
   }
 </script>
 
@@ -304,39 +319,80 @@
       transition:fade
     >
       <div class="bg-gray-800 rounded-lg p-6 w-full max-w-md" transition:slide>
-        <h2 class="text-xl font-bold mb-6">Create New Song</h2>
+        <h2 class="text-xl font-bold mb-6">Upload Audio File</h2>
         <form
           action="?/create"
           method="POST"
-          class="space-y-4"
+          class="space-y-6"
           onsubmit={() => {
             isCreating = true;
           }}
         >
           <input type="hidden" name="project_id" value={data.project.id} />
-          <input
-            type="text"
-            name="name"
-            bind:value={newSongName}
-            placeholder="Song name"
-            class="w-full px-4 py-2 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-          />
+
+          <!-- Drag & Drop Area -->
+          <div
+            class="border-2 border-dashed border-gray-600 rounded-lg p-6 flex flex-col items-center justify-center text-center hover:border-blue-400 transition-colors cursor-pointer"
+            role="button"
+            tabindex="0"
+          >
+            <input
+              type="file"
+              id="audio-file"
+              name="audio"
+              accept="audio/*"
+              class="hidden"
+              onchange={handleFileSelect}
+            />
+            <div class="text-gray-400 mb-4">
+              {selectedFile
+                ? selectedFile.name
+                : "Select file or drag and drop"}
+            </div>
+            <button
+              type="button"
+              class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors flex items-center gap-2"
+              onclick={() => document.getElementById("audio-file")?.click()}
+            >
+              <Plus size={16} />
+              {selectedFile ? "Change File" : "Choose File"}
+            </button>
+          </div>
+
+          <!-- Optional Name Input -->
+          <div>
+            <label
+              for="song-name"
+              class="block text-sm font-medium text-gray-300 mb-1"
+              >Name (optional)</label
+            >
+            <input
+              id="song-name"
+              type="text"
+              name="name"
+              bind:value={newSongName}
+              placeholder="Enter song name"
+              class="w-full px-4 py-2 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+            />
+          </div>
+
+          <!-- Action Buttons -->
           <div class="flex gap-4">
             <button
               type="submit"
               class="flex-1 px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-              disabled={!newSongName.trim() || isCreating}
+              disabled={isCreating}
             >
               {#if isCreating}
                 <Loader2 class="animate-spin" size={20} />
               {:else}
-                Create Song
+                Upload
               {/if}
             </button>
             <button
               type="button"
               class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
-              onclick={() => (isCreateModalOpen = false)}
+              onclick={closeCreateModal}
             >
               Cancel
             </button>
