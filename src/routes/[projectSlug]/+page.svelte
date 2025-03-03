@@ -14,51 +14,6 @@
   import { fade, slide } from "svelte/transition";
   import type { PageProps } from "./$types";
 
-  // Mock data for demonstration
-  let project = $state({
-    id: 1,
-    name: "Summer Jazz Album",
-    description: "A collection of jazz standards and original compositions",
-    created_at: "2024-01-15T12:00:00Z",
-    updated_at: "2024-01-20T15:30:00Z",
-    projects_users: [
-      { id: 1, name: "John Doe" },
-      { id: 2, name: "Jane Smith" },
-      { id: 3, name: "Mike Johnson" },
-    ],
-  });
-
-  // let recordings = $state([
-  //   {
-  //     id: 1,
-  //     name: "First Take - Piano Solo",
-  //     duration: 185, // 3:05
-  //     creator: "John Doe",
-  //     created_at: "2024-01-20T14:30:00Z",
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "Rhythm Section Groove",
-  //     duration: 242, // 4:02
-  //     creator: "Jane Smith",
-  //     created_at: "2024-01-21T16:45:00Z",
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "Bass Line Draft",
-  //     duration: 163, // 2:43
-  //     creator: "Mike Johnson",
-  //     created_at: "2024-01-22T09:15:00Z",
-  //   },
-  //   {
-  //     id: 4,
-  //     name: "Saxophone Melody",
-  //     duration: 198, // 3:18
-  //     creator: "John Doe",
-  //     created_at: "2024-01-22T11:20:00Z",
-  //   },
-  // ]);
-
   let isLoading = $state(false);
   let isCreating = $state(false);
   let isDeleting = $state(false);
@@ -115,30 +70,6 @@
         console.error("Please upload an audio file");
       }
     }
-  }
-
-  async function createTrack() {
-    isCreating = true;
-    try {
-      await goto(`/projects/${project.id}/track`);
-    } finally {
-      isCreating = false;
-    }
-  }
-
-  async function deleteTrack() {
-    if (!trackToDelete) return;
-
-    // try {
-    //   isDeleting = true;
-    //   // await tracksService.deleteTrack(trackToDelete.id);
-    //   recordings = recordings.filter((r) => r.id !== trackToDelete?.id);
-    //   trackToDelete = null;
-    // } catch (error) {
-    //   console.error("Error deleting track:", error);
-    // } finally {
-    //   isDeleting = false;
-    // }
   }
 
   function formatTime(seconds: number): string {
@@ -431,7 +362,6 @@
       <div class="flex space-x-4">
         <button
           class="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          onclick={deleteTrack}
           disabled={isDeleting}
         >
           {#if isDeleting}
