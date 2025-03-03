@@ -1,7 +1,7 @@
 // import { projectsService } from '$lib/services/projects';
 
 import type { Database } from "$lib/database.types";
-import type { Actions } from "@sveltejs/kit";
+import { redirect, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 
 
@@ -43,9 +43,11 @@ export const actions = {
             return { error: 'Project name is required' };
         }
 
-        const { error } = await supabase
+        const { data, error } = await supabase
             .from('projects')
-            .insert([{ name }]);
+            .insert([{ name }])
+            .select('*')
+            .single();
 
         if (error) {
             console.error('Error creating project:', error);
@@ -53,7 +55,7 @@ export const actions = {
         }
 
         console.log('Project created');
-        return { success: true };
+        redirect(303, `/${data.slug}`);
     },
     delete: async ({ request, locals: { supabase } }) => {
         const formData = await request.formData();

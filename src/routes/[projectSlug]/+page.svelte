@@ -68,6 +68,7 @@
   let isDragging = $state(false);
 
   function handleFileSelect(event: Event) {
+    console.log("handleFileSelect");
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       selectedFile = input.files[0];
@@ -323,7 +324,7 @@
   >
     <div
       class="bg-gray-800 rounded-lg p-6 w-full max-w-md ${isDragging
-        ? 'border-2 border-blue-400 bg-blue-900/20'
+        ? 'border-2 border-blue-400 bg-blue-950'
         : ''}"
       transition:slide
     >
@@ -363,7 +364,6 @@
           <button
             type="button"
             class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors flex items-center gap-2"
-            onclick={() => document.getElementById("audio-file")?.click()}
           >
             <Plus size={16} />
             {selectedFile ? "Change File" : "Choose File"}

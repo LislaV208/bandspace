@@ -1,6 +1,6 @@
 
 import type { Database } from "$lib/database.types";
-import type { Actions } from "@sveltejs/kit";
+import { redirect, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 
 
@@ -44,7 +44,7 @@ export const load: PageServerLoad = async ({ locals: { supabase }, params }) => 
 
 export const actions = {
     // create new project
-    create: async ({ request, locals: { supabase, user } }) => {
+    create: async ({ request, locals: { supabase, user }, params }) => {
         const formData = await request.formData();
         const name = formData.get('name')?.toString();
         const projectId = formData.get('project_id')?.toString();
@@ -62,13 +62,15 @@ export const actions = {
 
 
 
-        const { error } = await supabase
+        const { data, error } = await supabase
             .from('tracks')
             .insert([{
                 name,
                 project_id: parseInt(projectId),
                 uploaded_by: user?.id,
-            }]);
+            }])
+            .select()
+            .single();
 
         if (error) {
             console.error('Error creating song:', error);
@@ -76,7 +78,7 @@ export const actions = {
         }
 
         console.log('Song created');
-        return { success: true };
+        redirect(303, `/${params.projectSlug}/${data.slug}`);
     },
     delete: async ({ request, locals: { supabase } }) => {
         const formData = await request.formData();
