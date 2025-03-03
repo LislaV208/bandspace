@@ -70,6 +70,7 @@ export type Database = {
           project_id: number
           slug: string
           updated_at: string
+          uploaded_by: string
         }
         Insert: {
           created_at?: string
@@ -78,6 +79,7 @@ export type Database = {
           project_id: number
           slug?: string
           updated_at?: string
+          uploaded_by?: string
         }
         Update: {
           created_at?: string
@@ -86,6 +88,7 @@ export type Database = {
           project_id?: number
           slug?: string
           updated_at?: string
+          uploaded_by?: string
         }
         Relationships: [
           {

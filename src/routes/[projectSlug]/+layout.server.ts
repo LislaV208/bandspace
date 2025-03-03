@@ -7,11 +7,10 @@ import type { LayoutServerLoad } from './$types';
 // }
 
 export const load: LayoutServerLoad = async ({ params, locals: { supabase } }) => {
-    const projectSlug = params.projectId;
     const { data: project, error: projectError } = await supabase
         .from('projects')
-        .select('name')
-        .eq('slug', projectSlug)
+        .select('id, name')
+        .eq('slug', params.projectSlug)
         .single();
     if (projectError) {
         console.error('Error fetching project:', projectError);
@@ -20,12 +19,14 @@ export const load: LayoutServerLoad = async ({ params, locals: { supabase } }) =
 
 
 
+
+    let recordingId = null;
     let recordingName = null;
     const recordingSlug = params.recordingId ?? null;
     if (recordingSlug) {
         const { data, error: fileError } = await supabase
             .from('tracks')
-            .select('name')
+            .select('id, name')
             .eq('slug', recordingSlug)
             .single();
         if (fileError) {
@@ -33,15 +34,18 @@ export const load: LayoutServerLoad = async ({ params, locals: { supabase } }) =
             throw error(500, 'Internal Server Error');
         }
 
+        recordingId = data.id;
         recordingName = data.name;
     }
 
     return {
         project: {
+            id: project.id,
             name: project.name,
-            slug: projectSlug
+            slug: params.projectSlug
         },
         recording: {
+            id: recordingId,
             name: recordingName,
             slug: recordingSlug
         }
