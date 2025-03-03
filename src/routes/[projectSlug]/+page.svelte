@@ -190,10 +190,9 @@
           transition:slide
           role="button"
           tabindex="0"
-          onclick={() => goto(`/${data.project.slug}/${data.recording.slug}`)}
+          onclick={() => goto(`/${data.project.slug}/${track.slug}`)}
           onkeydown={(e) =>
-            e.key === "Enter" &&
-            goto(`/${data.project.slug}/${data.recording.slug}`)}
+            e.key === "Enter" && goto(`/${data.project.slug}/${track.slug}`)}
         >
           <div class="flex-1 w-full">
             <div class="flex items-center justify-between mb-2">

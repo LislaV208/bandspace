@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Breadcrumbs from "$lib/components/Breadcrumbs.svelte";
   import {
     Download,
     Pause,
@@ -7,7 +8,6 @@
     SkipBack,
     SkipForward,
   } from "lucide-svelte";
-  import { onMount } from "svelte";
   import type { PageProps } from "./$types";
 
   const { data }: PageProps = $props();
@@ -18,22 +18,24 @@
   let audio: HTMLAudioElement;
 
   // Mock data for demonstration
-  const recording = {
-    title: "Summer Breeze",
-    artist: "The Project Band",
-    uploadedBy: "Alex Turner",
-    uploadDate: "Jan 15, 2024",
-    duration: "3:45",
-    audioUrl: "/path/to/audio.mp3",
-  };
+  // const recording = {
+  //   title: "Summer Breeze",
+  //   artist: "The Project Band",
+  //   uploadedBy: "Alex Turner",
+  //   uploadDate: "Jan 15, 2024",
+  //   duration: "3:45",
+  //   audioUrl: "/path/to/audio.mp3",
+  // };
 
-  onMount(() => {
-    audio = new Audio(recording.audioUrl);
-    audio.addEventListener("timeupdate", () => {
-      progress = (audio.currentTime / audio.duration) * 100;
-      currentTime = formatTime(audio.currentTime);
-    });
-  });
+  const recording = data.track;
+
+  // onMount(() => {
+  //   audio = new Audio(recording.audioUrl);
+  //   audio.addEventListener("timeupdate", () => {
+  //     progress = (audio.currentTime / audio.duration) * 100;
+  //     currentTime = formatTime(audio.currentTime);
+  //   });
+  // });
 
   function formatTime(seconds: number) {
     const minutes = Math.floor(seconds / 60);
@@ -42,30 +44,31 @@
   }
 
   function togglePlayback() {
-    if (isPlaying) {
-      audio.pause();
-    } else {
-      audio.play();
-    }
-    isPlaying = !isPlaying;
+    // if (isPlaying) {
+    //   audio.pause();
+    // } else {
+    //   audio.play();
+    // }
+    // isPlaying = !isPlaying;
   }
 
   function seek(event: MouseEvent) {
-    const timeline = event.currentTarget as HTMLDivElement;
-    const rect = timeline.getBoundingClientRect();
-    const percent = (event.clientX - rect.left) / rect.width;
-    audio.currentTime = percent * audio.duration;
+    // const timeline = event.currentTarget as HTMLDivElement;
+    // const rect = timeline.getBoundingClientRect();
+    // const percent = (event.clientX - rect.left) / rect.width;
+    // audio.currentTime = percent * audio.duration;
   }
 
   function skipBackward() {
-    audio.currentTime = Math.max(0, audio.currentTime - 10);
+    // audio.currentTime = Math.max(0, audio.currentTime - 10);
   }
 
   function skipForward() {
-    audio.currentTime = Math.min(audio.duration, audio.currentTime + 10);
+    // audio.currentTime = Math.min(audio.duration, audio.currentTime + 10);
   }
 </script>
 
+<Breadcrumbs project={data.project} recording={data.recording} />
 <div class="max-w-4xl mx-auto px-4 py-8">
   <div
     class="bg-gradient-to-br from-gray-800/90 to-gray-900/90 backdrop-blur-sm rounded-xl p-8 border border-gray-600/50 shadow-xl"
@@ -86,13 +89,13 @@
         <h1
           class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-200 to-gray-400 mb-2"
         >
-          {recording.title}
+          {recording.name}
         </h1>
-        <p class="text-xl text-gray-400 mb-4">{recording.artist}</p>
+        <p class="text-xl text-gray-400 mb-4">{data.project.name}</p>
         <div class="flex items-center gap-4 text-sm text-gray-500">
-          <span>Uploaded by {recording.uploadedBy}</span>
+          <span>Uploaded by Stachu Jones</span>
           <span>•</span>
-          <span>{recording.uploadDate}</span>
+          <span>{new Date(recording.created_at).toLocaleString()}</span>
         </div>
       </div>
 
@@ -128,7 +131,7 @@
       <!-- Time and Duration -->
       <div class="flex justify-between text-sm text-gray-400">
         <span>{currentTime}</span>
-        <span>{recording.duration}</span>
+        <span>3:14</span>
       </div>
 
       <!-- Controls -->
