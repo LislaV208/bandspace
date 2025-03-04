@@ -5,6 +5,7 @@ import { redirect, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 
 
+
 export type Project = Database['public']['Tables']['projects']['Row'];
 export type ProjectWithUsers = Project & {
     projects_users: Database['public']['Tables']['projects_users']['Row'][]

@@ -1,46 +1,19 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { Clock, Loader2, Music, Plus, Trash2, Users } from "lucide-svelte";
+  import toast, { Toaster } from "svelte-french-toast";
   import { fade, slide } from "svelte/transition";
 
-  let { data } = $props();
+  let { data, form } = $props();
   let projects = data.data;
 
-  // Mock data for demonstration
-  // let projects = $state([
-  //   {
-  //     id: 1,
-  //     name: "Summer Jazz Album",
-  //     category: "Jazz",
-  //     lastModified: "2024-01-15",
-  //     collaborators: 3,
-  //     tracks: 8,
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "Rock Fusion Project",
-  //     category: "Rock",
-  //     lastModified: "2024-01-14",
-  //     collaborators: 2,
-  //     tracks: 5,
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "Electronic Beats",
-  //     category: "Electronic",
-  //     lastModified: "2024-01-13",
-  //     collaborators: 4,
-  //     tracks: 12,
-  //   },
-  //   {
-  //     id: 4,
-  //     name: "Acoustic Sessions",
-  //     category: "Acoustic",
-  //     lastModified: "2024-01-12",
-  //     collaborators: 1,
-  //     tracks: 6,
-  //   },
-  // ]);
+  $effect(() => {
+    if (form?.error) {
+      toast.error(form?.error, {
+        position: "bottom-right",
+      });
+    }
+  });
 
   let isCreateModalOpen = $state(false);
   let newProjectName = $state("");
@@ -48,10 +21,6 @@
   let isDeleting = $state(false);
   let projectToDelete: (typeof projects)[0] | null = $state(null);
   let searchQuery = $state("");
-
-  // $derived.filteredProjects = projects.filter((project) =>
-  //   project.name.toLowerCase().includes(searchQuery.toLowerCase()),
-  // );
 
   const filteredProjects = $derived.by(() => {
     return projects.filter((project) =>
@@ -73,6 +42,8 @@
     });
   }
 </script>
+
+<Toaster />
 
 <!-- <div class="max-w-6xl mx-auto px-4 py-8"> -->
 <!-- <div class="container mx-auto px-4 py-6 sm:py-8"> -->
