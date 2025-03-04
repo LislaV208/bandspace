@@ -21,13 +21,20 @@
   let newSongName = $state("");
   let selectedFile = $state<File | null>(null);
   let isDragging = $state(false);
+  let fileError = $state("");
 
   function handleFileSelect(event: Event) {
-    console.log("handleFileSelect");
+    fileError = "";
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
-      selectedFile = input.files[0];
-      newSongName = selectedFile.name.replace(/\.[^/.]+$/, "");
+      const file = input.files[0];
+      if (file.type.startsWith("audio/")) {
+        selectedFile = file;
+        newSongName = file.name.replace(/\.[^/.]+$/, "");
+      } else {
+        fileError = "Please upload an audio file (MP3, WAV, etc.)";
+        input.value = "";
+      }
     }
   }
 
@@ -66,8 +73,7 @@
           fileInput.files = dataTransfer.files;
         }
       } else {
-        // Could add error handling for non-audio files here
-        console.error("Please upload an audio file");
+        fileError = "Please upload an audio file (MP3, WAV, etc.)";
       }
     }
   }
@@ -99,6 +105,7 @@
     isCreateModalOpen = false;
     newSongName = "";
     selectedFile = null;
+    fileError = "";
   }
 </script>
 
@@ -297,6 +304,9 @@
             onchange={handleFileSelect}
           />
           <div class="text-gray-400 mb-4">
+            {#if fileError}
+              <p class="text-red-400 mb-2">{fileError}</p>
+            {/if}
             {selectedFile ? selectedFile.name : "Select file or drag and drop"}
           </div>
           <button
