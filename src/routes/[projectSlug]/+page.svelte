@@ -252,6 +252,7 @@
     ondragover={handleDragOver}
     ondragleave={handleDragLeave}
     ondrop={handleDrop}
+    role="presentation"
   >
     <div
       class="bg-gray-800 rounded-lg p-6 w-full max-w-md ${isDragging
@@ -280,6 +281,12 @@
           role="button"
           tabindex="0"
           onclick={() => document.getElementById("audio-file")?.click()}
+          onkeydown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              document.getElementById("audio-file")?.click();
+            }
+          }}
         >
           <input
             type="file"
