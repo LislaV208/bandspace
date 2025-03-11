@@ -9,6 +9,47 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      files: {
+        Row: {
+          created_at: string
+          duration: number
+          file_url: string
+          id: number
+          name: string
+          size: number
+          track_id: number
+          uploaded_by: string
+        }
+        Insert: {
+          created_at?: string
+          duration: number
+          file_url: string
+          id?: number
+          name: string
+          size: number
+          track_id: number
+          uploaded_by: string
+        }
+        Update: {
+          created_at?: string
+          duration?: number
+          file_url?: string
+          id?: number
+          name?: string
+          size?: number
+          track_id?: number
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "files_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: false
+            referencedRelation: "tracks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           created_at: string
@@ -16,7 +57,6 @@ export type Database = {
           name: string
           slug: string
           updated_at: string
-          users: string[] | null
         }
         Insert: {
           created_at?: string
@@ -24,7 +64,6 @@ export type Database = {
           name?: string
           slug?: string
           updated_at?: string
-          users?: string[] | null
         }
         Update: {
           created_at?: string
@@ -32,7 +71,6 @@ export type Database = {
           name?: string
           slug?: string
           updated_at?: string
-          users?: string[] | null
         }
         Relationships: []
       }
