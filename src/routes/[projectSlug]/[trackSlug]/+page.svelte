@@ -15,57 +15,16 @@
   let isPlaying = $state(false);
   let progress = $state(0);
   let currentTime = $state("0:00");
-  let audio: HTMLAudioElement;
-
-  // Mock data for demonstration
-  // const recording = {
-  //   title: "Summer Breeze",
-  //   artist: "The Project Band",
-  //   uploadedBy: "Alex Turner",
-  //   uploadDate: "Jan 15, 2024",
-  //   duration: "3:45",
-  //   audioUrl: "/path/to/audio.mp3",
-  // };
 
   const recording = data.track;
 
-  // onMount(() => {
-  //   audio = new Audio(recording.audioUrl);
-  //   audio.addEventListener("timeupdate", () => {
-  //     progress = (audio.currentTime / audio.duration) * 100;
-  //     currentTime = formatTime(audio.currentTime);
-  //   });
-  // });
+  function togglePlayback() {}
 
-  function formatTime(seconds: number) {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = Math.floor(seconds % 60);
-    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
-  }
+  function seek(event: MouseEvent) {}
 
-  function togglePlayback() {
-    // if (isPlaying) {
-    //   audio.pause();
-    // } else {
-    //   audio.play();
-    // }
-    // isPlaying = !isPlaying;
-  }
+  function skipBackward() {}
 
-  function seek(event: MouseEvent) {
-    // const timeline = event.currentTarget as HTMLDivElement;
-    // const rect = timeline.getBoundingClientRect();
-    // const percent = (event.clientX - rect.left) / rect.width;
-    // audio.currentTime = percent * audio.duration;
-  }
-
-  function skipBackward() {
-    // audio.currentTime = Math.max(0, audio.currentTime - 10);
-  }
-
-  function skipForward() {
-    // audio.currentTime = Math.min(audio.duration, audio.currentTime + 10);
-  }
+  function skipForward() {}
 </script>
 
 <Breadcrumbs project={data.project} recording={data.recording} />
@@ -120,7 +79,7 @@
       <!-- Timeline -->
       <div
         class="relative h-2 bg-gray-700/50 rounded-full cursor-pointer overflow-hidden"
-        on:click={seek}
+        onclick={seek}
       >
         <div
           class="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full transition-all duration-100"
@@ -138,7 +97,7 @@
       <div class="flex items-center justify-center gap-6">
         <button
           class="p-3 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-full transition-all"
-          on:click={skipBackward}
+          onclick={skipBackward}
           title="Skip 10 seconds backward"
         >
           <SkipBack size={24} />
@@ -146,7 +105,7 @@
 
         <button
           class="w-16 h-16 flex items-center justify-center bg-gradient-to-r from-blue-500 to-blue-400 hover:from-blue-600 hover:to-blue-500 rounded-full transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500/40 shadow-lg"
-          on:click={togglePlayback}
+          onclick={togglePlayback}
           title={isPlaying ? "Pause" : "Play"}
         >
           {#if isPlaying}
@@ -158,7 +117,7 @@
 
         <button
           class="p-3 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-full transition-all"
-          on:click={skipForward}
+          onclick={skipForward}
           title="Skip 10 seconds forward"
         >
           <SkipForward size={24} />

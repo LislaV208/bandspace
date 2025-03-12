@@ -22,7 +22,7 @@ export const load: LayoutServerLoad = async ({ params, locals: { supabase } }) =
 
     let recordingId = null;
     let recordingName = null;
-    const recordingSlug = params.recordingId ?? null;
+    const recordingSlug = params.trackSlug ?? null;
     if (recordingSlug) {
         const { data, error: fileError } = await supabase
             .from('tracks')

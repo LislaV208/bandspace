@@ -1,20 +1,31 @@
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ locals: { supabase }, params }) => {
-
-
-    const { data: track, error } = await supabase
+    // Pobieramy utwór wraz z powiązanym plikiem w jednym zapytaniu
+    const { data, error } = await supabase
         .from('tracks')
-        .select('*')
-        .eq('slug', params.recordingId)
+        .select(`
+            *,
+            files!track_id(*)     
+        `)
+        .eq('slug', params.trackSlug)
         .single();
 
     if (error) {
-        console.error('Error fetching tracks:', error);
+        console.error('Error fetching track with file:', error);
         throw error;
     }
 
-    console.log('Tracks:', track);
+    const track = {
+        ...data,
+        files: undefined // Usuwamy tablicę files z obiektu track
+    };
 
-    return { track };
+    // Pobieramy pierwszy plik z tablicy files (jeśli istnieje)
+    const file = data.files && data.files.length > 0 ? data.files[0] : null;
+
+    console.log('Track:', track);
+    console.log('File:', file);
+
+    return { track, file }
 };

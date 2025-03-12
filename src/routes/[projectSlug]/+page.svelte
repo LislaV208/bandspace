@@ -139,7 +139,7 @@
 
       console.log("Upload pliku do Supabase Storage zakończony:", uploadData);
 
-      return uploadData.fullPath;
+      return uploadData.path;
     } catch (error: any) {
       fileError = error?.message ?? "Wystąpił nieoczekiwany błąd";
       toast.error(fileError, { position: "top-right", duration: 5000 });

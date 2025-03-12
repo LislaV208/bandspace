@@ -4,3 +4,4 @@
 - Design Approach: Blue-ish dark, responsive UI
 - Limitations: No advanced collaboration features, keeping it a basic MVP for user feedback.
 - Success Metrics: 100 active users in the first month, 80% success rate for operations, and page load under 2 seconds.
+- refer to /src/lib/database.types.ts file when making changes to server code related to database
