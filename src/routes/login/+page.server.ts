@@ -33,7 +33,8 @@ export const actions = {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `http://localhost:5173/auth/callback`,
+        // redirectTo: `http://localhost:5173/auth/callback`,
+        redirectTo: `https://bandspace.vercel.app/auth/callback`,
       },
     });
 
