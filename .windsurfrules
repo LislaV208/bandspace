@@ -1,0 +1,6 @@
+- Main Purpose: BandSpace is a minimalist web app for musicians and bands to upload, record, and share audio files (e.g., mp3, wav) in a collaborative cloud environment.
+- Key Features: User authentication (email/password, Google OAuth), project creation with unique slugs, audio file uploads and playback, project sharing via invite links.
+- Focus on Simplicity: Emphasizes easy implementation with SvelteKit, Supabase (Auth, Storage, Database), Tailwind CSS, and Web Audio API, targeting quick deployment on Vercel with minimal manual testing.
+- Design Approach: Blue-ish dark, responsive UI
+- Limitations: No advanced collaboration features, keeping it a basic MVP for user feedback.
+- Success Metrics: 100 active users in the first month, 80% success rate for operations, and page load under 2 seconds.

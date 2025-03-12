@@ -12,31 +12,25 @@ export type Database = {
       files: {
         Row: {
           created_at: string
-          duration: number
-          file_url: string
           id: number
           name: string
-          size: number
+          storage_path: string
           track_id: number
           uploaded_by: string
         }
         Insert: {
           created_at?: string
-          duration: number
-          file_url: string
           id?: number
           name: string
-          size: number
+          storage_path: string
           track_id: number
           uploaded_by: string
         }
         Update: {
           created_at?: string
-          duration?: number
-          file_url?: string
           id?: number
           name?: string
-          size?: number
+          storage_path?: string
           track_id?: number
           uploaded_by?: string
         }

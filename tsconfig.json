@@ -9,6 +9,7 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
+    "allowUnreachableCode": true,
     "moduleResolution": "bundler",
     "baseUrl": ".", // Dodajemy baseUrl dla relatywnych ścieżek
     "paths": { // Explicitne mapowanie dla $app/*

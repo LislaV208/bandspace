@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { enhance } from "$app/forms";
   import { goto } from "$app/navigation";
   import Breadcrumbs from "$lib/components/Breadcrumbs.svelte";
   import {
@@ -11,7 +12,7 @@
     Trash2,
     Users,
   } from "lucide-svelte";
-  import toast from "svelte-french-toast";
+  import toast, { Toaster } from "svelte-french-toast";
   import { fade, slide } from "svelte/transition";
   import type { PageProps } from "./$types";
 
@@ -113,9 +114,7 @@
     }
   }
 
-  async function handleFileUpload(e: Event) {
-    e.preventDefault();
-
+  async function handleFileUpload() {
     if (!selectedFile) return;
 
     isUploading = true;
@@ -139,36 +138,40 @@
       }
 
       console.log("Upload pliku do Supabase Storage zakończony:", uploadData);
-      closeCreateModal();
+
+      return uploadData.fullPath;
     } catch (error: any) {
       fileError = error?.message ?? "Wystąpił nieoczekiwany błąd";
       toast.error(fileError, { position: "top-right", duration: 5000 });
       console.error("Błąd procesu uploadu:", error);
+      isUploading = false;
     }
-
-    isUploading = false;
   }
 </script>
+
+<Toaster />
 
 <div
   class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-6 sm:mb-8"
 >
   <Breadcrumbs project={data.project} />
-  <div class="flex flex-col sm:flex-row w-full sm:w-auto gap-4">
-    <input
-      type="text"
-      bind:value={searchQuery}
-      placeholder="Search songs..."
-      class="w-full sm:w-64 px-4 py-2 bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-    />
-    <button
-      onclick={openCreateModal}
-      class="w-full sm:w-auto bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
-    >
-      <Plus size={20} />
-      New Song
-    </button>
-  </div>
+  {#if data.tracks.length !== 0}
+    <div class="flex flex-col sm:flex-row w-full sm:w-auto gap-4">
+      <input
+        type="text"
+        bind:value={searchQuery}
+        placeholder="Search songs..."
+        class="w-full sm:w-64 px-4 py-2 bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+      />
+      <button
+        onclick={openCreateModal}
+        class="w-full sm:w-auto bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
+      >
+        <Plus size={20} />
+        New Song
+      </button>
+    </div>
+  {/if}
 </div>
 
 <div class="flex flex-col lg:flex-row my-4 gap-6">
@@ -294,7 +297,7 @@
 {#if isCreateModalOpen}
   <div
     class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 backdrop-blur-sm"
-    transition:fade
+    transition:fade={{ duration: 300 }}
     ondragover={handleDragOver}
     ondragleave={handleDragLeave}
     ondrop={handleDrop}
@@ -304,7 +307,7 @@
       class="bg-gray-800 rounded-lg p-6 w-full max-w-md ${isDragging
         ? 'border-2 border-blue-400 bg-blue-950'
         : ''}"
-      transition:slide
+      transition:slide={{ duration: 300 }}
     >
       {#if isUploading}
         <!-- Stan uploadu (pokazywany podczas całego procesu) -->
@@ -328,11 +331,16 @@
           method="POST"
           class="space-y-6"
           enctype="multipart/form-data"
-          onsubmit={(e) => {
-            if (selectedFile) {
-              e.preventDefault();
-              handleFileUpload(e);
+          use:enhance={async ({ formData, cancel }) => {
+            const storagePath = await handleFileUpload();
+            if (storagePath) {
+              formData.append("storagePath", storagePath);
             }
+            formData.append("fileName", selectedFile?.name ?? "");
+
+            return async ({ update }) => {
+              update();
+            };
           }}
         >
           <input type="hidden" name="project_id" value={data.project.id} />
