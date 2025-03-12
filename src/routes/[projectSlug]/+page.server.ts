@@ -159,22 +159,22 @@ export const actions = {
         redirect(303, `/${params.projectSlug}/${trackData.slug}`);
     },
 
-    // Usuwanie projektu
+    // Usuwanie utworu
     delete: async ({ request, locals: { supabase } }) => {
         const formData = await request.formData();
         const id = formData.get('id')?.toString();
 
         if (!id) {
-            return { error: 'Project id is required' };
+            return { error: 'Track id is required' };
         }
 
         const { error } = await supabase
-            .from('projects')
+            .from('tracks')
             .delete()
             .eq('id', parseInt(id));
 
         if (error) {
-            console.error('Error deleting project:', error);
+            console.error('Error deleting track:', error);
             return { error: error.message };
         }
 

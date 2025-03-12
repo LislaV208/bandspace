@@ -425,10 +425,16 @@
 
 <!-- Delete Confirmation Modal -->
 {#if trackToDelete}
-  <div
+  <form
+    action="?/delete"
+    method="POST"
     class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 backdrop-blur-sm"
     transition:fade
+    onsubmit={() => {
+      isDeleting = true;
+    }}
   >
+    <input type="hidden" name="id" value={trackToDelete.id} />
     <div
       class="bg-gray-800 rounded-lg p-6 w-full max-w-md border border-gray-700/50"
       transition:slide
@@ -457,5 +463,5 @@
         </button>
       </div>
     </div>
-  </div>
+  </form>
 {/if}
