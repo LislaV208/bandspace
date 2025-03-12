@@ -4,13 +4,11 @@
   import Breadcrumbs from "$lib/components/Breadcrumbs.svelte";
   import {
     Calendar,
-    Clock,
     ListMusic,
     Loader2,
     Music2,
     Plus,
     Trash2,
-    Users,
   } from "lucide-svelte";
   import toast, { Toaster } from "svelte-french-toast";
   import { fade, slide } from "svelte/transition";
@@ -24,7 +22,6 @@
   let fileError = $state("");
   let uploadProgress = $state(0);
   let isUploading = $state(false);
-  let searchQuery = $state("");
 
   function handleFileSelect(event: Event) {
     fileError = "";
@@ -35,7 +32,7 @@
         selectedFile = file;
         newSongName = file.name.replace(/\.[^/.]+$/, "");
       } else {
-        fileError = "Please upload an audio file (MP3, WAV, etc.)";
+        fileError = "Wybierz plik audio (MP3, WAV, itp.)";
         input.value = "";
       }
     }
@@ -76,7 +73,7 @@
           fileInput.files = dataTransfer.files;
         }
       } else {
-        fileError = "Please upload an audio file (MP3, WAV, etc.)";
+        fileError = "Wybierz plik audio (MP3, WAV, itp.)";
       }
     }
   }
@@ -88,7 +85,7 @@
   }
 
   function formatDate(dateStr: string) {
-    return new Date(dateStr).toLocaleDateString("en-US", {
+    return new Date(dateStr).toLocaleDateString("pl", {
       month: "short",
       day: "numeric",
       year: "numeric",
@@ -127,8 +124,6 @@
       const uniqueFileName = `${Date.now()}-${Math.random().toString(36).substring(2, 10)}.${fileExt}`;
       const filePath = `${data.project.id}/${uniqueFileName}`;
 
-      console.log("Rozpoczynam upload pliku do Supabase Storage:", filePath);
-
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from("project_files")
         .upload(filePath, selectedFile);
@@ -137,13 +132,10 @@
         throw uploadError;
       }
 
-      console.log("Upload pliku do Supabase Storage zakończony:", uploadData);
-
       return uploadData.path;
     } catch (error: any) {
       fileError = error?.message ?? "Wystąpił nieoczekiwany błąd";
       toast.error(fileError, { position: "top-right", duration: 5000 });
-      console.error("Błąd procesu uploadu:", error);
       isUploading = false;
     }
   }
@@ -157,18 +149,12 @@
   <Breadcrumbs project={data.project} />
   {#if data.tracks.length !== 0}
     <div class="flex flex-col sm:flex-row w-full sm:w-auto gap-4">
-      <input
-        type="text"
-        bind:value={searchQuery}
-        placeholder="Search songs..."
-        class="w-full sm:w-64 px-4 py-2 bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-      />
       <button
         onclick={openCreateModal}
         class="w-full sm:w-auto bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
       >
         <Plus size={20} />
-        New Song
+        Nowy utwór
       </button>
     </div>
   {/if}
@@ -180,62 +166,22 @@
       class="w-full flex flex-col items-center justify-center py-12 sm:py-16 space-y-6"
       transition:fade
     >
-      {#if searchQuery}
-        <div
-          class="w-32 h-32 sm:w-48 sm:h-48 text-gray-600 flex items-center justify-center"
-        >
-          <svg
-            class="w-full h-full"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-          >
-            <path
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-            <path
-              d="M12 8v4m0 4h.01"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-        </div>
-        <div class="space-y-2 text-center px-4">
-          <h3 class="text-lg sm:text-xl font-semibold text-gray-200">
-            No matching songs
-          </h3>
-          <p class="text-gray-400">
-            We couldn't find any songs matching "{searchQuery}"
-          </p>
-        </div>
-        <button
-          onclick={() => (searchQuery = "")}
-          class="px-4 py-2 text-sm text-blue-400 hover:text-blue-300 transition-colors"
-        >
-          Clear search
-        </button>
-      {:else}
-        <div class="text-gray-600">
-          <ListMusic size={100}></ListMusic>
-        </div>
-        <div class="space-y-2 text-center px-4">
-          <h3 class="text-lg sm:text-xl font-semibold text-gray-200">
-            No songs yet
-          </h3>
-          <p class="text-gray-400">Let's add some music to your project!</p>
-        </div>
-        <button
-          onclick={openCreateModal}
-          class="px-4 sm:px-6 py-2 sm:py-3 bg-blue-500 hover:bg-blue-600 rounded-lg flex items-center gap-2 transition-all transform hover:scale-105"
-        >
-          <Plus size={20} />
-          Add first song
-        </button>
-      {/if}
+      <div class="text-gray-600">
+        <ListMusic size={100}></ListMusic>
+      </div>
+      <div class="space-y-2 text-center px-4">
+        <h3 class="text-lg sm:text-xl font-semibold text-gray-200">
+          Brak utworów
+        </h3>
+        <p class="text-gray-400">Dodaj utwór do swojego projektu</p>
+      </div>
+      <button
+        onclick={openCreateModal}
+        class="px-4 sm:px-6 py-2 sm:py-3 bg-blue-500 hover:bg-blue-600 rounded-lg flex items-center gap-2 transition-all transform hover:scale-105"
+      >
+        <Plus size={20} />
+        Dodaj utwór
+      </button>
     </div>
   {:else}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -252,11 +198,11 @@
             e.key === "Enter" && goto(`/${data.project.slug}/${trackSlug}`)}
         >
           <div class="flex-1 w-full">
-            <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-4 justify-between mb-2">
               <div class="flex items-center gap-2">
                 <Music2 size={20} class="text-blue-400" />
                 <h2 class="font-semibold text-lg">
-                  {"name" in track ? track.name : "Untitled"}
+                  {"name" in track ? track.name : "-"}
                 </h2>
               </div>
               <button
@@ -265,7 +211,7 @@
                   e.stopPropagation();
                   trackToDelete = track;
                 }}
-                title="Delete track"
+                title="Usuń utwór"
               >
                 <Trash2 size={20} />
               </button>
@@ -273,15 +219,14 @@
             <div
               class="flex flex-wrap items-center gap-4 text-sm text-gray-400"
             >
-              <div class="flex items-center gap-1">
+              <!-- <div class="flex items-center gap-1">
                 <Clock size={14} />
                 {formatTime(123)}
               </div>
               <div class="flex items-center gap-1">
                 <Users size={14} />
-                <!-- {track.creator} -->
                 Stachu Jones
-              </div>
+              </div> -->
               <div class="flex items-center gap-1">
                 <Calendar size={14} />
                 {"created_at" in track ? formatDate(track.created_at) : ""}
@@ -323,7 +268,7 @@
         </div>
       {:else}
         <h2 class="text-xl font-bold mb-6">
-          {isDragging ? "Drop your audio file to upload" : "Upload Audio File"}
+          {isDragging ? "Przeciągnij plik audio aby dodać" : "Dodaj plik audio"}
         </h2>
 
         <form
@@ -365,7 +310,7 @@
               {/if}
               {selectedFile
                 ? selectedFile.name
-                : "Select file or drag and drop"}
+                : "Kliknij poniższy przycisk lub przeciągnij plik"}
             </div>
             <button
               type="button"
@@ -379,7 +324,7 @@
               }}
             >
               <Plus size={16} />
-              {selectedFile ? "Change File" : "Choose File"}
+              {selectedFile ? "Zmień plik" : "Wybierz plik"}
             </button>
           </div>
 
@@ -388,14 +333,13 @@
             <label
               for="song-name"
               class="block text-sm font-medium text-gray-300 mb-1"
-              >Name (optional)</label
+              >Nazwa utworu</label
             >
             <input
               id="song-name"
               type="text"
               name="name"
               bind:value={newSongName}
-              placeholder="Enter song name"
               class="w-full px-4 py-2 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
             />
           </div>
@@ -407,14 +351,14 @@
               class="flex-1 px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               disabled={!selectedFile}
             >
-              Upload
+              Dodaj
             </button>
             <button
               type="button"
               class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
               onclick={closeCreateModal}
             >
-              Cancel
+              Anuluj
             </button>
           </div>
         </form>
@@ -439,10 +383,10 @@
       class="bg-gray-800 rounded-lg p-6 w-full max-w-md border border-gray-700/50"
       transition:slide
     >
-      <h2 class="text-xl font-bold mb-4">Delete Track</h2>
+      <h2 class="text-xl font-bold mb-4">Usuń utwór</h2>
       <p class="text-gray-300 mb-6">
-        Are you sure you want to delete "{trackToDelete.name}"? This action
-        cannot be undone.
+        Czy na pewno chcesz usunąć "{trackToDelete.name}". Tej czynności nie
+        można cofnąć.
       </p>
       <div class="flex space-x-4">
         <button
@@ -452,14 +396,14 @@
           {#if isDeleting}
             <Loader2 class="animate-spin mx-auto" size={20} />
           {:else}
-            Delete Track
+            Usuń
           {/if}
         </button>
         <button
           class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
           onclick={() => (trackToDelete = null)}
         >
-          Cancel
+          Anuluj
         </button>
       </div>
     </div>

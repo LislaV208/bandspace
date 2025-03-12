@@ -20,13 +20,6 @@
   let isCreating = $state(false);
   let isDeleting = $state(false);
   let projectToDelete: (typeof projects)[0] | null = $state(null);
-  let searchQuery = $state("");
-
-  const filteredProjects = $derived.by(() => {
-    return projects.filter((project) =>
-      project.name.toLowerCase().includes(searchQuery.toLowerCase()),
-    );
-  });
 
   const hasProjects = $derived(projects.length > 0);
 
@@ -35,7 +28,7 @@
   }
 
   function formatDate(dateStr: string) {
-    return new Date(dateStr).toLocaleDateString("en-US", {
+    return new Date(dateStr).toLocaleDateString("pl", {
       month: "short",
       day: "numeric",
       year: "numeric",
@@ -50,28 +43,22 @@
 <div
   class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-6 sm:mb-8"
 >
-  <h1 class="text-2xl">Projects</h1>
+  <h1 class="text-2xl">Projekty</h1>
   {#if hasProjects}
     <div class="flex flex-col sm:flex-row w-full sm:w-auto gap-4">
-      <input
-        type="text"
-        bind:value={searchQuery}
-        placeholder="Search projects..."
-        class="w-full sm:w-64 px-4 py-2 bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-      />
       <button
         onclick={openCreateModal}
         class="w-full sm:w-auto bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
       >
         <Plus size={20} />
-        New Project
+        Nowy projekt
       </button>
     </div>
   {/if}
 </div>
 
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-  {#each filteredProjects as project (project.id)}
+  {#each projects as project (project.id)}
     <div class="relative" transition:slide>
       <div
         role="button"
@@ -112,90 +99,48 @@
           </div>
           <div class="flex items-center gap-1">
             <Music size={16} />
-            No tracks
+            Brak utworów
           </div>
         </div>
       </div>
     </div>
   {/each}
 
-  {#if filteredProjects.length === 0}
+  {#if projects.length === 0}
     <div
       class="col-span-full flex flex-col items-center justify-center py-12 sm:py-16 space-y-6"
       transition:fade
     >
-      {#if searchQuery}
-        <div
-          class="w-32 h-32 sm:w-48 sm:h-48 text-gray-600 flex items-center justify-center"
+      <div
+        class="w-32 h-32 sm:w-48 sm:h-48 text-gray-600 flex items-center justify-center"
+      >
+        <svg
+          class="w-full h-full"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
         >
-          <svg
-            class="w-full h-full"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-          >
-            <path
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-            <path
-              d="M12 8v4m0 4h.01"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-        </div>
-        <div class="space-y-2 text-center px-4">
-          <h3 class="text-lg sm:text-xl font-semibold text-gray-200">
-            No matching projects
-          </h3>
-          <p class="text-gray-400">
-            We couldn't find any projects matching "{searchQuery}"
-          </p>
-        </div>
-        <button
-          onclick={() => (searchQuery = "")}
-          class="px-4 py-2 text-sm text-blue-400 hover:text-blue-300 transition-colors"
-        >
-          Clear search
-        </button>
-      {:else}
-        <div
-          class="w-32 h-32 sm:w-48 sm:h-48 text-gray-600 flex items-center justify-center"
-        >
-          <svg
-            class="w-full h-full"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-          >
-            <path
-              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-        </div>
-        <div class="space-y-2 text-center px-4">
-          <h3 class="text-lg sm:text-xl font-semibold text-gray-200">
-            No projects yet
-          </h3>
-          <p class="text-gray-400">
-            Start creating your first project and begin your musical journey!
-          </p>
-        </div>
-        <button
-          onclick={openCreateModal}
-          class="px-4 sm:px-6 py-2 sm:py-3 bg-blue-500 hover:bg-blue-600 rounded-lg flex items-center gap-2 transition-all transform hover:scale-105"
-        >
-          <Plus size={20} />
-          Create Your First Project
-        </button>
-      {/if}
+          <path
+            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </div>
+      <div class="space-y-2 text-center px-4">
+        <h3 class="text-lg sm:text-xl font-semibold text-gray-200">
+          Brak projektów
+        </h3>
+        <p class="text-gray-400">Nie czekaj - utwórz swój pierwszy projekt!</p>
+      </div>
+      <button
+        onclick={openCreateModal}
+        class="px-4 sm:px-6 py-2 sm:py-3 bg-blue-500 hover:bg-blue-600 rounded-lg flex items-center gap-2 transition-all transform hover:scale-105"
+      >
+        <Plus size={20} />
+        Utwórz projekt
+      </button>
     </div>
   {/if}
 </div>
@@ -208,7 +153,7 @@
     transition:fade
   >
     <div class="bg-gray-800 rounded-lg p-6 w-full max-w-md" transition:slide>
-      <h2 class="text-xl font-bold mb-6">Create New Project</h2>
+      <h2 class="text-xl font-bold mb-6">Nowy projekt</h2>
       <form
         action="?/create"
         method="POST"
@@ -221,7 +166,7 @@
           type="text"
           name="name"
           bind:value={newProjectName}
-          placeholder="Project name"
+          placeholder="Nazwa projektu"
           class="w-full px-4 py-2 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
         />
         <div class="flex gap-4">
@@ -233,7 +178,7 @@
             {#if isCreating}
               <Loader2 class="animate-spin" size={20} />
             {:else}
-              Create Project
+              Utwórz
             {/if}
           </button>
           <button
@@ -241,7 +186,7 @@
             class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
             onclick={() => (isCreateModalOpen = false)}
           >
-            Cancel
+            Anuluj
           </button>
         </div>
       </form>
@@ -256,10 +201,10 @@
     transition:fade
   >
     <div class="bg-gray-800 rounded-lg p-6 w-full max-w-md" transition:slide>
-      <h2 class="text-xl font-bold mb-4">Delete Project</h2>
+      <h2 class="text-xl font-bold mb-4">Usuń projekt</h2>
       <p class="text-gray-300 mb-6">
-        Are you sure you want to delete "{projectToDelete.name}"? This action
-        cannot be undone.
+        Czy na pewno chcesz usunąć "{projectToDelete.name}"? Tej czynności nie
+        można cofnąć.
       </p>
       <form
         action="?/delete"
@@ -278,7 +223,7 @@
           {#if isDeleting}
             <Loader2 class="animate-spin" size={20} />
           {:else}
-            Delete Project
+            Usuń
           {/if}
         </button>
         <button
@@ -286,7 +231,7 @@
           class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
           onclick={() => (projectToDelete = null)}
         >
-          Cancel
+          Anuluj
         </button>
       </form>
     </div>

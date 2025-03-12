@@ -18,7 +18,6 @@ interface LoadResult {
 export const load: PageServerLoad = async ({ locals: { supabase, user } }): Promise<LoadResult> => {
     const { data, error } = await supabase
         .from('projects')
-        // .select('*, projects_users!inner(*)')
         .select('*, projects_users!inner(*)')
         .eq('projects_users.user_id', user!.id);
 
@@ -27,18 +26,15 @@ export const load: PageServerLoad = async ({ locals: { supabase, user } }): Prom
         throw error;
     }
 
-    console.log('Projects:', data);
 
     return { data };
 };
 
 export const actions = {
-    // create new project
     create: async ({ request, locals: { supabase } }) => {
         const formData = await request.formData();
         const name = formData.get('name')?.toString();
 
-        console.log('nowy projekt: ', name);
 
         if (!name) {
             return { error: 'Project name is required' };
@@ -55,7 +51,6 @@ export const actions = {
             return { error: error.message };
         }
 
-        console.log('Project created');
         redirect(303, `/${data.slug}`);
     },
     delete: async ({ request, locals: { supabase } }) => {

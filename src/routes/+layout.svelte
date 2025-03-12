@@ -4,14 +4,12 @@
 
   import { invalidate } from "$app/navigation";
   import { setAuthState } from "$lib/state/auth-state.svelte";
-  import { setTestState } from "$lib/state/test-state.svelte";
   import { onMount } from "svelte";
 
   let { data, children } = $props();
   let { supabase, user } = $derived(data);
 
   $effect(() => {
-    console.log("some data just changed");
     authState.updateState({
       supabase: data.supabase,
       session: data.session,
@@ -19,36 +17,21 @@
     });
   });
 
-  setTestState(null, null);
-
-  // $inspect(name);
-
-  // setContext("user", () => user);
-
   const authState = setAuthState({
     supabase: data.supabase,
     session: data.session,
     user: data.user,
   });
 
-  // $inspect(user);
-
   onMount(() => {
     const { data } = supabase.auth.onAuthStateChange((event, newSession) => {
-      console.log("event", event);
-      // console.log("newSession", newSession);
-      console.log("auth state changed");
       authState.updateState({
         session: newSession,
         supabase,
         user: newSession?.user ?? null,
       });
-      // if (newSession?.expires_at !== session?.expires_at) {
       invalidate("supabase:auth");
-      // }
     });
-
-    console.log("auth callback initialized");
 
     return () => data.subscription.unsubscribe();
   });
@@ -64,11 +47,11 @@
       <nav class="container mx-auto px-6 py-3">
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-6">
-            <div
+            <button
               class="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-gray-400 to-gray-300"
             >
-              BandSpace
-            </div>
+              <a href="/"> BandSpace </a>
+            </button>
           </div>
           <div class="flex items-center space-x-4">
             <ProfileMenu

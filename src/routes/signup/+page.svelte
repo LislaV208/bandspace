@@ -9,7 +9,7 @@
 </script>
 
 <div
-  class="fixed inset-0 flex bg-gradient-to-b from-gray-900 to-gray-800 flex items-center justify-center p-4"
+  class="fixed inset-0 bg-gradient-to-b from-gray-900 to-gray-800 flex items-center justify-center p-4"
 >
   <div class="flex flex-col items-center w-full max-w-md">
     <h1
@@ -22,7 +22,7 @@
       class="w-full p-8 bg-gray-800/70 backdrop-blur-sm rounded-lg shadow-xl border border-gray-600/50"
     >
       <h2 class="text-2xl font-bold text-center text-gray-200 mb-8">
-        Create Account
+        Rejestracja
       </h2>
 
       <form method="post" class="space-y-6">
@@ -50,14 +50,14 @@
               name="email"
               required
               class="block w-full pl-10 pr-3 py-2 bg-gray-800/70 border border-gray-600/50 rounded-lg text-gray-300 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all [&:-webkit-autofill]:bg-gray-800/70 [&:-webkit-autofill]:text-gray-300 [&:-webkit-autofill]:[-webkit-text-fill-color:rgb(209_213_219)] [&:-webkit-autofill]:[transition:background-color_9999s_ease-in-out_0s]"
-              placeholder="Enter your email"
+              placeholder="Wprowadź adres email"
             />
           </div>
         </div>
 
         <div>
           <label for="password" class="block text-sm font-medium text-gray-300"
-            >Password</label
+            >Hasło</label
           >
           <div class="mt-1 relative">
             <div
@@ -71,7 +71,7 @@
               name="password"
               required
               class="block w-full pl-10 pr-3 py-2 bg-gray-800/70 border border-gray-600/50 rounded-lg text-gray-300 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-              placeholder="Create a password"
+              placeholder="Wpisz hasło"
             />
           </div>
         </div>
@@ -80,7 +80,7 @@
           <label
             for="confirm-password"
             class="block text-sm font-medium text-gray-300"
-            >Confirm Password</label
+            >Potwierdź hasło</label
           >
           <div class="mt-1 relative">
             <div
@@ -94,7 +94,7 @@
               name="confirm-password"
               required
               class="block w-full pl-10 pr-3 py-2 bg-gray-800/70 border border-gray-600/50 rounded-lg text-gray-300 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-              placeholder="Confirm your password"
+              placeholder="Potwierdź hasło"
             />
           </div>
         </div>
@@ -105,14 +105,14 @@
           class="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
         >
           <UserPlus class="h-5 w-5 mr-2" />
-          {loading ? "Creating Account..." : "Sign Up"}
+          {loading ? "Tworzenie konta..." : "Utwórz konto"}
         </button>
 
         <p class="text-center text-sm text-gray-400 mt-4">
-          Already have an account? <a
+          Masz już konto? <a
             href="/login"
             class="text-blue-400 hover:text-blue-300 transition-colors"
-            >Log in</a
+            >Zaloguj się</a
           >
         </p>
       </form>

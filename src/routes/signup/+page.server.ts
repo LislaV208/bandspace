@@ -12,11 +12,11 @@ export const actions = {
         const confirmPassword = formData.get('confirm-password')?.toString();
 
         if (!email || !password) {
-            return fail(400, { error: 'Email and password are required' });
+            return fail(400, { error: 'Email i hasło są wymagane' });
         }
 
         if (password !== confirmPassword) {
-            return fail(400, { error: 'Passwords do not match' });
+            return fail(400, { error: 'Podane hasła różnią się od siebie' });
         }
 
         const { error } = await supabase.auth.signUp({

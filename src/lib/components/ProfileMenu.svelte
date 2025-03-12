@@ -3,7 +3,6 @@
 
   import { goto } from "$app/navigation";
   import { getAuthState } from "$lib/state/auth-state.svelte";
-  import { getTestState } from "$lib/state/test-state.svelte";
   import { User as UserIcon } from "lucide-svelte";
   import { onMount } from "svelte";
   import { slide } from "svelte/transition";
@@ -18,26 +17,7 @@
   const authState = getAuthState();
   const user = $derived(authState.user);
 
-  // const user = $derived(authState.user);
-
-  // $inspect(user);
-
-  // const userContext = getContext<() => User | null>("user");
-  // const user = userContext();
-
-  // $inspect(authState());
-
-  // const name = getContext<string>("user");
-
-  // $inspect(name);
-  // const user = $derived(authState.user);
-
-  const testState = getTestState();
-  const name = $derived(testState.name);
-
   $inspect(user);
-
-  // let user: User | null = null;
 
   let profileMenuButton: HTMLElement | null = $state(null);
 
@@ -69,12 +49,12 @@
     bind:this={profileMenuButton}
     onclick={stopPropagation(onToggle)}
     class="p-3 hover:bg-gray-700/80 rounded-full transition-all duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-500/40 flex items-center justify-center"
-    title="User menu"
+    title="Menu użytkownika"
   >
     {#if userAvatar}
       <img
         src={userAvatar}
-        alt="User avatar"
+        alt="Awatar użytkownika"
         class="w-8 h-8 rounded-full object-cover"
       />
     {:else}
@@ -95,14 +75,13 @@
           try {
             await authState.signOut();
             goto("/login");
-            // setContext("user", "andrzej");
           } catch (error) {
             console.error("Error signing out:", error);
           }
         }}
         class="w-full text-left px-4 py-3 text-sm hover:bg-gray-700/80 transition-all duration-200 ease-in-out text-gray-100 hover:text-white"
       >
-        Log out
+        Wyloguj się
       </button>
     </div>
   {/if}

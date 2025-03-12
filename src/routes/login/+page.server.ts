@@ -10,7 +10,7 @@ export const actions = {
     const password = formData.get('password')?.toString();
 
     if (!email || !password) {
-      return fail(400, { error: 'Email and password are required' });
+      return fail(400, { error: 'Email i hasło są wymagane' });
     }
 
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -39,7 +39,7 @@ export const actions = {
 
     if (error) {
       return fail(400, {
-        message: "Something went wrong with Google login",
+        message: "Wystąpił błąd podczas logowania Google",
       });
     }
 
