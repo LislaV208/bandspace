@@ -2,28 +2,9 @@ import type { Database } from "$lib/database.types";
 import { error, redirect, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 
-// Stałe dla storage i ustawień
-const STORAGE = {
-    PROJECT_FILES_BUCKET: 'project_files',
-    CACHE_CONTROL: '3600'
-};
 
-// Funkcja pomocnicza do generowania unikalnej nazwy pliku
-function generateUniqueFileName(fileExt: string | undefined): string {
-    const timestamp = Date.now();
-    const randomString = Math.random().toString(36).substring(2, 15);
-    return `${timestamp}-${randomString}.${fileExt}`;
-}
-
-
-export type Project = Database['public']['Tables']['projects']['Row'];
-export type ProjectWithUsers = Project & {
-    projects_users: Database['public']['Tables']['projects_users']['Row'][]
-};
-
-// interface LoadResult {
-//     data: ProjectWithUsers[];
-// }
+type Track = Database['public']['Tables']['tracks']['Row'];
+type NewTrack = Omit<Track, "id" | "slug" | "created_at">;
 
 export const load: PageServerLoad = async ({ locals: { supabase }, params }) => {
     // Pobranie projektu na podstawie sluga
@@ -34,18 +15,18 @@ export const load: PageServerLoad = async ({ locals: { supabase }, params }) => 
         .single();
 
     if (projectError) {
-        console.error('Error fetching project:', projectError);
+        console.error(`Error fetching project in +page.server.ts [${params.projectSlug}]:`, projectError);
         throw projectError;
     }
 
     // Pobranie utworów dla projektu
     const { data: tracks, error } = await supabase
         .from('tracks')
-        .select('*, files(*)')
+        .select()
         .eq('project_id', project.id);
 
     if (error) {
-        console.error('Error fetching tracks:', error);
+        console.error(`Error fetching tracks in +page.server.ts [${params.projectSlug}]:`, error);
         throw error;
     }
 
@@ -58,105 +39,81 @@ export const load: PageServerLoad = async ({ locals: { supabase }, params }) => 
 };
 
 export const actions = {
-    // Tworzenie nowego utworu - tylko rekord w bazie danych bez pliku
+    // Tworzenie nowego utworu
     create: async ({ request, locals: { supabase, user }, params }) => {
 
-
-        // Odczytanie danych z formularza
         const formData = await request.formData();
+        const file = formData.get('file') as File;
         const name = formData.get('name')?.toString();
         const projectId = formData.get('project_id')?.toString();
-        const storagePath = formData.get('storagePath')?.toString();
-        const fileName = formData.get('fileName')?.toString();
 
-
-        console.log('Tworzenie nowego tracku: ', name);
-        console.log('FormData:', formData);
-
-        // Walidacja danych wejściowych
-        if (!name) {
-            throw error(400, { message: 'Song name is required' });
+        if (!file) {
+            throw error(400, { message: 'File is required' });
         }
 
         if (!projectId) {
             throw error(400, { message: 'No project id' });
         }
 
-        if (!storagePath) {
-            throw error(400, { message: 'No storage path' });
+        if (!file.name) {
+            throw error(400, { message: 'File name is required' });
         }
 
-        if (!fileName) {
-            throw error(400, { message: 'No file name' });
+        // Sanitize the file name for storage
+        const storageFileName = file.name
+            .replace(/\.[^.]+$/, "")          // Remove file extension
+            .replace(/[^a-zA-Z0-9._-]/g, "-") // Replace unsupported chars with underscore
+            .replace(/\s+/g, "-")             // Replace spaces with underscore
+            .toLowerCase();                    // Convert to lowercase for consistency
+
+
+        const timestamp = new Date().toISOString().replace(/[:.]/g, "");
+
+
+        // 1. zapisanie pliku do storage
+        const storagePath = `${params.projectSlug}/${storageFileName}_${timestamp}`;
+        const { error: storageError } = await supabase
+            .storage
+            .from('project_files')
+            .upload(storagePath, file, {
+                contentType: file.type,
+            });
+
+
+
+        if (storageError) {
+            console.error(`Error uploading file in +page.server.ts [${params.projectSlug}]:`, storageError);
+            throw error(500, { message: storageError.message });
         }
 
-        let trackData: {
-            created_at: string;
-            id: number;
-            name: string;
-            project_id: number;
-            slug: string;
-            updated_at: string;
-            uploaded_by: string;
-        } | null = null;
+        //  2. dodanie rekordu w bazie danych
+        const trackToCreate: NewTrack = {
+            name: name ?? file.name,
+            project_id: parseInt(projectId),
+            uploaded_by: user!.id,
+            file_name: file.name,
+            storage_file_path: storagePath,
+        };
 
-        try {
+        const { data: track, error: trackError } = await supabase
+            .from('tracks')
+            .insert([trackToCreate])
+            .select()
+            .single();
 
-            // 1. Tworzymy najpierw rekord utworu
-            const trackInsertData = {
-                name,
-                project_id: parseInt(projectId),
-                uploaded_by: user?.id,
-            };
+        if (!track || trackError) {
+            // Usun plik z storage w razie niepowodzenia
+            await supabase
+                .storage
+                .from('project_files')
+                .remove([storagePath]);
 
-            const { data: trackDataResult, error: trackError } = await supabase
-                .from('tracks')
-                .insert([trackInsertData])
-                .select()
-                .single();
-
-            if (trackError) {
-                console.error('Error creating song:', trackError);
-                throw error(500, { message: trackError.message });
-            }
-
-            trackData = trackDataResult;
-
-            if (!trackData) {
-                throw error(500, { message: 'Failed to create track record' });
-            }
-
-            console.log('Track record created');
-
-            // 2. Dodajemy rekord w tabeli files
-            const fileInsertData = {
-                name: fileName,
-                storage_path: storagePath,
-                track_id: trackData.id,
-                uploaded_by: user?.id ?? '',
-            };
-
-            const { data: fileData, error: fileError } = await supabase
-                .from('files')
-                .insert([fileInsertData])
-                .select()
-                .single();
-
-            if (fileError) {
-                console.error('Error creating file:', fileError);
-                throw error(500, { message: fileError.message });
-            }
-
-            if (!fileData) {
-                throw error(500, { message: 'Failed to create file record' });
-            }
-
-            console.log('File record created');
-        } catch (e) {
-            console.error('Unexpected error creating track record:', e);
-            throw error(500, { message: 'An error occurred while creating track record' });
+            throw error(500, { message: trackError.message });
         }
-        redirect(303, `/${params.projectSlug}/${trackData.slug}`);
+
+        // 3. przekierowanie do strony utworu
+        redirect(303, `/${params.projectSlug}/${track.slug}`);
+
     },
 
     // Usuwanie utworu
@@ -164,9 +121,41 @@ export const actions = {
         const formData = await request.formData();
         const id = formData.get('id')?.toString();
 
+        console.log('usuwanie utworu');
+
         if (!id) {
             return { error: 'Track id is required' };
         }
+
+        const { data: track, error: trackError } = await supabase
+            .from('tracks')
+            .select('storage_file_path')
+            .eq('id', parseInt(id))
+            .single();
+
+        console.log('pobrano track:', track);
+
+        if (trackError || !track) {
+            console.error('Error fetching track:', trackError);
+            return { error: trackError.message };
+        }
+
+        console.log('usuwanie pliku z storage');
+
+        // Usun plik z storage
+        const { data: storageData, error: storageError } = await supabase
+            .storage
+            .from('project_files')
+            .remove([track.storage_file_path]);
+
+        console.log('odpoiedz po usunieciu:', storageData, storageError);
+
+        if (storageError) {
+            console.error('Error deleting file from storage:', storageError);
+            return { error: storageError.message };
+        }
+
+        console.log('usuwanie rekordu z bazy danych');
 
         const { error } = await supabase
             .from('tracks')
@@ -177,6 +166,8 @@ export const actions = {
             console.error('Error deleting track:', error);
             return { error: error.message };
         }
+
+        console.log('usunieto rekord z bazy danych');
 
         return { success: true };
     }

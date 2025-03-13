@@ -67,6 +67,11 @@ const authGuard: Handle = async ({ event, resolve }) => {
   event.locals.session = session
   event.locals.user = user
 
+  if (event.url.pathname.includes('favicon.png')) {
+    console.log('favicon.png')
+    return resolve(event)
+  }
+
   const publicPathnames = ['/login', '/signup']
 
   if (!event.locals.session && (!publicPathnames.includes(event.url.pathname) && !event.url.pathname.startsWith('/auth'))) {

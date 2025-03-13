@@ -17,8 +17,6 @@
   const authState = getAuthState();
   const user = $derived(authState.user);
 
-  $inspect(user);
-
   let profileMenuButton: HTMLElement | null = $state(null);
 
   onMount(() => {

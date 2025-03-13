@@ -13,7 +13,7 @@ export const load: LayoutServerLoad = async ({ params, locals: { supabase } }) =
         .eq('slug', params.projectSlug)
         .single();
     if (projectError) {
-        console.error('Error fetching project:', projectError);
+        console.error(`Error fetching project in +layout.server.ts [${params.projectSlug}]:`, projectError);
         throw error(500, 'Internal Server Error');
     }
 
@@ -30,7 +30,7 @@ export const load: LayoutServerLoad = async ({ params, locals: { supabase } }) =
             .eq('slug', recordingSlug)
             .single();
         if (fileError) {
-            console.error('Error fetching file:', fileError);
+            console.error(`Error fetching file in +layout.server.ts [${params.projectSlug}]:`, fileError);
             throw error(500, 'Internal Server Error');
         }
 

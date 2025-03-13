@@ -9,41 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      files: {
-        Row: {
-          created_at: string
-          id: number
-          name: string
-          storage_path: string
-          track_id: number
-          uploaded_by: string
-        }
-        Insert: {
-          created_at?: string
-          id?: number
-          name: string
-          storage_path: string
-          track_id: number
-          uploaded_by: string
-        }
-        Update: {
-          created_at?: string
-          id?: number
-          name?: string
-          storage_path?: string
-          track_id?: number
-          uploaded_by?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "files_track_id_fkey"
-            columns: ["track_id"]
-            isOneToOne: false
-            referencedRelation: "tracks"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       projects: {
         Row: {
           created_at: string
@@ -92,34 +57,44 @@ export type Database = {
             referencedRelation: "projects"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "projects_users_user_id_fkey1"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
         ]
       }
       tracks: {
         Row: {
           created_at: string
+          file_name: string
           id: number
           name: string
           project_id: number
           slug: string
-          updated_at: string
+          storage_file_path: string
           uploaded_by: string
         }
         Insert: {
           created_at?: string
+          file_name: string
           id?: number
           name?: string
           project_id: number
           slug?: string
-          updated_at?: string
+          storage_file_path?: string
           uploaded_by?: string
         }
         Update: {
           created_at?: string
+          file_name?: string
           id?: number
           name?: string
           project_id?: number
           slug?: string
-          updated_at?: string
+          storage_file_path?: string
           uploaded_by?: string
         }
         Relationships: [
@@ -130,7 +105,38 @@ export type Database = {
             referencedRelation: "projects"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "tracks_uploaded_by_fkey1"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      users: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          id: string
+          name?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {

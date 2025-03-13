@@ -1,6 +1,8 @@
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions } from './$types';
 
+import { APP_URL } from '$env/static/private';
+
 
 export const actions = {
   login: async ({ request, locals: { supabase } }) => {
@@ -33,8 +35,7 @@ export const actions = {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        // redirectTo: `http://localhost:5173/auth/callback`,
-        redirectTo: `https://bandspace.vercel.app/auth/callback`,
+        redirectTo: `${APP_URL}/auth/callback`,
       },
     });
 

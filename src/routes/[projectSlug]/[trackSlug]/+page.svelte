@@ -12,7 +12,7 @@
   import type { PageProps } from "./$types";
 
   const { data }: PageProps = $props();
-  const { supabase, track, file, project } = data;
+  const { supabase, track } = data;
 
   // Stan odtwarzania
   let isPlaying = $state(false);
@@ -35,15 +35,10 @@
   // Pobranie URL pliku audio z Supabase Storage
   async function fetchAudioUrl(): Promise<void> {
     try {
-      if (!file || !file.storage_path) {
-        loadError = "Brak pliku audio do odtworzenia";
-        return;
-      }
-
       // Pobranie tymczasowego URL z Supabase Storage
       const { data: storageData, error: storageError } = await supabase.storage
         .from("project_files")
-        .createSignedUrl(file.storage_path, 3600);
+        .createSignedUrl(track.storage_file_path, 3600);
 
       if (storageError) {
         throw storageError;

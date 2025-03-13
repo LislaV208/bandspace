@@ -16,23 +16,23 @@
 
   let isDeleting = $state(false);
   let trackToDelete: (typeof data.tracks)[0] | null = $state(null);
-  let newSongName = $state("");
+  let songName = $state("");
   let selectedFile = $state<File | null>(null);
   let isDragging = $state(false);
-  let fileError = $state("");
-  let uploadProgress = $state(0);
   let isUploading = $state(false);
 
   function handleFileSelect(event: Event) {
-    fileError = "";
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
       if (file.type.startsWith("audio/")) {
         selectedFile = file;
-        newSongName = file.name.replace(/\.[^/.]+$/, "");
+        songName = file.name.split(".").slice(0, -1).join(".");
+        console.log("songName:", songName);
       } else {
-        fileError = "Wybierz plik audio (MP3, WAV, itp.)";
+        toast.error("Wybierz plik audio (MP3, WAV, itp.)", {
+          position: "bottom-right",
+        });
         input.value = "";
       }
     }
@@ -60,7 +60,7 @@
       // Check if file is audio
       if (file.type.startsWith("audio/")) {
         selectedFile = file;
-        newSongName = file.name.replace(/\.[^/.]+$/, "");
+        songName = file.name.split(".").slice(0, -1).join(".");
 
         // Update the hidden file input to reflect the dropped file
         const fileInput = document.getElementById(
@@ -73,15 +73,11 @@
           fileInput.files = dataTransfer.files;
         }
       } else {
-        fileError = "Wybierz plik audio (MP3, WAV, itp.)";
+        toast.error("Wybierz plik audio (MP3, WAV, itp.)", {
+          position: "bottom-right",
+        });
       }
     }
-  }
-
-  function formatTime(seconds: number): string {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
   }
 
   function formatDate(dateStr: string) {
@@ -104,39 +100,8 @@
   function closeCreateModal() {
     if (!isUploading) {
       isCreateModalOpen = false;
-      newSongName = "";
+      songName = "";
       selectedFile = null;
-      fileError = "";
-      uploadProgress = 0;
-    }
-  }
-
-  async function handleFileUpload() {
-    if (!selectedFile) return;
-
-    isUploading = true;
-    uploadProgress = 0;
-    fileError = "";
-
-    try {
-      // Generujemy unikalną nazwę pliku
-      const fileExt = selectedFile.name.split(".").pop();
-      const uniqueFileName = `${Date.now()}-${Math.random().toString(36).substring(2, 10)}.${fileExt}`;
-      const filePath = `${data.project.id}/${uniqueFileName}`;
-
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from("project_files")
-        .upload(filePath, selectedFile);
-
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      return uploadData.path;
-    } catch (error: any) {
-      fileError = error?.message ?? "Wystąpił nieoczekiwany błąd";
-      toast.error(fileError, { position: "top-right", duration: 5000 });
-      isUploading = false;
     }
   }
 </script>
@@ -270,21 +235,25 @@
         <h2 class="text-xl font-bold mb-6">
           {isDragging ? "Przeciągnij plik audio aby dodać" : "Dodaj plik audio"}
         </h2>
-
         <form
           action="?/create"
           method="POST"
           class="space-y-6"
           enctype="multipart/form-data"
-          use:enhance={async ({ formData, cancel }) => {
-            const storagePath = await handleFileUpload();
-            if (storagePath) {
-              formData.append("storagePath", storagePath);
-            }
-            formData.append("fileName", selectedFile?.name ?? "");
+          use:enhance={({ formElement }) => {
+            isUploading = true;
+            return async ({ result, update }) => {
+              console.log("result:", result);
 
-            return async ({ update }) => {
-              update();
+              if (result.type === "error") {
+                isUploading = false;
+                songName = "";
+                selectedFile = null;
+                formElement.reset();
+                toast.error(result.error.message, { position: "bottom-right" });
+              } else if (result.type === "redirect") {
+                goto(result.location);
+              }
             };
           }}
         >
@@ -299,15 +268,12 @@
             <input
               type="file"
               id="audio-file"
-              name="audio"
+              name="file"
               accept="audio/*"
               class="hidden"
               onchange={handleFileSelect}
             />
             <div class="text-gray-400 mb-4">
-              {#if fileError}
-                <p class="text-red-400 mb-2">{fileError}</p>
-              {/if}
               {selectedFile
                 ? selectedFile.name
                 : "Kliknij poniższy przycisk lub przeciągnij plik"}
@@ -339,7 +305,7 @@
               id="song-name"
               type="text"
               name="name"
-              bind:value={newSongName}
+              bind:value={songName}
               class="w-full px-4 py-2 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
             />
           </div>
