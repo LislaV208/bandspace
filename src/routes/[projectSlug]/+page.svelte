@@ -90,6 +90,7 @@
 
   const { data }: PageProps = $props();
   const supabase = data.supabase;
+  const project = data.project;
 
   let isCreateModalOpen = $state(false);
 
@@ -240,12 +241,49 @@
           method="POST"
           class="space-y-6"
           enctype="multipart/form-data"
-          use:enhance={({ formElement }) => {
+          use:enhance={async ({ formElement, formData }) => {
             isUploading = true;
-            return async ({ result, update }) => {
+            // formData.append("project_id", params.projectId);
+            const file = formData.get("file") as File;
+            // Sanitize the file name for storage
+            const storageFileName = file.name
+              .replace(/\.[^.]+$/, "") // Remove file extension
+              .replace(/[^a-zA-Z0-9._-]/g, "-") // Replace unsupported chars with underscore
+              .replace(/\s+/g, "-") // Replace spaces with underscore
+              .toLowerCase(); // Convert to lowercase for consistency
+
+            const timestamp = new Date().toISOString().replace(/[:.]/g, "");
+
+            // 1. zapisanie pliku do storage
+            const storagePath = `${project.slug}/${storageFileName}_${timestamp}`;
+            const { error: storageError } = await supabase.storage
+              .from("project_files")
+              .upload(storagePath, file, {
+                contentType: file.type,
+              });
+
+            formData.append("storage_file_path", storagePath);
+
+            if (storageError) {
+              console.error(
+                `Error uploading file in +page.svelte [${project.slug}]:`,
+                storageError
+              );
+              isUploading = false;
+              songName = "";
+              selectedFile = null;
+              formElement.reset();
+              toast.error(storageError.message, { position: "bottom-right" });
+              return;
+            }
+            return async ({ result }) => {
               console.log("result:", result);
 
               if (result.type === "error") {
+                await supabase.storage
+                  .from("project_files")
+                  .remove([storagePath]);
+
                 isUploading = false;
                 songName = "";
                 selectedFile = null;
@@ -258,6 +296,7 @@
           }}
         >
           <input type="hidden" name="project_id" value={data.project.id} />
+          <input type="hidden" name="file_name" value={selectedFile?.name} />
 
           <!-- Drag & Drop Area -->
           <div

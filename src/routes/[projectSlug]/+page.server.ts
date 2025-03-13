@@ -43,55 +43,30 @@ export const actions = {
     create: async ({ request, locals: { supabase, user }, params }) => {
 
         const formData = await request.formData();
-        const file = formData.get('file') as File;
-        const name = formData.get('name')?.toString();
-        const projectId = formData.get('project_id')?.toString();
 
-        if (!file) {
-            throw error(400, { message: 'File is required' });
+        const name = formData.get('name')?.toString();
+        const file_name = formData.get('file_name')?.toString();
+        const projectId = formData.get('project_id')?.toString();
+        const storagePath = formData.get('storage_file_path')?.toString();
+
+        if (!file_name) {
+            throw error(400, { message: 'No file name' });
         }
 
         if (!projectId) {
             throw error(400, { message: 'No project id' });
         }
 
-        if (!file.name) {
-            throw error(400, { message: 'File name is required' });
-        }
-
-        // Sanitize the file name for storage
-        const storageFileName = file.name
-            .replace(/\.[^.]+$/, "")          // Remove file extension
-            .replace(/[^a-zA-Z0-9._-]/g, "-") // Replace unsupported chars with underscore
-            .replace(/\s+/g, "-")             // Replace spaces with underscore
-            .toLowerCase();                    // Convert to lowercase for consistency
-
-
-        const timestamp = new Date().toISOString().replace(/[:.]/g, "");
-
-
-        // 1. zapisanie pliku do storage
-        const storagePath = `${params.projectSlug}/${storageFileName}_${timestamp}`;
-        const { error: storageError } = await supabase
-            .storage
-            .from('project_files')
-            .upload(storagePath, file, {
-                contentType: file.type,
-            });
-
-
-
-        if (storageError) {
-            console.error(`Error uploading file in +page.server.ts [${params.projectSlug}]:`, storageError);
-            throw error(500, { message: storageError.message });
+        if (!storagePath) {
+            throw error(400, { message: 'No storage file path' });
         }
 
         //  2. dodanie rekordu w bazie danych
         const trackToCreate: NewTrack = {
-            name: name ? name : file.name,
+            name: name ? name : file_name,
             project_id: parseInt(projectId),
             uploaded_by: user!.id,
-            file_name: file.name,
+            file_name: file_name,
             storage_file_path: storagePath,
         };
 
@@ -102,12 +77,6 @@ export const actions = {
             .single();
 
         if (!track || trackError) {
-            // Usun plik z storage w razie niepowodzenia
-            await supabase
-                .storage
-                .from('project_files')
-                .remove([storagePath]);
-
             throw error(500, { message: trackError.message });
         }
 
