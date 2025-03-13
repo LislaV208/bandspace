@@ -236,15 +236,29 @@
         <h2 class="text-xl font-bold mb-6">
           {isDragging ? "Przeciągnij plik audio aby dodać" : "Dodaj plik audio"}
         </h2>
+        <input
+          type="file"
+          id="audio-file"
+          name="file"
+          accept=".mp3,.wav,.m4a,.aac,.ogg,.flac,audio/mp3,audio/wav,audio/mpeg,audio/mp4,audio/aac,audio/ogg,audio/flac"
+          class="hidden"
+          onchange={handleFileSelect}
+        />
         <form
           action="?/create"
           method="POST"
           class="space-y-6"
-          enctype="multipart/form-data"
           use:enhance={async ({ formElement, formData }) => {
             isUploading = true;
-            // formData.append("project_id", params.projectId);
-            const file = formData.get("file") as File;
+            const file = selectedFile;
+            if (!file) {
+              isUploading = false;
+              songName = "";
+              selectedFile = null;
+              formElement.reset();
+              toast.error("No file selected", { position: "bottom-right" });
+              return;
+            }
             // Sanitize the file name for storage
             const storageFileName = file.name
               .replace(/\.[^.]+$/, "") // Remove file extension
@@ -304,14 +318,6 @@
               ? 'border-blue-400 bg-blue-900/20'
               : 'border-gray-600'} rounded-lg p-6 flex flex-col items-center justify-center text-center transition-colors"
           >
-            <input
-              type="file"
-              id="audio-file"
-              name="file"
-              accept=".mp3,.wav,.m4a,.aac,.ogg,.flac,audio/mp3,audio/wav,audio/mpeg,audio/mp4,audio/aac,audio/ogg,audio/flac"
-              class="hidden"
-              onchange={handleFileSelect}
-            />
             <div class="text-gray-400 mb-4">
               {selectedFile
                 ? selectedFile.name
