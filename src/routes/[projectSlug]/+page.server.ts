@@ -88,7 +88,7 @@ export const actions = {
 
         //  2. dodanie rekordu w bazie danych
         const trackToCreate: NewTrack = {
-            name: name ?? file.name,
+            name: name ? name : file.name,
             project_id: parseInt(projectId),
             uploaded_by: user!.id,
             file_name: file.name,
