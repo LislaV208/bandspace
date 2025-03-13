@@ -1,21 +1,13 @@
 // import { projectsService } from '$lib/services/projects';
 
-import type { Database } from "$lib/database.types";
 import { redirect, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 
 
 
-export type Project = Database['public']['Tables']['projects']['Row'];
-export type ProjectWithUsers = Project & {
-    projects_users: Database['public']['Tables']['projects_users']['Row'][]
-};
 
-interface LoadResult {
-    data: ProjectWithUsers[];
-}
 
-export const load: PageServerLoad = async ({ locals: { supabase, user } }): Promise<LoadResult> => {
+export const load: PageServerLoad = async ({ locals: { supabase, user } }) => {
     const { data, error } = await supabase
         .from('projects')
         .select('*, projects_users!inner(*)')
@@ -54,11 +46,42 @@ export const actions = {
         redirect(303, `/${data.slug}`);
     },
     delete: async ({ request, locals: { supabase } }) => {
+
         const formData = await request.formData();
         const id = formData.get('id')?.toString();
-        if (!id) {
-            return { error: 'Project id is required' };
+        const slug = formData.get('slug')?.toString();
+        if (!id || !slug) {
+            return { error: 'Project id and slug are required' };
         }
+
+        // 1. Pobierz listę wszystkich plików w storage
+        const { data: filesList, error: listError } = await supabase
+            .storage
+            .from('project_files')
+            .list(slug);
+
+        if (listError) {
+            console.error('Błąd podczas pobierania listy plików:', listError);
+            return { error: listError.message };
+        }
+
+        // 2. Utwórz tablicę ścieżek do plików
+        const filePaths = filesList.map(file => `${slug}/${file.name}`);
+
+        // 3. Usuń wszystkie pliki jednocześnie
+        if (filePaths.length > 0) {
+            const { error: storageError } = await supabase
+                .storage
+                .from('project_files')
+                .remove(filePaths);
+
+            if (storageError) {
+                console.error('Błąd podczas usuwania plików:', storageError);
+                return { error: storageError.message };
+            }
+        }
+
+        // 2. usun rekord z bazy danych
         const { error } = await supabase
             .from('projects')
             .delete()

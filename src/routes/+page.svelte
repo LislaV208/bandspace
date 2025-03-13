@@ -7,13 +7,11 @@
   let { data, form } = $props();
   let projects = data.data;
 
-  $effect(() => {
-    if (form?.error) {
-      toast.error(form?.error, {
-        position: "bottom-right",
-      });
-    }
-  });
+  if (form?.error) {
+    toast.error(form?.error, {
+      position: "bottom-right",
+    });
+  }
 
   let isCreateModalOpen = $state(false);
   let newProjectName = $state("");
@@ -215,6 +213,7 @@
         }}
       >
         <input type="hidden" name="id" value={projectToDelete.id} />
+        <input type="hidden" name="slug" value={projectToDelete.slug} />
         <button
           type="submit"
           class="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
