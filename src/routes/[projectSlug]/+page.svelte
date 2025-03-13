@@ -269,7 +269,7 @@
               type="file"
               id="audio-file"
               name="file"
-              accept="audio/*"
+              accept=".mp3,.wav,.m4a,.aac,.ogg,.flac,audio/mp3,audio/wav,audio/mpeg,audio/mp4,audio/aac,audio/ogg,audio/flac"
               class="hidden"
               onchange={handleFileSelect}
             />
