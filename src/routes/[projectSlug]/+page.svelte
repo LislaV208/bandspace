@@ -4,10 +4,12 @@
   import Breadcrumbs from "$lib/components/Breadcrumbs.svelte";
   import {
     Calendar,
+    Link2,
     ListMusic,
     Loader2,
     Music2,
     Plus,
+    Share2,
     Trash2,
   } from "lucide-svelte";
   import toast, { Toaster } from "svelte-french-toast";
@@ -93,6 +95,9 @@
   const project = data.project;
 
   let isCreateModalOpen = $state(false);
+  let isInviteModalOpen = $state(false);
+  let inviteUrl = $state("");
+  let isCopied = $state(false);
 
   function openCreateModal() {
     isCreateModalOpen = true;
@@ -103,6 +108,75 @@
       isCreateModalOpen = false;
       songName = "";
       selectedFile = null;
+    }
+  }
+
+  function openInviteModal() {
+    isInviteModalOpen = true;
+    // Jeśli nie ma jeszcze wygenerowanego linku, generujemy go automatycznie
+    if (!inviteUrl) {
+      generateInviteLink();
+    }
+  }
+
+  function closeInviteModal() {
+    isInviteModalOpen = false;
+    isCopied = false;
+  }
+
+  async function generateInviteLink() {
+    try {
+      const response = await fetch("/api/project-invites", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          project_id: data.project.id,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Błąd podczas generowania linku");
+      }
+
+      const inviteData = await response.json();
+      inviteUrl = inviteData.invite_url;
+      isCopied = false;
+
+      toast.success("Wygenerowano nowy link do zaproszenia", {
+        position: "bottom-right",
+      });
+    } catch (error) {
+      console.error("Error generating invite link:", error);
+      toast.error("Nie udało się wygenerować linku zapraszającego", {
+        position: "bottom-right",
+      });
+    }
+  }
+
+  function copyInviteLink() {
+    if (inviteUrl) {
+      navigator.clipboard
+        .writeText(inviteUrl)
+        .then(() => {
+          isCopied = true;
+          toast.success("Link skopiowany do schowka", {
+            position: "bottom-right",
+            duration: 3000,
+          });
+
+          // Reset stanu po 3 sekundach
+          setTimeout(() => {
+            isCopied = false;
+          }, 3000);
+        })
+        .catch(() => {
+          toast.error("Nie udało się skopiować linku", {
+            position: "bottom-right",
+          });
+        });
     }
   }
 </script>
@@ -116,8 +190,15 @@
   {#if data.tracks.length !== 0}
     <div class="flex flex-col sm:flex-row w-full sm:w-auto gap-4">
       <button
+        onclick={openInviteModal}
+        class="w-full h-10 sm:w-auto bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
+      >
+        <Share2 size={20} />
+        Zaproś do projektu
+      </button>
+      <button
         onclick={openCreateModal}
-        class="w-full sm:w-auto bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
+        class="w-full h-10 sm:w-auto bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
       >
         <Plus size={20} />
         Nowy utwór
@@ -204,6 +285,84 @@
     </div>
   {/if}
 </div>
+
+{#if isInviteModalOpen}
+  <div
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 backdrop-blur-sm z-50"
+    transition:fade={{ duration: 300 }}
+  >
+    <div
+      class="bg-gray-800 rounded-lg p-6 w-full max-w-xl"
+      role="dialog"
+      aria-labelledby="invite-modal-title"
+      aria-modal="true"
+      tabindex="-1"
+    >
+      <h2 id="invite-modal-title" class="text-xl font-bold mb-6">
+        Zaproś do projektu
+      </h2>
+
+      <div class="space-y-4 mb-6">
+        <p class="text-gray-300">
+          Wygeneruj link zapraszający i udostępnij go osobom, które chcesz
+          zaprosić do współpracy przy projekcie <span class="font-semibold"
+            >{project.name}</span
+          >.
+        </p>
+
+        <div class="bg-gray-700 p-3 rounded-lg flex items-center">
+          <input
+            type="text"
+            readonly
+            class="bg-transparent flex-1 outline-none text-sm"
+            value={inviteUrl ||
+              "Kliknij 'Wygeneruj link', aby utworzyć link zapraszający"}
+          />
+          <button
+            class="ml-2 p-2 text-gray-300 hover:text-white hover:bg-gray-600 rounded transition-colors"
+            title="Kopiuj link"
+            disabled={!inviteUrl}
+            onclick={copyInviteLink}
+            aria-label="Kopiuj link zapraszający"
+          >
+            {#if isCopied}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="text-green-400"
+                ><polyline points="20 6 9 17 4 12"></polyline></svg
+              >
+            {:else}
+              <Link2 size={18} />
+            {/if}
+          </button>
+        </div>
+      </div>
+
+      <div class="flex justify-between">
+        <button
+          onclick={closeInviteModal}
+          class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded transition-colors"
+        >
+          Anuluj
+        </button>
+        <button
+          onclick={generateInviteLink}
+          class="px-4 py-2 bg-green-600 hover:bg-green-500 rounded transition-colors"
+        >
+          Wygeneruj {inviteUrl ? "nowy" : ""} link
+        </button>
+      </div>
+    </div>
+  </div>
+{/if}
 
 {#if isCreateModalOpen}
   <div
