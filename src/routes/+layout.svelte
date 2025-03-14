@@ -2,6 +2,7 @@
   import ProfileMenu from "$lib/components/ProfileMenu.svelte";
   import "../app.css";
 
+  import { version } from "$app/environment";
   import { invalidate } from "$app/navigation";
   import { setAuthState } from "$lib/state/auth-state.svelte";
   import { onMount } from "svelte";
@@ -39,7 +40,9 @@
   let isProfileMenuOpen = $state(false);
 </script>
 
-<div class="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
+<div
+  class="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white relative"
+>
   {#if user != null}
     <header
       class="bg-gray-800/70 shadow-lg top-0 z-50 border-b border-gray-600/50"
@@ -64,7 +67,13 @@
     </header>
   {/if}
 
-  <main class="container mx-auto px-6 py-8">
+  <main class="container mx-auto px-6 py-8 pb-16">
     {@render children?.()}
   </main>
+
+  <footer
+    class="text-center py-3 text-gray-500 text-xs absolute bottom-0 w-full"
+  >
+    <p>BandSpace v{version}</p>
+  </footer>
 </div>
