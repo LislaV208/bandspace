@@ -1,7 +1,25 @@
 import { redirect, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 
+import type { Database } from "$lib/database.types";
+
+// Typ dla utworu muzycznego na podstawie schematu bazy danych
+type DbTrack = Database['public']['Tables']['tracks']['Row'];
+
+// Typ używany dla utworów w aplikacji
+type Track = Pick<DbTrack, 'id' | 'name' | 'created_at'>;
+
+// Baza projektu z bazy danych
+type DbProject = Database['public']['Tables']['projects']['Row'];
+
+// Rozszerzony typ projektu z ostatnimi utworami
+interface ProjectWithTracks extends DbProject {
+    members_count: number;
+    recent_tracks: Track[];
+}
+
 export const load: PageServerLoad = async ({ locals: { supabase, user } }) => {
+    // Pobieramy projekty użytkownika wraz z liczbą członków
     const { data, error } = await supabase
         .from('projects')
         .select(`
@@ -19,8 +37,26 @@ export const load: PageServerLoad = async ({ locals: { supabase, user } }) => {
     // Przekształcamy members_count z tablicy [{ count: liczba }] na samą liczbę
     const transformedData = data.map(project => ({
         ...project,
-        members_count: project.members_count[0]?.count || 0
-    }));
+        members_count: project.members_count[0]?.count || 0,
+        recent_tracks: [] as Track[] // Inicjalizujemy pustą tablicę dla utworów z właściwym typem
+    })) as ProjectWithTracks[];
+
+    // Dla każdego projektu pobieramy 5 ostatnich utworów
+    for (const project of transformedData) {
+        const { data: tracks, error: tracksError } = await supabase
+            .from('tracks')
+            .select('id, name, created_at')
+            .eq('project_id', project.id)
+            .order('created_at', { ascending: false })
+            .limit(5);
+
+        if (tracksError) {
+            console.error(`Error fetching tracks for project ${project.id}:`, tracksError);
+            continue; // Kontynuujemy pętlę nawet jeśli wystąpi błąd dla jednego projektu
+        }
+
+        project.recent_tracks = tracks || [];
+    }
 
     return { data: transformedData };
 };

@@ -1,6 +1,6 @@
 <script lang="ts">
   import Breadcrumbs from "$lib/components/Breadcrumbs.svelte";
-  import { Download, Pause, Play, SkipBack, SkipForward } from "lucide-svelte";
+  import { Download, FastForward, Pause, Play, Rewind } from "lucide-svelte";
   import { onMount } from "svelte";
   import type { PageProps } from "./$types";
 
@@ -224,7 +224,7 @@
           onclick={skipBackward}
           title="Cofnij 10 sekund"
         >
-          <SkipBack size={20} />
+          <Rewind />
         </button>
 
         <button
@@ -233,9 +233,9 @@
           title={isPlaying ? "Pauza" : "Odtwórz"}
         >
           {#if isPlaying}
-            <Pause size={24} />
+            <Pause />
           {:else}
-            <Play size={24} class="ml-1" />
+            <Play />
           {/if}
         </button>
 
@@ -244,7 +244,7 @@
           onclick={skipForward}
           title="Przewiń 10 sekund"
         >
-          <SkipForward size={20} />
+          <FastForward />
         </button>
       </div>
     </div>
