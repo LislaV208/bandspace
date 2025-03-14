@@ -30,11 +30,27 @@ export const load: PageServerLoad = async ({ locals: { supabase }, params }) => 
         throw error;
     }
 
+    // Pobranie użytkowników przypisanych do projektu
+    const { data: projectUsers, error: usersError } = await supabase
+        .from('projects_users')
+        .select(`
+            *,
+            user:users(*)
+        `)
+        .eq('project_id', project.id);
+
+    if (usersError) {
+        console.error(`Error fetching project users in +page.server.ts [${params.projectSlug}]:`, usersError);
+        throw usersError;
+    }
+
     console.log('Tracks:', tracks);
+    console.log('Project users:', projectUsers);
 
     return {
         project,
-        tracks
+        tracks,
+        projectUsers
     };
 };
 

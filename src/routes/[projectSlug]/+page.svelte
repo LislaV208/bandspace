@@ -28,6 +28,7 @@
   let isProjectMenuOpen = $state(false);
   let isDeleteProjectModalOpen = $state(false);
   let isDeletingProject = $state(false);
+  let isUsersModalOpen = $state(false);
 
   function handleFileSelect(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -99,6 +100,7 @@
   const { data }: PageProps = $props();
   const supabase = data.supabase;
   const project = data.project;
+  const projectUsers = data.projectUsers;
 
   let isCreateModalOpen = $state(false);
   let isInviteModalOpen = $state(false);
@@ -121,6 +123,15 @@
 
   function closeDeleteProjectModal() {
     isDeleteProjectModalOpen = false;
+  }
+
+  function openUsersModal() {
+    isUsersModalOpen = true;
+    closeProjectMenu();
+  }
+
+  function closeUsersModal() {
+    isUsersModalOpen = false;
   }
 
   function toggleProjectMenu(event: Event) {
@@ -326,6 +337,29 @@
           transition:fade={{ duration: 150 }}
         >
           <div class="py-1" role="none">
+            <button
+              onclick={openUsersModal}
+              class="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white flex items-center gap-2"
+              role="menuitem"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+              </svg>
+              Członkowie projektu
+            </button>
             <button
               onclick={openLeaveModal}
               class="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white flex items-center gap-2"
@@ -864,6 +898,108 @@
           Anuluj
         </button>
       </form>
+    </div>
+  </div>
+{/if}
+
+<!-- Project Users Modal -->
+{#if isUsersModalOpen}
+  <div
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 backdrop-blur-sm z-50"
+    transition:fade={{ duration: 300 }}
+  >
+    <div class="bg-gray-800 rounded-lg p-6 w-full max-w-md" transition:slide>
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-bold">Członkowie projektu</h2>
+        <button
+          onclick={closeUsersModal}
+          class="text-gray-400 hover:text-gray-300 transition-colors"
+          aria-label="Zamknij modal"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="space-y-4 max-h-96 overflow-y-auto pr-2">
+        {#if projectUsers && projectUsers.length > 0}
+          <ul class="space-y-3">
+            {#each projectUsers as projectUser}
+              <li
+                class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-700 transition-colors"
+              >
+                <div
+                  class="h-10 w-10 rounded-full flex items-center justify-center text-white text-sm font-medium overflow-hidden"
+                >
+                  {#if projectUser.user.avatar_url}
+                    <img
+                      src={projectUser.user.avatar_url}
+                      alt={projectUser.user.name || projectUser.user.email}
+                      class="h-full w-full object-cover"
+                      aria-label="Obrazek użytkownika"
+                    />
+                  {:else}
+                    {(projectUser.user.name ||
+                      projectUser.user.email ||
+                      "?")[0].toUpperCase()}
+                  {/if}
+                </div>
+                <div class="overflow-hidden">
+                  <div class="font-medium truncate">
+                    {projectUser.user.name || "Bez nazwy"}
+                  </div>
+                  <div class="text-sm text-gray-400 truncate">
+                    {projectUser.user.email}
+                  </div>
+                </div>
+              </li>
+            {/each}
+          </ul>
+        {:else}
+          <div class="text-center text-gray-400 py-8">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="48"
+              height="48"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="mx-auto mb-4"
+            >
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <p>Brak użytkowników w projekcie</p>
+          </div>
+        {/if}
+      </div>
+
+      <div class="mt-6 flex justify-center">
+        <button
+          onclick={closeUsersModal}
+          class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
+          aria-label="Zamknij modal użytkowników"
+        >
+          Powrót
+        </button>
+      </div>
     </div>
   </div>
 {/if}
