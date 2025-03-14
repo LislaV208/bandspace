@@ -1,4 +1,3 @@
-import { APP_URL } from '$env/static/private';
 import { error, json } from '@sveltejs/kit';
 import { randomBytes } from 'crypto';
 import type { RequestHandler } from './$types';
@@ -61,9 +60,13 @@ export const POST: RequestHandler = async ({ request, locals: { supabase, user }
             .delete()
             .lt('expires_at', new Date().toISOString());
 
+        // Pobierz bazowy URL z aktualnego żądania
+        const requestUrl = new URL(request.url);
+        const baseUrl = `${requestUrl.protocol}//${requestUrl.host}`;
+
         // Zwrócenie informacji o utworzonym zaproszeniu
         return json({
-            invite_url: `${APP_URL}/invite/${invite.token}`,
+            invite_url: `${baseUrl}/invite/${invite.token}`,
             token: invite.token,
             project_id: invite.project_id,
             expires_at: invite.expires_at

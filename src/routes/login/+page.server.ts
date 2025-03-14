@@ -1,8 +1,6 @@
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions } from './$types';
 
-import { APP_URL } from '$env/static/private';
-
 
 export const actions = {
   login: async ({ request, url, locals: { supabase } }) => {
@@ -34,13 +32,16 @@ export const actions = {
     redirect(303, redirectTo);
 
   },
-  googleLogin: async ({ locals: { supabase } }) => {
+  googleLogin: async ({ request, locals: { supabase } }) => {
+    // Pobierz bazowy URL z aktualnego żądania
+    const requestUrl = new URL(request.url);
+    const baseUrl = `${requestUrl.protocol}//${requestUrl.host}`;
     // Dla Google OAuth nie przekazujemy parametru redirect w URL
     // Zamiast tego używamy localStorage (zaimplementowane w +page.svelte)
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${APP_URL}/auth/callback`,
+        redirectTo: `${baseUrl}/auth/callback`,
       },
     });
 

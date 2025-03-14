@@ -42,7 +42,7 @@
 <div class="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
   {#if user != null}
     <header
-      class="bg-gray-800/70 backdrop-blur-sm shadow-lg sticky top-0 z-50 border-b border-gray-600/50"
+      class="bg-gray-800/70 shadow-lg top-0 z-50 border-b border-gray-600/50"
     >
       <nav class="container mx-auto px-6 py-3">
         <div class="flex items-center justify-between">

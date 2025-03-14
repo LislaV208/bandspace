@@ -139,7 +139,7 @@
       <div class="flex flex-wrap items-center justify-between gap-4">
         <div class="text-sm text-gray-500 flex flex-wrap items-center gap-3">
           <span
-            >Zamieszczono przez: {track.uploaded_by.name ||
+            >Dodano przez: {track.uploaded_by.name ||
               track.uploaded_by.email ||
               "-"}</span
           >
