@@ -123,43 +123,32 @@
 </script>
 
 <Breadcrumbs project={data.project} recording={data.recording} />
-<div class="max-w-4xl mx-auto px-4 py-8">
+<div class="max-w-3xl mx-auto px-4 py-6">
   <div
-    class="bg-gradient-to-br from-gray-800/90 to-gray-900/90 backdrop-blur-sm rounded-xl p-8 border border-gray-600/50 shadow-xl"
+    class="bg-gray-800/90 rounded-lg p-6 border border-gray-700/30 shadow-lg"
   >
     <!-- Track Info -->
-    <div
-      class="flex flex-col md:flex-row items-start md:items-center gap-6 mb-8"
-    >
-      <div class="w-full md:w-auto">
-        <div
-          class="aspect-square w-48 bg-gray-700/50 rounded-lg shadow-lg flex items-center justify-center"
-        >
-          <Play size={48} class="text-gray-400" />
-        </div>
-      </div>
-
-      <div class="flex-grow">
-        <h1
-          class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-gray-200 to-gray-400 mb-2"
-        >
+    <div class="mb-8">
+      <div class="flex flex-col items-start gap-2 mb-4">
+        <h1 class="text-3xl font-bold text-white mb-1">
           {track.name}
         </h1>
-        <p class="text-xl text-gray-400 mb-4">{data.project.name}</p>
-        <div class="flex items-center gap-4 text-sm text-gray-500">
+        <p class="text-lg text-gray-400">{data.project.name}</p>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div class="text-sm text-gray-500 flex flex-wrap items-center gap-3">
           <span
             >Zamieszczono przez: {track.uploaded_by.name ||
               track.uploaded_by.email ||
-              "-"}
-          </span>
-          <span>•</span>
+              "-"}</span
+          >
+          <span class="hidden sm:inline">•</span>
           <span>{new Date(track.created_at).toLocaleString()}</span>
         </div>
-      </div>
 
-      <div class="flex items-center gap-3">
         <button
-          class="p-2 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-full transition-all"
+          class="p-2 text-gray-400 hover:text-white bg-gray-700/40 hover:bg-gray-700/70 rounded-md transition-all flex items-center gap-2"
           title="Download track"
           onclick={async () => {
             const { data, error } = await supabase.storage
@@ -177,14 +166,9 @@
             URL.revokeObjectURL(url);
           }}
         >
-          <Download size={24} />
+          <Download size={20} />
+          <span class="text-sm">Pobierz</span>
         </button>
-        <!-- <button
-          class="p-2 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-full transition-all"
-          title="Share track"
-        >
-          <Share2 size={24} />
-        </button> -->
       </div>
     </div>
 
@@ -208,7 +192,7 @@
 
       <!-- Timeline -->
       <div
-        class="relative h-2 bg-gray-700/50 rounded-full cursor-pointer overflow-hidden"
+        class="relative h-2 bg-gray-700/40 rounded-full cursor-pointer overflow-hidden mt-6"
         onclick={seek}
         role="slider"
         aria-label="Audio progress"
@@ -222,7 +206,7 @@
         }}
       >
         <div
-          class="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full transition-all duration-100"
+          class="absolute top-0 left-0 h-full bg-blue-500 rounded-full transition-all duration-100"
           style="width: {progress}%"
         ></div>
       </div>
@@ -234,33 +218,33 @@
       </div>
 
       <!-- Controls -->
-      <div class="flex items-center justify-center gap-6">
+      <div class="flex items-center justify-center gap-5 mt-4">
         <button
-          class="p-3 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-full transition-all"
+          class="p-2 text-gray-400 hover:text-white hover:bg-gray-700/40 rounded-full transition-all"
           onclick={skipBackward}
-          title="Skip 10 seconds backward"
+          title="Cofnij 10 sekund"
         >
-          <SkipBack size={24} />
+          <SkipBack size={20} />
         </button>
 
         <button
-          class="w-16 h-16 flex items-center justify-center bg-gradient-to-r from-blue-500 to-blue-400 hover:from-blue-600 hover:to-blue-500 rounded-full transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500/40 shadow-lg"
+          class="w-14 h-14 flex items-center justify-center bg-blue-500 hover:bg-blue-600 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/40 shadow-md"
           onclick={togglePlayback}
-          title={isPlaying ? "Pause" : "Play"}
+          title={isPlaying ? "Pauza" : "Odtwórz"}
         >
           {#if isPlaying}
-            <Pause size={32} />
+            <Pause size={24} />
           {:else}
-            <Play size={32} />
+            <Play size={24} class="ml-1" />
           {/if}
         </button>
 
         <button
-          class="p-3 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-full transition-all"
+          class="p-2 text-gray-400 hover:text-white hover:bg-gray-700/40 rounded-full transition-all"
           onclick={skipForward}
-          title="Skip 10 seconds forward"
+          title="Przewiń 10 sekund"
         >
-          <SkipForward size={24} />
+          <SkipForward size={20} />
         </button>
       </div>
     </div>
