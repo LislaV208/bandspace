@@ -919,6 +919,7 @@
           {/if}
         </button>
         <button
+          type="button"
           class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
           onclick={() => (trackToDelete = null)}
         >
