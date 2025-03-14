@@ -78,10 +78,10 @@
   - Przechowywanie plików audio w Supabase Storage
   - Unikalny ścieżki przechowywania plików
 
+## 8. Profil użytkownika
+- Edycja nazwy użytkownika
 
 
-
-  ## BACKLOG:
-  - Profil użytkownika
+## BACKLOG:
   - Notatki/komentarze do utworu
   - Foldery i/lub tagi
