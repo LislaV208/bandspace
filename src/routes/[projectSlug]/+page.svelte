@@ -17,11 +17,13 @@
   import type { PageProps } from "./$types";
 
   let isDeleting = $state(false);
+  let isLeavingProject = $state(false);
   let trackToDelete: (typeof data.tracks)[0] | null = $state(null);
   let songName = $state("");
   let selectedFile = $state<File | null>(null);
   let isDragging = $state(false);
   let isUploading = $state(false);
+  let isLeaveModalOpen = $state(false);
 
   function handleFileSelect(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -98,6 +100,57 @@
   let isInviteModalOpen = $state(false);
   let inviteUrl = $state("");
   let isCopied = $state(false);
+
+  function openLeaveModal() {
+    isLeaveModalOpen = true;
+  }
+
+  function closeLeaveModal() {
+    isLeaveModalOpen = false;
+  }
+
+  async function leaveProject() {
+    try {
+      isLeavingProject = true;
+      
+      const response = await fetch("/api/project-invites", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          project_id: data.project.id,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Błąd podczas opuszczania projektu");
+      }
+
+      const responseData = await response.json();
+      
+      // Wyświetl komunikat o powodzeniu
+      toast.success(responseData.message || "Pomyślnie opuszczono projekt", {
+        position: "bottom-right",
+        duration: 3000,
+      });
+
+      // Przekieruj do strony głównej po opuszczeniu projektu
+      goto("/");
+    } catch (error) {
+      console.error("Error leaving project:", error);
+      
+      // Wyświetl komunikat o błędzie
+      toast.error(error instanceof Error ? error.message : "Nie udało się opuścić projektu", {
+        position: "bottom-right",
+        duration: 5000,
+      });
+      
+      isLeavingProject = false;
+      closeLeaveModal();
+    }
+  }
 
   function openCreateModal() {
     isCreateModalOpen = true;
@@ -196,6 +249,27 @@
       >
         <Share2 size={20} />
         Zaproś do projektu
+      </button>
+      <button
+        onclick={openLeaveModal}
+        class="w-full h-10 sm:w-auto bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+          <polyline points="16 17 21 12 16 7"></polyline>
+          <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+        Opuść projekt
       </button>
       <button
         onclick={openCreateModal}
@@ -583,4 +657,43 @@
       </div>
     </div>
   </form>
+{/if}
+
+<!-- Leave Project Confirmation Modal -->
+{#if isLeaveModalOpen}
+  <div
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 backdrop-blur-sm z-50"
+    transition:fade={{ duration: 300 }}
+  >
+    <div
+      class="bg-gray-800 rounded-lg p-6 w-full max-w-md border border-gray-700/50"
+      transition:slide={{ duration: 300 }}
+    >
+      <h2 class="text-xl font-bold mb-4">Opuść projekt</h2>
+      <p class="text-gray-300 mb-6">
+        Czy na pewno chcesz opuścić projekt
+        <span class="font-semibold">{project.name}</span>?
+      </p>
+      <div class="flex space-x-4">
+        <button
+          class="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          onclick={leaveProject}
+          disabled={isLeavingProject}
+        >
+          {#if isLeavingProject}
+            <Loader2 class="animate-spin mx-auto" size={20} />
+          {:else}
+            Opuść projekt
+          {/if}
+        </button>
+        <button
+          class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
+          onclick={closeLeaveModal}
+          disabled={isLeavingProject}
+        >
+          Anuluj
+        </button>
+      </div>
+    </div>
+  </div>
 {/if}

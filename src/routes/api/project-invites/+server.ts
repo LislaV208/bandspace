@@ -74,3 +74,68 @@ export const POST: RequestHandler = async ({ request, locals: { supabase, user }
         throw error(500, { message: 'Internal server error' });
     }
 };
+
+// Endpoint DELETE do obsługi opuszczania projektu przez użytkownika
+export const DELETE: RequestHandler = async ({ request, locals: { supabase, user } }) => {
+
+    if (!user) {
+        throw error(401, { message: 'Nieautoryzowany dostęp' });
+    }
+
+
+    // Pobranie danych z żądania
+    const { project_id } = await request.json();
+
+    if (!project_id) {
+        throw error(400, { message: 'Brak wymaganych pól (project_id)' });
+    }
+
+    // Sprawdzenie, czy użytkownik ma dostęp do projektu
+    const { data: projectAccess, error: accessError } = await supabase
+        .from('projects_users')
+        .select('*')
+        .eq('project_id', project_id)
+        .eq('user_id', user.id)
+        .single();
+
+    if (accessError || !projectAccess) {
+        throw error(403, { message: 'Nie masz dostępu do tego projektu' });
+    }
+
+    // Sprawdzenie, czy użytkownik nie jest jedynym członkiem projektu
+    const { count, error: countError } = await supabase
+        .from('projects_users')
+        .select('*', { count: 'exact', head: true })
+        .eq('project_id', project_id);
+
+    if (countError) {
+        throw error(500, { message: 'Błąd podczas sprawdzania członków projektu' });
+    }
+
+    // Jeśli użytkownik jest jedynym członkiem projektu, wyświetl komunikat o błędzie
+    if (count === 1) {
+        throw error(400, {
+            message: 'Nie możesz opuścić projektu, jesteś jedynym członkiem. Usuń projekt, jeśli nie chcesz go kontynuować.'
+        });
+    }
+
+    // Usunięcie powiązania użytkownika z projektem
+    const { error: leaveError } = await supabase
+        .from('projects_users')
+        .delete()
+        .eq('project_id', project_id)
+        .eq('user_id', user.id);
+
+    if (leaveError) {
+        console.error('Błąd podczas opuszczania projektu:', leaveError);
+        throw error(500, { message: 'Nie udało się opuścić projektu' });
+    }
+
+    // Zwrócenie informacji o powodzeniu operacji
+    return json({
+        success: true,
+        message: 'Pomyślnie opuszczono projekt'
+    });
+
+
+};
