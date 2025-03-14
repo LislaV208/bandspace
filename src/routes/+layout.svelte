@@ -29,7 +29,16 @@
       authState.updateState({
         session: newSession,
         supabase,
-        user: newSession?.user ?? null,
+        user:
+          newSession?.user === null
+            ? null
+            : {
+                id: newSession?.user?.id || "",
+                created_at: newSession?.user?.created_at || "",
+                email: newSession?.user?.email || "",
+                name: newSession?.user?.user_metadata?.full_name || "",
+                avatar_url: newSession?.user?.user_metadata?.avatar_url || "",
+              },
       });
       invalidate("supabase:auth");
     });

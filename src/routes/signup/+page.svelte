@@ -1,16 +1,17 @@
 <script lang="ts">
   import { page } from "$app/stores";
-  import { Lock, Mail, UserPlus } from "lucide-svelte";
+  import { HelpCircle, Lock, Mail, User, UserPlus } from "lucide-svelte";
   import type { PageProps } from "./$types";
 
   const { form }: PageProps = $props();
   const error = $derived(form?.error);
 
   let loading = $state(false);
-  
+  let showTooltip = $state(false);
+
   // Pobieramy parametr redirect z URL
   const redirectParam = $derived($page.url.searchParams.get("redirect"));
-  
+
   // Tworzymy URL do strony logowania z przekazaniem parametru redirect
   const loginUrl = $derived(
     redirectParam ? `/login?redirect=${redirectParam}` : "/login"
@@ -60,6 +61,54 @@
               required
               class="block w-full pl-10 pr-3 py-2 bg-gray-800/70 border border-gray-600/50 rounded-lg text-gray-300 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all [&:-webkit-autofill]:bg-gray-800/70 [&:-webkit-autofill]:text-gray-300 [&:-webkit-autofill]:[-webkit-text-fill-color:rgb(209_213_219)] [&:-webkit-autofill]:[transition:background-color_9999s_ease-in-out_0s]"
               placeholder="Wprowadź adres email"
+            />
+          </div>
+        </div>
+
+        <div>
+          <div class="flex items-center relative">
+            <label
+              for="displayName"
+              class="block text-sm font-medium text-gray-300">Nazwa</label
+            >
+            <div class="ml-2 relative">
+              <button
+                type="button"
+                onmouseenter={() => (showTooltip = true)}
+                onmouseleave={() => (showTooltip = false)}
+                ontouchstart={(e) => {
+                  e.preventDefault();
+                  showTooltip = !showTooltip;
+                }}
+                class="text-gray-400 hover:text-gray-300 focus:outline-none"
+              >
+                <HelpCircle class="h-4 w-4" />
+              </button>
+              {#if showTooltip}
+                <div
+                  class="absolute left-0 bottom-full mb-2 w-64 p-2 bg-gray-700 text-gray-200 text-xs rounded shadow-lg z-10 pointer-events-none"
+                >
+                  Nazwa, która będzie wyświetlana innym użytkownikom aplikacji.
+                  <div
+                    class="absolute left-0 bottom-0 transform translate-y-1/2 rotate-45 w-2 h-2 bg-gray-700"
+                  ></div>
+                </div>
+              {/if}
+            </div>
+          </div>
+          <div class="mt-1 relative">
+            <div
+              class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+            >
+              <User class="h-5 w-5 text-gray-500" />
+            </div>
+            <input
+              id="displayName"
+              type="text"
+              name="displayName"
+              required
+              class="block w-full pl-10 pr-3 py-2 bg-gray-800/70 border border-gray-600/50 rounded-lg text-gray-300 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+              placeholder="Np. imię i nazwisko"
             />
           </div>
         </div>
@@ -124,7 +173,7 @@
             >Zaloguj się</a
           >
         </p>
-        
+
         {#if redirectParam}
           <input type="hidden" name="redirect" value={redirectParam} />
         {/if}

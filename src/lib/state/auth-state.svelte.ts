@@ -1,5 +1,6 @@
 import type { Database } from "$lib/database.types";
-import type { Session, SupabaseClient, User } from "@supabase/supabase-js";
+import type { User } from "$lib/user.type";
+import type { Session, SupabaseClient } from "@supabase/supabase-js";
 import { getContext, setContext } from "svelte";
 
 interface AuthStateProps {

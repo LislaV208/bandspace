@@ -1,4 +1,5 @@
 import { PUBLIC_SUPABASE_ANON_KEY, PUBLIC_SUPABASE_URL } from '$env/static/public'
+import type { Database } from '$lib/database.types'
 import { createBrowserClient, createServerClient, isBrowser } from '@supabase/ssr'
 import type { LayoutLoad } from './$types'
 
@@ -10,12 +11,12 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
     depends('supabase:auth')
 
     const supabase = isBrowser()
-        ? createBrowserClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, {
+        ? createBrowserClient<Database>(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, {
             global: {
                 fetch,
             },
         })
-        : createServerClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, {
+        : createServerClient<Database>(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, {
             global: {
                 fetch,
             },
@@ -36,8 +37,19 @@ export const load: LayoutLoad = async ({ data, depends, fetch }) => {
     } = await supabase.auth.getSession()
 
     const {
-        data: { user },
+        data: { user: authUser },
     } = await supabase.auth.getUser()
+
+    if (!authUser) {
+        return {
+            session,
+            supabase,
+            user: null
+        }
+    }
+
+    // zwróć usera z public.users a nie z auth.users
+    const { data: user } = await supabase.from('users').select().eq('id', authUser?.id).single();
 
 
     return { session, supabase, user }

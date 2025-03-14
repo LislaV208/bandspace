@@ -77,3 +77,11 @@
 - **Przechowywanie plików**
   - Przechowywanie plików audio w Supabase Storage
   - Unikalny ścieżki przechowywania plików
+
+
+
+
+  ## BACKLOG:
+  - Profil użytkownika
+  - Notatki/komentarze do utworu
+  - Foldery i/lub tagi

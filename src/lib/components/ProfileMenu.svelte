@@ -37,9 +37,9 @@
     };
   });
 
-  let userAvatar = $derived(user?.user_metadata?.avatar_url || null);
-  let userEmail = $derived(user?.user_metadata?.email || "");
-  let displayName = $derived(user?.user_metadata?.full_name || userEmail);
+  let userAvatar = $derived(user?.avatar_url || null);
+  let userEmail = $derived(user?.email || "");
+  let displayName = $derived(user?.name || userEmail);
 </script>
 
 <div class="relative">

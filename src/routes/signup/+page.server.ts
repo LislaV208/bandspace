@@ -1,4 +1,3 @@
-// import { authService } from '$lib/services/auth';
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions } from './$types';
 
@@ -12,9 +11,10 @@ export const actions = {
         const email = formData.get('email')?.toString();
         const password = formData.get('password')?.toString();
         const confirmPassword = formData.get('confirm-password')?.toString();
+        const displayName = formData.get('displayName')?.toString();
 
-        if (!email || !password) {
-            return fail(400, { error: 'Email i hasło są wymagane' });
+        if (!email || !password || !displayName) {
+            return fail(400, { error: 'Email, hasło i nazwa są wymagane' });
         }
 
         if (password !== confirmPassword) {
@@ -24,6 +24,11 @@ export const actions = {
         const { error } = await supabase.auth.signUp({
             email,
             password,
+            options: {
+                data: {
+                    name: displayName
+                }
+            }
         });
 
 
