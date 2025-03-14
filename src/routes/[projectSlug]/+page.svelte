@@ -126,6 +126,7 @@
 
   async function generateInviteLink() {
     try {
+      inviteUrl = "";
       const response = await fetch("/api/project-invites", {
         method: "POST",
         headers: {
@@ -304,7 +305,7 @@
 
       <div class="space-y-4 mb-6">
         <p class="text-gray-300">
-          Wygeneruj link zapraszający i udostępnij go osobom, które chcesz
+          Skopiuj link zapraszający i udostępnij go osobom, które chcesz
           zaprosić do współpracy przy projekcie <span class="font-semibold"
             >{project.name}</span
           >.
@@ -315,8 +316,7 @@
             type="text"
             readonly
             class="bg-transparent flex-1 outline-none text-sm"
-            value={inviteUrl ||
-              "Kliknij 'Wygeneruj link', aby utworzyć link zapraszający"}
+            value={inviteUrl}
           />
           <button
             class="ml-2 p-2 text-gray-300 hover:text-white hover:bg-gray-600 rounded transition-colors"
@@ -325,7 +325,9 @@
             onclick={copyInviteLink}
             aria-label="Kopiuj link zapraszający"
           >
-            {#if isCopied}
+            {#if !inviteUrl}
+              <Loader2 class="animate-spin text-blue-400" size={18} />
+            {:else if isCopied}
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="18"
@@ -344,20 +346,23 @@
             {/if}
           </button>
         </div>
+        <div class="flex items-center justify-center text-sm mt-4">
+          <span class="text-gray-400">Problem z linkiem?</span>
+          <button
+            onclick={generateInviteLink}
+            class="ml-2 text-blue-400 hover:text-blue-300 transition-colors"
+          >
+            Wygeneruj nowy
+          </button>
+        </div>
       </div>
 
-      <div class="flex justify-between">
+      <div class="flex justify-end">
         <button
           onclick={closeInviteModal}
           class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded transition-colors"
         >
-          Anuluj
-        </button>
-        <button
-          onclick={generateInviteLink}
-          class="px-4 py-2 bg-green-600 hover:bg-green-500 rounded transition-colors"
-        >
-          Wygeneruj {inviteUrl ? "nowy" : ""} link
+          Powrót
         </button>
       </div>
     </div>
