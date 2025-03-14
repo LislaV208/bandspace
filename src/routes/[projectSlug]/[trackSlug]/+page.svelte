@@ -1,13 +1,6 @@
 <script lang="ts">
   import Breadcrumbs from "$lib/components/Breadcrumbs.svelte";
-  import {
-    Download,
-    Pause,
-    Play,
-    Share2,
-    SkipBack,
-    SkipForward,
-  } from "lucide-svelte";
+  import { Download, Pause, Play, SkipBack, SkipForward } from "lucide-svelte";
   import { onMount } from "svelte";
   import type { PageProps } from "./$types";
 
@@ -168,15 +161,30 @@
         <button
           class="p-2 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-full transition-all"
           title="Download track"
+          onclick={async () => {
+            const { data, error } = await supabase.storage
+              .from("project_files")
+              .download(track.storage_file_path);
+            if (error) {
+              console.error("Error downloading file:", error);
+              return;
+            }
+            const url = URL.createObjectURL(data);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = track.name;
+            link.click();
+            URL.revokeObjectURL(url);
+          }}
         >
           <Download size={24} />
         </button>
-        <button
+        <!-- <button
           class="p-2 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-full transition-all"
           title="Share track"
         >
           <Share2 size={24} />
-        </button>
+        </button> -->
       </div>
     </div>
 
