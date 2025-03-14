@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { Clock, Loader2, Plus, Trash2, Users } from "lucide-svelte";
+  import { Clock, Loader2, Plus, Users } from "lucide-svelte";
   import toast, { Toaster } from "svelte-french-toast";
   import { fade, slide } from "svelte/transition";
 
@@ -16,8 +16,6 @@
   let isCreateModalOpen = $state(false);
   let newProjectName = $state("");
   let isCreating = $state(false);
-  let isDeleting = $state(false);
-  let projectToDelete: (typeof projects)[0] | null = $state(null);
 
   const hasProjects = $derived(projects.length > 0);
 
@@ -36,8 +34,6 @@
 
 <Toaster />
 
-<!-- <div class="max-w-6xl mx-auto px-4 py-8"> -->
-<!-- <div class="container mx-auto px-4 py-6 sm:py-8"> -->
 <div
   class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-6 sm:mb-8"
 >
@@ -71,17 +67,6 @@
           >
             {project.name}
           </div>
-          <button
-            type="button"
-            class="absolute top-4 sm:top-6 right-4 sm:right-6 p-2 text-gray-400 hover:text-red-500 transition-colors rounded-full hover:bg-gray-600/50"
-            onclick={(e) => {
-              e.stopPropagation();
-              projectToDelete = project;
-            }}
-            title="Delete project"
-          >
-            <Trash2 size={20} />
-          </button>
         </div>
 
         <div
@@ -187,51 +172,6 @@
             Anuluj
           </button>
         </div>
-      </form>
-    </div>
-  </div>
-{/if}
-
-<!-- Delete Confirmation Modal -->
-{#if projectToDelete}
-  <div
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 backdrop-blur-sm"
-    transition:fade
-  >
-    <div class="bg-gray-800 rounded-lg p-6 w-full max-w-md" transition:slide>
-      <h2 class="text-xl font-bold mb-4">Usuń projekt</h2>
-      <p class="text-gray-300 mb-6">
-        Czy na pewno chcesz usunąć "{projectToDelete.name}"? Tej czynności nie
-        można cofnąć.
-      </p>
-      <form
-        action="?/delete"
-        method="POST"
-        class="flex gap-4"
-        onsubmit={() => {
-          isDeleting = true;
-        }}
-      >
-        <input type="hidden" name="id" value={projectToDelete.id} />
-        <input type="hidden" name="slug" value={projectToDelete.slug} />
-        <button
-          type="submit"
-          class="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-          disabled={isDeleting}
-        >
-          {#if isDeleting}
-            <Loader2 class="animate-spin" size={20} />
-          {:else}
-            Usuń
-          {/if}
-        </button>
-        <button
-          type="button"
-          class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
-          onclick={() => (projectToDelete = null)}
-        >
-          Anuluj
-        </button>
       </form>
     </div>
   </div>

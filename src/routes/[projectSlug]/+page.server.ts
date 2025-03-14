@@ -86,7 +86,7 @@ export const actions = {
     },
 
     // Usuwanie utworu
-    delete: async ({ request, locals: { supabase } }) => {
+    deleteTrack: async ({ request, locals: { supabase } }) => {
         const formData = await request.formData();
         const id = formData.get('id')?.toString();
 
@@ -139,5 +139,57 @@ export const actions = {
         console.log('usunieto rekord z bazy danych');
 
         return { success: true };
+    },
+    
+    // Usuwanie projektu
+    deleteProject: async ({ request, locals: { supabase }, params }) => {
+        const formData = await request.formData();
+        const id = formData.get('id')?.toString();
+        const slug = formData.get('slug')?.toString();
+        
+        if (!id || !slug) {
+            return { error: 'ID projektu i slug są wymagane' };
+        }
+
+        // 1. Pobierz listę wszystkich plików w storage dla projektu
+        const { data: filesList, error: listError } = await supabase
+            .storage
+            .from('project_files')
+            .list(slug);
+
+        if (listError) {
+            console.error('Błąd podczas pobierania listy plików:', listError);
+            return { error: listError.message };
+        }
+
+        // 2. Utwórz tablicę ścieżek do plików
+        const filePaths = filesList.map(file => `${slug}/${file.name}`);
+
+        // 3. Usuń wszystkie pliki jednocześnie
+        if (filePaths.length > 0) {
+            const { error: storageError } = await supabase
+                .storage
+                .from('project_files')
+                .remove(filePaths);
+
+            if (storageError) {
+                console.error('Błąd podczas usuwania plików:', storageError);
+                return { error: storageError.message };
+            }
+        }
+
+        // 4. Usuń rekord projektu z bazy danych
+        const { error } = await supabase
+            .from('projects')
+            .delete()
+            .eq('id', parseInt(id));
+            
+        if (error) {
+            console.error('Błąd podczas usuwania projektu:', error);
+            return { error: error.message };
+        }
+        
+        // 5. Przekieruj na stronę główną po pomyślnym usunięciu
+        redirect(303, '/');
     }
 } satisfies Actions;

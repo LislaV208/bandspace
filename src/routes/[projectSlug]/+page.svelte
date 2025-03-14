@@ -12,6 +12,7 @@
     Share2,
     Trash2,
   } from "lucide-svelte";
+  import { onMount } from "svelte";
   import toast, { Toaster } from "svelte-french-toast";
   import { fade, slide } from "svelte/transition";
   import type { PageProps } from "./$types";
@@ -24,6 +25,9 @@
   let isDragging = $state(false);
   let isUploading = $state(false);
   let isLeaveModalOpen = $state(false);
+  let isProjectMenuOpen = $state(false);
+  let isDeleteProjectModalOpen = $state(false);
+  let isDeletingProject = $state(false);
 
   function handleFileSelect(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -103,16 +107,55 @@
 
   function openLeaveModal() {
     isLeaveModalOpen = true;
+    isProjectMenuOpen = false;
   }
 
   function closeLeaveModal() {
     isLeaveModalOpen = false;
   }
 
+  function openDeleteProjectModal() {
+    isDeleteProjectModalOpen = true;
+    closeProjectMenu();
+  }
+
+  function closeDeleteProjectModal() {
+    isDeleteProjectModalOpen = false;
+  }
+
+  function toggleProjectMenu(event: Event) {
+    event.stopPropagation();
+    isProjectMenuOpen = !isProjectMenuOpen;
+  }
+
+  function closeProjectMenu() {
+    isProjectMenuOpen = false;
+  }
+
+  // Obsługa kliknięcia poza menu aby je zamknąć
+  onMount(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isProjectMenuOpen) {
+        const target = event.target as HTMLElement;
+        const menuContainer = document.getElementById("project-menu-container");
+
+        if (menuContainer && !menuContainer.contains(target)) {
+          isProjectMenuOpen = false;
+        }
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  });
+
   async function leaveProject() {
     try {
       isLeavingProject = true;
-      
+
       const response = await fetch("/api/project-invites", {
         method: "DELETE",
         headers: {
@@ -125,11 +168,13 @@
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Błąd podczas opuszczania projektu");
+        throw new Error(
+          errorData.message || "Błąd podczas opuszczania projektu"
+        );
       }
 
       const responseData = await response.json();
-      
+
       // Wyświetl komunikat o powodzeniu
       toast.success(responseData.message || "Pomyślnie opuszczono projekt", {
         position: "bottom-right",
@@ -140,13 +185,18 @@
       goto("/");
     } catch (error) {
       console.error("Error leaving project:", error);
-      
+
       // Wyświetl komunikat o błędzie
-      toast.error(error instanceof Error ? error.message : "Nie udało się opuścić projektu", {
-        position: "bottom-right",
-        duration: 5000,
-      });
-      
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Nie udało się opuścić projektu",
+        {
+          position: "bottom-right",
+          duration: 5000,
+        }
+      );
+
       isLeavingProject = false;
       closeLeaveModal();
     }
@@ -198,10 +248,6 @@
       const inviteData = await response.json();
       inviteUrl = inviteData.invite_url;
       isCopied = false;
-
-      toast.success("Wygenerowano nowy link do zaproszenia", {
-        position: "bottom-right",
-      });
     } catch (error) {
       console.error("Error generating invite link:", error);
       toast.error("Nie udało się wygenerować linku zapraszającego", {
@@ -241,17 +287,18 @@
   class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-6 sm:mb-8"
 >
   <Breadcrumbs project={data.project} />
-  {#if data.tracks.length !== 0}
-    <div class="flex flex-col sm:flex-row w-full sm:w-auto gap-4">
+
+  <div class="flex flex-col sm:flex-row w-full sm:w-auto gap-4">
+    <button
+      onclick={openInviteModal}
+      class="w-full h-10 sm:w-auto bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
+    >
+      <Share2 size={20} />
+      Zaproś do projektu
+    </button>
+    <div class="relative" id="project-menu-container">
       <button
-        onclick={openInviteModal}
-        class="w-full h-10 sm:w-auto bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
-      >
-        <Share2 size={20} />
-        Zaproś do projektu
-      </button>
-      <button
-        onclick={openLeaveModal}
+        onclick={toggleProjectMenu}
         class="w-full h-10 sm:w-auto bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
       >
         <svg
@@ -265,12 +312,69 @@
           stroke-linecap="round"
           stroke-linejoin="round"
         >
-          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-          <polyline points="16 17 21 12 16 7"></polyline>
-          <line x1="21" y1="12" x2="9" y2="12"></line>
+          <path
+            d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
+          ></path>
+          <circle cx="12" cy="12" r="3"></circle>
         </svg>
-        Opuść projekt
+        Zarządzaj
       </button>
+
+      {#if isProjectMenuOpen}
+        <div
+          class="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-gray-800 ring-1 ring-black ring-opacity-5 divide-y divide-gray-700 z-50"
+          transition:fade={{ duration: 150 }}
+        >
+          <div class="py-1" role="none">
+            <button
+              onclick={openLeaveModal}
+              class="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white flex items-center gap-2"
+              role="menuitem"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                <polyline points="16 17 21 12 16 7"></polyline>
+                <line x1="21" y1="12" x2="9" y2="12"></line>
+              </svg>
+              Opuść projekt
+            </button>
+            <button
+              onclick={openDeleteProjectModal}
+              class="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-red-400 flex items-center gap-2"
+              role="menuitem"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M3 6h18"></path>
+                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+              </svg>
+              Usuń projekt
+            </button>
+          </div>
+        </div>
+      {/if}
+    </div>
+    {#if data.tracks.length !== 0}
       <button
         onclick={openCreateModal}
         class="w-full h-10 sm:w-auto bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
@@ -278,8 +382,8 @@
         <Plus size={20} />
         Nowy utwór
       </button>
-    </div>
-  {/if}
+    {/if}
+  </div>
 </div>
 
 <div class="flex flex-col lg:flex-row my-4 gap-6">
@@ -372,6 +476,7 @@
       aria-labelledby="invite-modal-title"
       aria-modal="true"
       tabindex="-1"
+      transition:slide={{ duration: 300 }}
     >
       <h2 id="invite-modal-title" class="text-xl font-bold mb-6">
         Zaproś do projektu
@@ -663,11 +768,11 @@
 {#if isLeaveModalOpen}
   <div
     class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 backdrop-blur-sm z-50"
-    transition:fade={{ duration: 300 }}
+    transition:fade
   >
     <div
       class="bg-gray-800 rounded-lg p-6 w-full max-w-md border border-gray-700/50"
-      transition:slide={{ duration: 300 }}
+      transition:slide
     >
       <h2 class="text-xl font-bold mb-4">Opuść projekt</h2>
       <p class="text-gray-300 mb-6">
@@ -694,6 +799,71 @@
           Anuluj
         </button>
       </div>
+    </div>
+  </div>
+{/if}
+
+<!-- Delete Project Confirmation Modal -->
+{#if isDeleteProjectModalOpen}
+  <div
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 backdrop-blur-sm z-50"
+    transition:fade={{ duration: 300 }}
+  >
+    <div
+      class="bg-gray-800 rounded-lg p-6 w-full max-w-md border border-gray-700/50"
+      transition:slide={{ duration: 300 }}
+    >
+      <h2 class="text-xl font-bold mb-4">Usuń projekt</h2>
+      <p class="text-gray-300 mb-6">
+        Czy na pewno chcesz usunąć projekt
+        <span class="font-semibold">{data.project.name}</span>? Tej czynności
+        nie można cofnąć. Wszystkie pliki projektu i dane zostaną trwale
+        usunięte.
+      </p>
+      <form
+        action="?/deleteProject"
+        method="POST"
+        class="flex space-x-4"
+        use:enhance={() => {
+          isDeletingProject = true;
+          return async ({ result, update }) => {
+            if (result.type === "error") {
+              toast.error(
+                result.error?.message ||
+                  "Wystąpił błąd podczas usuwania projektu",
+                {
+                  position: "bottom-right",
+                }
+              );
+              isDeletingProject = false;
+              closeDeleteProjectModal();
+            }
+
+            update();
+          };
+        }}
+      >
+        <input type="hidden" name="id" value={data.project.id} />
+        <input type="hidden" name="slug" value={data.project.slug} />
+        <button
+          type="submit"
+          class="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+          disabled={isDeletingProject}
+        >
+          {#if isDeletingProject}
+            <Loader2 class="animate-spin" size={20} />
+          {:else}
+            Usuń projekt
+          {/if}
+        </button>
+        <button
+          type="button"
+          class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
+          onclick={closeDeleteProjectModal}
+        >
+          Anuluj
+        </button>
+      </form>
     </div>
   </div>
 {/if}
