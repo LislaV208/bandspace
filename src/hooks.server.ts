@@ -76,7 +76,12 @@ const authGuard: Handle = async ({ event, resolve }) => {
 
   if (!event.locals.session && (!publicPathnames.includes(event.url.pathname) && !event.url.pathname.startsWith('/auth'))) {
     console.log('redirecting to login')
-    redirect(303, '/login')
+    // Zapisujemy bieżący URL jako parametr redirect
+    const currentPath = event.url.pathname + event.url.search
+    // Enkodujemy URL, aby uniknąć problemów z znakami specjalnymi
+    const encodedPath = encodeURIComponent(currentPath)
+    // Przekierowujemy do strony logowania z parametrem redirect
+    redirect(303, `/login?redirect=${encodedPath}`)
   }
 
   if (event.locals.session && (publicPathnames.includes(event.url.pathname) && event.url.pathname.startsWith('/auth'))) {

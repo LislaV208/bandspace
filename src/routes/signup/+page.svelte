@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { page } from "$app/stores";
   import { Lock, Mail, UserPlus } from "lucide-svelte";
   import type { PageProps } from "./$types";
 
@@ -6,6 +7,14 @@
   const error = $derived(form?.error);
 
   let loading = $state(false);
+  
+  // Pobieramy parametr redirect z URL
+  const redirectParam = $derived($page.url.searchParams.get("redirect"));
+  
+  // Tworzymy URL do strony logowania z przekazaniem parametru redirect
+  const loginUrl = $derived(
+    redirectParam ? `/login?redirect=${redirectParam}` : "/login"
+  );
 </script>
 
 <div
@@ -110,11 +119,15 @@
 
         <p class="text-center text-sm text-gray-400 mt-4">
           Masz już konto? <a
-            href="/login"
+            href={loginUrl}
             class="text-blue-400 hover:text-blue-300 transition-colors"
             >Zaloguj się</a
           >
         </p>
+        
+        {#if redirectParam}
+          <input type="hidden" name="redirect" value={redirectParam} />
+        {/if}
       </form>
     </div>
   </div>

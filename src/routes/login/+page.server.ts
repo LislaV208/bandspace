@@ -5,7 +5,9 @@ import { APP_URL } from '$env/static/private';
 
 
 export const actions = {
-  login: async ({ request, locals: { supabase } }) => {
+  login: async ({ request, url, locals: { supabase } }) => {
+    // Pobieramy parametr redirect z URL
+    const redirectTo = url.searchParams.get('redirect') || '/';
 
     const formData = await request.formData();
     const email = formData.get('email')?.toString();
@@ -28,10 +30,13 @@ export const actions = {
       return fail(401, { error: error.message });
     }
 
-    redirect(303, '/');
+    // Przekierowujemy do wcześniej żądanej strony lub do strony głównej
+    redirect(303, redirectTo);
 
   },
   googleLogin: async ({ locals: { supabase } }) => {
+    // Dla Google OAuth nie przekazujemy parametru redirect w URL
+    // Zamiast tego używamy localStorage (zaimplementowane w +page.svelte)
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {

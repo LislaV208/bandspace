@@ -1,11 +1,28 @@
 <script lang="ts">
   import { enhance } from "$app/forms";
+  import { page } from "$app/stores";
   import { Lock, LogIn, Mail } from "lucide-svelte";
   import type { PageProps } from "./$types";
 
   const { data, form }: PageProps = $props();
   let loading = $state(false);
   const error = $derived(form?.error);
+  
+  // Pobieramy parametr redirect z URL
+  const redirectParam = $derived($page.url.searchParams.get("redirect"));
+  
+  // Tworzymy URL do strony rejestracji z przekazaniem parametru redirect
+  const signupUrl = $derived(
+    redirectParam ? `/signup?redirect=${redirectParam}` : "/signup"
+  );
+  
+  // Funkcja zapisująca docelowy URL do localStorage przed logowaniem przez Google
+  function saveRedirectToLocalStorage() {
+    if (redirectParam) {
+      localStorage.setItem("redirectAfterLogin", redirectParam);
+      console.log("Zapisano URL do przekierowania w localStorage:", redirectParam);
+    }
+  }
 </script>
 
 <div
@@ -101,6 +118,7 @@
             type="submit"
             formnovalidate
             formaction="?/googleLogin"
+            onclick={saveRedirectToLocalStorage}
             class="w-full flex items-center justify-center px-4 py-2 border border-gray-600/50 shadow-sm text-sm font-medium rounded-lg text-gray-300 bg-gray-800/70 hover:bg-gray-700/70 transition-all"
           >
             <img
@@ -114,11 +132,15 @@
 
         <p class="text-center text-sm text-gray-400 mt-4">
           Nie masz konta? <a
-            href="/signup"
+            href={signupUrl}
             class="text-blue-400 hover:text-blue-300 transition-colors"
             >Utwórz je</a
           >
         </p>
+        
+        {#if redirectParam}
+          <input type="hidden" name="redirect" value={redirectParam} />
+        {/if}
       </form>
     </div>
   </div>

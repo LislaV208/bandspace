@@ -4,7 +4,9 @@ import type { Actions } from './$types';
 
 
 export const actions = {
-    default: async ({ request, locals: { supabase } }) => {
+    default: async ({ request, url, locals: { supabase } }) => {
+        // Pobieramy parametr redirect z URL
+        const redirectTo = url.searchParams.get('redirect') || '/';
 
         const formData = await request.formData();
         const email = formData.get('email')?.toString();
@@ -29,6 +31,7 @@ export const actions = {
             return fail(401, { error: error.message });
         }
 
-        redirect(303, '/');
+        // Przekierowujemy do wcześniej żądanej strony lub do strony głównej
+        redirect(303, redirectTo);
     }
 } satisfies Actions;
