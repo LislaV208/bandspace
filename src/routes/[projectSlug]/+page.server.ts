@@ -102,7 +102,7 @@ export const actions = {
     },
 
     // Usuwanie utworu
-    deleteTrack: async ({ request, locals: { supabase } }) => {
+    deleteTrack: async ({ request, locals: { supabase }, params }) => {
         const formData = await request.formData();
         const id = formData.get('id')?.toString();
 
@@ -154,15 +154,15 @@ export const actions = {
 
         console.log('usunieto rekord z bazy danych');
 
-        return { success: true };
+        redirect(303, `/${params.projectSlug}`);
     },
-    
+
     // Usuwanie projektu
     deleteProject: async ({ request, locals: { supabase }, params }) => {
         const formData = await request.formData();
         const id = formData.get('id')?.toString();
         const slug = formData.get('slug')?.toString();
-        
+
         if (!id || !slug) {
             return { error: 'ID projektu i slug są wymagane' };
         }
@@ -199,12 +199,12 @@ export const actions = {
             .from('projects')
             .delete()
             .eq('id', parseInt(id));
-            
+
         if (error) {
             console.error('Błąd podczas usuwania projektu:', error);
             return { error: error.message };
         }
-        
+
         // 5. Przekieruj na stronę główną po pomyślnym usunięciu
         redirect(303, '/');
     }
