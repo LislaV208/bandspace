@@ -28,6 +28,7 @@
   },
   "type": "module",
   "dependencies": {
+    "@careswitch/svelte-data-table": "^0.6.3",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.49.1",
     "@uppy/core": "^4.4.2",
