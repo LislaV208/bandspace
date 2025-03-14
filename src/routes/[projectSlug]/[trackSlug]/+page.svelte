@@ -154,7 +154,11 @@
         </h1>
         <p class="text-xl text-gray-400 mb-4">{data.project.name}</p>
         <div class="flex items-center gap-4 text-sm text-gray-500">
-          <span>Uploaded by Stachu Jones</span>
+          <span
+            >Zamieszczono przez: {track.uploaded_by.name ||
+              track.uploaded_by.email ||
+              "-"}
+          </span>
           <span>•</span>
           <span>{new Date(track.created_at).toLocaleString()}</span>
         </div>

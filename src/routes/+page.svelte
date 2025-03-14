@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { Clock, Loader2, Music, Plus, Trash2, Users } from "lucide-svelte";
+  import { Clock, Loader2, Plus, Trash2, Users } from "lucide-svelte";
   import toast, { Toaster } from "svelte-french-toast";
   import { fade, slide } from "svelte/transition";
 
@@ -95,10 +95,10 @@
             <Users size={16} />
             {project.projects_users?.length}
           </div>
-          <div class="flex items-center gap-1">
+          <!-- <div class="flex items-center gap-1">
             <Music size={16} />
             Brak utworów
-          </div>
+          </div> -->
         </div>
       </div>
     </div>

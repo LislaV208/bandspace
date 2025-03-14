@@ -1,3 +1,4 @@
+import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ locals: { supabase }, params }) => {
@@ -8,19 +9,17 @@ export const load: PageServerLoad = async ({ locals: { supabase }, params }) => 
         .single();
 
     if (projectError) {
-        console.error('Error fetching track project:', projectError);
-        throw projectError;
+        throw error(500, projectError.message);
     }
 
-    const { data: track, error } = await supabase.from('tracks')
-        .select()
+    const { data: track, error: trackError } = await supabase.from('tracks')
+        .select('*, uploaded_by(name, email)')
         .eq('project_id', project.id)
         .eq('slug', params.trackSlug)
         .single();
 
-    if (error) {
-        console.log('Error fetching track:', error);
-        throw error;
+    if (trackError) {
+        throw error(500, trackError.message);
     }
 
     return { track }
