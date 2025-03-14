@@ -1,16 +1,14 @@
-// import { projectsService } from '$lib/services/projects';
-
 import { redirect, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
-
-
-
-
 
 export const load: PageServerLoad = async ({ locals: { supabase, user } }) => {
     const { data, error } = await supabase
         .from('projects')
-        .select('*, projects_users!inner(*)')
+        .select(`
+        *,
+        projects_users!inner(user_id),
+        members_count:projects_users(count)
+    `)
         .eq('projects_users.user_id', user!.id);
 
     if (error) {
@@ -18,8 +16,13 @@ export const load: PageServerLoad = async ({ locals: { supabase, user } }) => {
         throw error;
     }
 
+    // Przekształcamy members_count z tablicy [{ count: liczba }] na samą liczbę
+    const transformedData = data.map(project => ({
+        ...project,
+        members_count: project.members_count[0]?.count || 0
+    }));
 
-    return { data };
+    return { data: transformedData };
 };
 
 export const actions = {

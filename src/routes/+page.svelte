@@ -78,7 +78,7 @@
           </div>
           <div class="flex items-center gap-1">
             <Users size={16} />
-            {project.projects_users?.length}
+            {project.members_count}
           </div>
           <!-- <div class="flex items-center gap-1">
             <Music size={16} />
