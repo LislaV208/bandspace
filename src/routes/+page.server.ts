@@ -1,4 +1,4 @@
-import { redirect, type Actions } from "@sveltejs/kit";
+import { error, redirect, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 
 import type { Database } from "$lib/database.types";
@@ -13,7 +13,7 @@ type Track = Pick<DbTrack, "id" | "name" | "created_at">;
 type DbProject = Database["public"]["Tables"]["projects"]["Row"];
 
 // Rozszerzony typ projektu z ostatnimi utworami
-interface ProjectWithTracks extends DbProject {
+export interface DashboardProject extends DbProject {
   members_count: number;
   recent_tracks: Track[];
 }
@@ -41,7 +41,7 @@ export const load: PageServerLoad = async ({ locals: { supabase, user } }) => {
     ...project,
     members_count: project.members_count[0]?.count || 0,
     recent_tracks: [] as Track[], // Inicjalizujemy pustą tablicę dla utworów z właściwym typem
-  })) as ProjectWithTracks[];
+  })) as DashboardProject[];
 
   // Dla każdego projektu pobieramy 5 ostatnich utworów
   for (const project of transformedData) {
@@ -69,21 +69,22 @@ export const load: PageServerLoad = async ({ locals: { supabase, user } }) => {
 export const actions = {
   create: async ({ request, locals: { supabase } }) => {
     const formData = await request.formData();
+
     const name = formData.get("name")?.toString();
 
     if (!name) {
-      return { error: "Project name is required" };
+      throw error(400, { message: "Project name is required" });
     }
 
-    const { data, error } = await supabase
+    const { data, error: dbError } = await supabase
       .from("projects")
       .insert([{ name }])
       .select("*")
       .single();
 
-    if (error) {
-      console.error("Error creating project:", error);
-      return { error: error.message };
+    if (dbError) {
+      console.error("Error creating project:", dbError);
+      throw error(500, { message: dbError.message });
     }
 
     redirect(303, `/${data.slug}`);
@@ -93,7 +94,7 @@ export const actions = {
     const id = formData.get("id")?.toString();
     const slug = formData.get("slug")?.toString();
     if (!id || !slug) {
-      return { error: "Project id and slug are required" };
+      throw error(400, { message: "Project id and slug are required" });
     }
 
     // 1. Pobierz listę wszystkich plików w storage
@@ -103,7 +104,7 @@ export const actions = {
 
     if (listError) {
       console.error("Błąd podczas pobierania listy plików:", listError);
-      return { error: listError.message };
+      throw error(500, { message: listError.message });
     }
 
     // 2. Utwórz tablicę ścieżek do plików
@@ -117,19 +118,20 @@ export const actions = {
 
       if (storageError) {
         console.error("Błąd podczas usuwania plików:", storageError);
-        return { error: storageError.message };
+        throw error(500, { message: storageError.message });
       }
     }
 
     // 2. usun rekord z bazy danych
-    const { error } = await supabase
+    const { error: dbError } = await supabase
       .from("projects")
       .delete()
       .eq("id", parseInt(id));
-    if (error) {
-      console.error("Error deleting project:", error);
-      return { error: error.message };
+    if (dbError) {
+      console.error("Error deleting project:", dbError);
+      throw error(500, { message: dbError.message });
     }
+
     return { success: true };
   },
 } satisfies Actions;

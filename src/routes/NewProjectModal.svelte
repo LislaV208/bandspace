@@ -3,6 +3,7 @@
   import Button from "$lib/components/ui/Button.svelte";
   import Input from "$lib/components/ui/Input.svelte";
   import Modal from "$lib/components/ui/Modal.svelte";
+  import toast, { Toaster } from "svelte-french-toast";
 
   let { isOpen = $bindable() } = $props();
 
@@ -15,6 +16,7 @@
   }
 </script>
 
+<Toaster />
 <Modal bind:isOpen title="Nowy projekt" {isLoading} onClose={() => reset()}>
   <form
     action="?/create"
@@ -23,9 +25,17 @@
     use:enhance={() => {
       isLoading = true;
       return async ({ result, update }) => {
-        await update();
-        isOpen = false;
-        reset();
+        console.log("result:", result);
+        if (result.type === "error") {
+          toast.error(result.error.message, {
+            position: "bottom-right",
+          });
+          isLoading = false;
+        } else {
+          await update();
+          isOpen = false;
+          reset();
+        }
       };
     }}
   >

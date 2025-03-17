@@ -130,7 +130,7 @@
   </button>
   {#if isOpen}
     <div
-      class="absolute right-0 mt-2 min-w-[12rem] max-w-xs bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-lg py-2 z-50 border border-gray-600/50 transition-all duration-200 ease-in-out profile-menu-popup"
+      class="absolute right-0 mt-2 min-w-[12rem] max-w-xs bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-lg z-50 border border-gray-600/50 transition-all duration-200 ease-in-out profile-menu-popup"
       transition:slide={{ duration: 200 }}
     >
       <div class="px-4 py-3 border-b border-gray-600">
