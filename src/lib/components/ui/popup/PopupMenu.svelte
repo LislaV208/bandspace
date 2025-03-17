@@ -33,13 +33,19 @@
 </script>
 
 <div class="relative">
-  <button bind:this={triggerButtonElement} onclick={() => (isOpen = !isOpen)}>
+  <div
+    bind:this={triggerButtonElement}
+    onclick={() => (isOpen = !isOpen)}
+    onkeydown={(e: KeyboardEvent) => e.key === "Enter" && (isOpen = !isOpen)}
+    role="button"
+    tabindex="0"
+  >
     {@render triggerContent()}
-  </button>
+  </div>
   {#if isOpen}
     <div
       bind:this={popupElement}
-      class="absolute right-0 mt-2 min-w-[12rem] max-w-xs bg-gray-800 rounded-lg shadow-lg z-50 border border-gray-600/50 transition-all duration-200 ease-in-out items-center"
+      class="absolute right-0 mt-2 bg-gray-800 rounded-lg shadow-lg z-50 border border-gray-600/50 transition-all duration-200 ease-in-out items-center"
       transition:slide={{ duration: 300 }}
     >
       <div transition:fade={{ duration: 300 }}>

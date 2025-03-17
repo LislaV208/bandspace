@@ -4,6 +4,7 @@
 
   let {
     primary,
+    icon,
     isLoading,
     fullWidth,
     class: className,
@@ -11,12 +12,15 @@
     ...props
   }: {
     primary?: boolean;
+    icon?: any;
     isLoading?: boolean;
     fullWidth?: boolean;
     class?: string;
     children?: Snippet;
     [props: string]: any;
   } = $props();
+
+  const IconComponent = $derived(icon);
 
   let color = primary
     ? "bg-blue-600 hover:bg-blue-500"
@@ -32,6 +36,9 @@
   {#if isLoading}
     <Loader2 class="animate-spin" size={20} />
   {:else}
+    {#if IconComponent}
+      <IconComponent size={20} />
+    {/if}
     {@render children?.()}
   {/if}
 </button>

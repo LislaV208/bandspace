@@ -2,15 +2,22 @@
   import { enhance } from "$app/forms";
   import { goto } from "$app/navigation";
   import Breadcrumbs from "$lib/components/Breadcrumbs.svelte";
+  import NoTracksView from "$lib/components/tracks/NoTracksView.svelte";
+  import Button from "$lib/components/ui/Button.svelte";
+  import PopupMenu from "$lib/components/ui/popup/PopupMenu.svelte";
+  import PopupMenuOption from "$lib/components/ui/popup/PopupMenuOption.svelte";
   import { DataTable } from "@careswitch/svelte-data-table";
   import {
     FileMusic,
     Link2,
     ListMusic,
     Loader2,
+    LogOut,
     Plus,
+    Settings,
     Share2,
     Trash2,
+    Users,
   } from "lucide-svelte";
   import { onMount } from "svelte";
   import toast, { Toaster } from "svelte-french-toast";
@@ -316,37 +323,31 @@
   <Breadcrumbs project={data.project} />
 
   <div class="flex flex-col sm:flex-row w-full sm:w-auto gap-4">
-    <button
-      onclick={openInviteModal}
-      class="w-full h-10 sm:w-auto bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
-    >
-      <Share2 size={20} />
-      Zaproś do projektu
-    </button>
-    <div class="relative" id="project-menu-container">
-      <button
-        onclick={toggleProjectMenu}
-        class="w-full h-10 sm:w-auto bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path
-            d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
-          ></path>
-          <circle cx="12" cy="12" r="3"></circle>
-        </svg>
-        Zarządzaj
-      </button>
+    <Button icon={Share2} onclick={openInviteModal}>Zaproś do projektu</Button>
 
+    <PopupMenu>
+      {#snippet triggerContent()}
+        <Button icon={Settings}></Button>
+      {/snippet}
+      <PopupMenuOption
+        icon={Users}
+        text="Członkowie projektu"
+        onclick={openUsersModal}
+      />
+      <PopupMenuOption
+        icon={LogOut}
+        text="Opuść projekt"
+        onclick={openLeaveModal}
+      />
+      <PopupMenuOption
+        icon={Trash2}
+        className="hover:text-red-500"
+        text="Usuń projekt"
+        onclick={openDeleteProjectModal}
+      />
+    </PopupMenu>
+
+    <div class="relative" id="project-menu-container">
       {#if isProjectMenuOpen}
         <div
           class="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-gray-800 ring-1 ring-black ring-opacity-5 divide-y divide-gray-700 z-50"
@@ -438,27 +439,7 @@
 
 <div class="flex flex-col lg:flex-row my-4 gap-6">
   {#if data.tracks.length === 0}
-    <div
-      class="w-full flex flex-col items-center justify-center py-12 sm:py-16 space-y-6"
-      transition:fade
-    >
-      <div class="text-gray-600">
-        <ListMusic size={100}></ListMusic>
-      </div>
-      <div class="space-y-2 text-center px-4">
-        <h3 class="text-lg sm:text-xl font-semibold text-gray-200">
-          Brak utworów
-        </h3>
-        <p class="text-gray-400">Dodaj utwór do swojego projektu</p>
-      </div>
-      <button
-        onclick={openCreateModal}
-        class="px-4 sm:px-6 py-2 sm:py-3 bg-blue-500 hover:bg-blue-600 rounded-lg flex items-center gap-2 transition-all transform hover:scale-105"
-      >
-        <Plus size={20} />
-        Dodaj utwór
-      </button>
-    </div>
+    <NoTracksView onAddTrack={openCreateModal} />
   {:else}
     <div class="w-full">
       <!-- Panel wyszukiwania -->
