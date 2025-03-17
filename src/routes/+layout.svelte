@@ -1,9 +1,9 @@
 <script lang="ts">
-  import ProfileMenu from "$lib/components/ProfileMenu.svelte";
   import "../app.css";
 
   import { version } from "$app/environment";
   import { invalidate } from "$app/navigation";
+  import UserProfileMenu from "$lib/components/user-profile/UserProfileMenu.svelte";
   import { setAuthState } from "$lib/state/auth-state.svelte";
   import { onMount } from "svelte";
 
@@ -45,8 +45,6 @@
 
     return () => data.subscription.unsubscribe();
   });
-
-  let isProfileMenuOpen = $state(false);
 </script>
 
 <div
@@ -66,10 +64,7 @@
             </button>
           </div>
           <div class="flex items-center space-x-4">
-            <ProfileMenu
-              isOpen={isProfileMenuOpen}
-              onToggle={() => (isProfileMenuOpen = !isProfileMenuOpen)}
-            />
+            <UserProfileMenu {user} />
           </div>
         </div>
       </nav>
