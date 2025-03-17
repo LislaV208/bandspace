@@ -3,7 +3,7 @@
   import { Music, Users } from "lucide-svelte";
 
   import CardButton from "$lib/components/ui/CardButton.svelte";
-  import type { DashboardProject } from "./+page.server";
+  import type { DashboardProject } from "$lib/types/project";
 
   const { project }: { project: DashboardProject } = $props();
 </script>

@@ -2,11 +2,11 @@
   import { goto } from "$app/navigation";
   import PopupMenu from "$lib/components/ui/popup/PopupMenu.svelte";
   import PopupMenuOption from "$lib/components/ui/popup/PopupMenuOption.svelte";
+  import EditProfileModal from "$lib/components/user-profile/EditProfileModal.svelte";
   import { getAuthState } from "$lib/state/auth-state.svelte";
-  import type { User } from "$lib/user.type";
+  import type { User } from "$lib/types/user";
   import { LogOut, Pencil, UserIcon } from "lucide-svelte";
   import toast, { Toaster } from "svelte-french-toast";
-  import EditProfileModal from "./EditProfileModal.svelte";
 
   const { user }: { user: User } = $props();
   const authState = getAuthState();

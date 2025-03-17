@@ -1,9 +1,9 @@
 <script lang="ts">
-  import type { User } from "$lib/user.type";
+  import Button from "$lib/components/ui/Button.svelte";
+  import Input from "$lib/components/ui/Input.svelte";
+  import Modal from "$lib/components/ui/Modal.svelte";
+  import type { User } from "$lib/types/user";
   import toast, { Toaster } from "svelte-french-toast";
-  import Button from "../ui/Button.svelte";
-  import Input from "../ui/Input.svelte";
-  import Modal from "../ui/Modal.svelte";
 
   let { isOpen = $bindable(), user }: { isOpen: boolean; user: User } =
     $props();

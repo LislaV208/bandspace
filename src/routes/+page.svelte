@@ -1,9 +1,9 @@
 <script lang="ts">
+  import NewProjectModal from "$lib/components/projects/NewProjectModal.svelte";
+  import NoProjectsView from "$lib/components/projects/NoProjectsView.svelte";
+  import ProjectCard from "$lib/components/projects/ProjectCard.svelte";
   import Button from "$lib/components/ui/Button.svelte";
   import { Plus } from "lucide-svelte";
-  import NewProjectModal from "./NewProjectModal.svelte";
-  import NoProjectsView from "./NoProjectsView.svelte";
-  import ProjectCard from "./ProjectCard.svelte";
 
   let { data } = $props();
   let projects = data.data;

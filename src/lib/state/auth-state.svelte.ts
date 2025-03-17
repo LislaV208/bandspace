@@ -1,40 +1,40 @@
 import type { Database } from "$lib/database.types";
-import type { User } from "$lib/user.type";
+import type { User } from "$lib/types/user";
 import type { Session, SupabaseClient } from "@supabase/supabase-js";
 import { getContext, setContext } from "svelte";
 
 interface AuthStateProps {
-    supabase: SupabaseClient<Database>;
-    session: Session | null;
-    user: User | null;
+  supabase: SupabaseClient<Database>;
+  session: Session | null;
+  user: User | null;
 }
 
 export class AuthState {
-    session = $state<Session | null>(null);
-    supabase = $state<SupabaseClient<Database> | null>(null);
-    user = $state<User | null>(null);
+  session = $state<Session | null>(null);
+  supabase = $state<SupabaseClient<Database> | null>(null);
+  user = $state<User | null>(null);
 
-    constructor(props: AuthStateProps) {
-        this.updateState(props);
-    }
+  constructor(props: AuthStateProps) {
+    this.updateState(props);
+  }
 
-    updateState(props: AuthStateProps) {
-        this.session = props.session;
-        this.supabase = props.supabase;
-        this.user = props.user;
-    }
+  updateState(props: AuthStateProps) {
+    this.session = props.session;
+    this.supabase = props.supabase;
+    this.user = props.user;
+  }
 
-    async signOut() {
-        await this.supabase?.auth.signOut();
-    }
+  async signOut() {
+    await this.supabase?.auth.signOut();
+  }
 }
 
-const AUTH_STATE_KEY = Symbol('AUTH_STATE');
+const AUTH_STATE_KEY = Symbol("AUTH_STATE");
 
 export function setAuthState(props: AuthStateProps) {
-    return setContext(AUTH_STATE_KEY, new AuthState(props));
+  return setContext(AUTH_STATE_KEY, new AuthState(props));
 }
 
 export function getAuthState() {
-    return getContext<ReturnType<typeof setAuthState>>(AUTH_STATE_KEY);
+  return getContext<ReturnType<typeof setAuthState>>(AUTH_STATE_KEY);
 }

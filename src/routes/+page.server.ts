@@ -1,22 +1,8 @@
 import { error, redirect, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 
-import type { Database } from "$lib/database.types";
-
-// Typ dla utworu muzycznego na podstawie schematu bazy danych
-type DbTrack = Database["public"]["Tables"]["tracks"]["Row"];
-
-// Typ używany dla utworów w aplikacji
-type Track = Pick<DbTrack, "id" | "name" | "created_at">;
-
-// Baza projektu z bazy danych
-type DbProject = Database["public"]["Tables"]["projects"]["Row"];
-
-// Rozszerzony typ projektu z ostatnimi utworami
-export interface DashboardProject extends DbProject {
-  members_count: number;
-  recent_tracks: Track[];
-}
+import type { DashboardProject } from "$lib/types/project";
+import type { Track } from "$lib/types/track";
 
 export const load: PageServerLoad = async ({ locals: { supabase, user } }) => {
   // Pobieramy projekty użytkownika wraz z liczbą członków
