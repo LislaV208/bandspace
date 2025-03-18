@@ -117,7 +117,7 @@
 </script>
 
 <div
-  class="h-[600px] flex flex-col bg-gray-800/90 rounded-lg border border-gray-700/30 shadow-lg"
+  class="flex flex-col bg-gray-800/90 rounded-lg border border-gray-700/30 shadow-lg h-[70vh]"
 >
   <div class="p-4 border-b border-gray-700/30">
     <h2 class="text-xl font-bold text-white">Komentarze</h2>
@@ -210,16 +210,18 @@
       class="flex items-center gap-2"
       on:submit|preventDefault={handleAddComment}
     >
-      <div class="flex-1">
+      <div class="flex-1 min-w-0">
         <Input
           bind:value={newCommentText}
           placeholder="Dodaj komentarz..."
           className="text-sm"
         />
       </div>
-      <Button variant="accent" icon={Send} disabled={!newCommentText.trim()}>
-        <span class="sr-only">Wyślij</span>
-      </Button>
+      <div class="flex-shrink-0">
+        <Button variant="accent" icon={Send} disabled={!newCommentText.trim()}>
+          <span class="sr-only">Wyślij</span>
+        </Button>
+      </div>
     </form>
   </div>
 </div>

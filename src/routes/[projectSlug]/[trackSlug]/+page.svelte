@@ -137,7 +137,7 @@
 <div class="flex-1 flex flex-col lg:flex-row gap-6 p-4">
   <div class="w-full lg:w-2/3">
     <div
-      class="bg-gray-800/90 rounded-lg p-4 sm:p-6 border border-gray-700/30 shadow-lg h-full"
+      class="bg-gray-800/90 rounded-lg p-4 sm:p-6 border border-gray-700/30 shadow-lg"
     >
       <div class="mb-8">
         <div class="flex flex-col items-start gap-2 mb-4">
