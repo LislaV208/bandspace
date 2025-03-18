@@ -132,10 +132,9 @@
   });
 </script>
 
-<!-- <Breadcrumbs project={data.project} recording={data.recording} /> -->
-
-<div class="flex-1 flex flex-col lg:flex-row gap-6 p-4">
-  <div class="w-full lg:w-2/3">
+<Breadcrumbs project={data.project} recording={data.recording} />
+<div class="flex-1 flex flex-col lg:flex-row gap-6 px-4 pt-8">
+  <div class="lg:w-7/12">
     <div
       class="bg-gray-800/90 rounded-lg p-4 sm:p-6 border border-gray-700/30 shadow-lg"
     >
@@ -261,7 +260,7 @@
     </div>
   </div>
 
-  <div class="w-full lg:w-1/3">
+  <div class="lg:w-5/12">
     <TrackComments />
   </div>
 </div>
