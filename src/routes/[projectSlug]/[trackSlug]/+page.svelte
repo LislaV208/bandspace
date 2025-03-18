@@ -1,6 +1,16 @@
 <script lang="ts">
   import Breadcrumbs from "$lib/components/Breadcrumbs.svelte";
-  import { Download, FastForward, Pause, Play, Rewind } from "lucide-svelte";
+  import TrackComments from "$lib/components/tracks/comment/TrackComments.svelte";
+  import Button from "$lib/components/ui/Button.svelte";
+  import Input from "$lib/components/ui/Input.svelte";
+  import {
+    Download,
+    FastForward,
+    Pause,
+    Play,
+    Rewind,
+    Send,
+  } from "lucide-svelte";
   import { onMount } from "svelte";
   import type { PageProps } from "./$types";
 
@@ -122,139 +132,138 @@
   });
 </script>
 
-<Breadcrumbs project={data.project} recording={data.recording} />
-<div class="max-w-3xl mx-auto px-4 py-6">
-  <div
-    class="bg-gray-800/90 rounded-lg p-6 border border-gray-700/30 shadow-lg"
-  >
-    <!-- Track Info -->
-    <div class="mb-8">
-      <div class="flex flex-col items-start gap-2 mb-4">
-        <h1 class="text-3xl font-bold text-white mb-1">
-          {track.name}
-        </h1>
-        <p class="text-lg text-gray-400">{data.project.name}</p>
-      </div>
+<!-- <Breadcrumbs project={data.project} recording={data.recording} /> -->
 
-      <div class="flex flex-wrap items-center justify-between gap-4">
-        <div class="text-sm text-gray-500 flex flex-wrap items-center gap-3">
-          <span
-            >Dodano przez: {track.uploaded_by.name ||
-              track.uploaded_by.email ||
-              "-"}</span
-          >
-          <span class="hidden sm:inline">•</span>
-          <span>{new Date(track.created_at).toLocaleString()}</span>
+<div class="flex-1 flex">
+  <div class="w-full">
+    <div
+      class=" bg-gray-800/90 rounded-lg p-6 border border-gray-700/30 shadow-lg max-w-2xl mx-auto"
+    >
+      <div class="mb-8">
+        <div class="flex flex-col items-start gap-2 mb-4">
+          <h1 class="text-3xl font-bold text-white mb-1">
+            {track.name}
+          </h1>
+          <p class="text-lg text-gray-400">{data.project.name}</p>
         </div>
 
-        <button
-          class="p-2 text-gray-400 hover:text-white bg-gray-700/40 hover:bg-gray-700/70 rounded-md transition-all flex items-center gap-2"
-          title="Download track"
-          onclick={async () => {
-            const { data, error } = await supabase.storage
-              .from("project_files")
-              .download(track.storage_file_path);
-            if (error) {
-              console.error("Error downloading file:", error);
-              return;
-            }
-            const url = URL.createObjectURL(data);
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = track.name;
-            link.click();
-            URL.revokeObjectURL(url);
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div class="text-sm text-gray-500 flex flex-wrap items-center gap-3">
+            <span
+              >Dodano przez: {track.uploaded_by.name ||
+                track.uploaded_by.email ||
+                "-"}</span
+            >
+            <span class="hidden sm:inline">•</span>
+            <span>{new Date(track.created_at).toLocaleString()}</span>
+          </div>
+
+          <button
+            class="p-2 text-gray-400 hover:text-white bg-gray-700/40 hover:bg-gray-700/70 rounded-md transition-all flex items-center gap-2"
+            title="Download track"
+            onclick={async () => {
+              const { data, error } = await supabase.storage
+                .from("project_files")
+                .download(track.storage_file_path);
+              if (error) {
+                console.error("Error downloading file:", error);
+                return;
+              }
+              const url = URL.createObjectURL(data);
+              const link = document.createElement("a");
+              link.href = url;
+              link.download = track.name;
+              link.click();
+              URL.revokeObjectURL(url);
+            }}
+          >
+            <Download size={20} />
+            <span class="text-sm">Pobierz</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        {#if audioUrl}
+          <audio
+            bind:this={audioElement}
+            src={audioUrl}
+            preload="metadata"
+            ontimeupdate={handleTimeUpdate}
+            onloadedmetadata={handleMetadataLoaded}
+            onended={handleAudioEnded}
+            onplay={handlePlayStateChange}
+            onpause={handlePlayStateChange}
+            onerror={handleError}
+            hidden
+          ></audio>
+        {/if}
+
+        <div
+          class="relative h-2 bg-gray-700/40 rounded-full cursor-pointer overflow-hidden mt-6"
+          onclick={seek}
+          role="slider"
+          aria-label="Audio progress"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow={progress}
+          tabindex="0"
+          onkeydown={(e) => {
+            if (e.key === "ArrowRight") skipForward();
+            if (e.key === "ArrowLeft") skipBackward();
           }}
         >
-          <Download size={20} />
-          <span class="text-sm">Pobierz</span>
-        </button>
-      </div>
-    </div>
+          <div
+            class="absolute top-0 left-0 h-full bg-blue-500 rounded-full transition-all duration-100"
+            style="width: {progress}%"
+          ></div>
+        </div>
 
-    <!-- Audio Player -->
-    <div class="space-y-4">
-      <!-- Ukryty element audio -->
-      {#if audioUrl}
-        <audio
-          bind:this={audioElement}
-          src={audioUrl}
-          preload="metadata"
-          ontimeupdate={handleTimeUpdate}
-          onloadedmetadata={handleMetadataLoaded}
-          onended={handleAudioEnded}
-          onplay={handlePlayStateChange}
-          onpause={handlePlayStateChange}
-          onerror={handleError}
-          hidden
-        ></audio>
-      {/if}
+        <div class="flex justify-between text-sm text-gray-400">
+          <span>{currentTime}</span>
+          <span>{duration}</span>
+        </div>
 
-      <!-- Timeline -->
-      <div
-        class="relative h-2 bg-gray-700/40 rounded-full cursor-pointer overflow-hidden mt-6"
-        onclick={seek}
-        role="slider"
-        aria-label="Audio progress"
-        aria-valuemin="0"
-        aria-valuemax="100"
-        aria-valuenow={progress}
-        tabindex="0"
-        onkeydown={(e) => {
-          if (e.key === "ArrowRight") skipForward();
-          if (e.key === "ArrowLeft") skipBackward();
-        }}
-      >
-        <div
-          class="absolute top-0 left-0 h-full bg-blue-500 rounded-full transition-all duration-100"
-          style="width: {progress}%"
-        ></div>
-      </div>
+        <div class="flex items-center justify-center gap-5 mt-4">
+          <button
+            class="p-2 text-gray-400 hover:text-white hover:bg-gray-700/40 rounded-full transition-all"
+            onclick={skipBackward}
+            title="Cofnij 10 sekund"
+          >
+            <Rewind />
+          </button>
 
-      <!-- Time and Duration -->
-      <div class="flex justify-between text-sm text-gray-400">
-        <span>{currentTime}</span>
-        <span>{duration}</span>
-      </div>
+          <button
+            class="w-14 h-14 flex items-center justify-center bg-blue-500 hover:bg-blue-600 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/40 shadow-md"
+            onclick={togglePlayback}
+            title={isPlaying ? "Pauza" : "Odtwórz"}
+          >
+            {#if isPlaying}
+              <Pause />
+            {:else}
+              <Play />
+            {/if}
+          </button>
 
-      <!-- Controls -->
-      <div class="flex items-center justify-center gap-5 mt-4">
-        <button
-          class="p-2 text-gray-400 hover:text-white hover:bg-gray-700/40 rounded-full transition-all"
-          onclick={skipBackward}
-          title="Cofnij 10 sekund"
-        >
-          <Rewind />
-        </button>
-
-        <button
-          class="w-14 h-14 flex items-center justify-center bg-blue-500 hover:bg-blue-600 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/40 shadow-md"
-          onclick={togglePlayback}
-          title={isPlaying ? "Pauza" : "Odtwórz"}
-        >
-          {#if isPlaying}
-            <Pause />
-          {:else}
-            <Play />
-          {/if}
-        </button>
-
-        <button
-          class="p-2 text-gray-400 hover:text-white hover:bg-gray-700/40 rounded-full transition-all"
-          onclick={skipForward}
-          title="Przewiń 10 sekund"
-        >
-          <FastForward />
-        </button>
+          <button
+            class="p-2 text-gray-400 hover:text-white hover:bg-gray-700/40 rounded-full transition-all"
+            onclick={skipForward}
+            title="Przewiń 10 sekund"
+          >
+            <FastForward />
+          </button>
+        </div>
       </div>
     </div>
   </div>
 
-  {#if loadError}
-    <div
-      class="mt-4 p-4 bg-red-500/20 border border-red-500/40 rounded-lg text-red-300 text-sm"
-    >
-      {loadError}
-    </div>
-  {/if}
+  <TrackComments />
 </div>
+
+{#if loadError}
+  <div
+    class="mt-4 p-4 bg-red-500/20 border border-red-500/40 rounded-lg text-red-300 text-sm"
+  >
+    {loadError}
+  </div>
+{/if}
