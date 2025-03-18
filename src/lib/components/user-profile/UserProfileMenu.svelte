@@ -6,7 +6,7 @@
   import { getAuthState } from "$lib/state/auth-state.svelte";
   import type { User } from "$lib/types/user";
   import { LogOut, Pencil, UserIcon } from "lucide-svelte";
-  import toast, { Toaster } from "svelte-french-toast";
+  import toast from "svelte-french-toast";
 
   const { user }: { user: User } = $props();
   const authState = getAuthState();
@@ -14,10 +14,11 @@
   let isEditProfileModalOpen = $state(false);
 </script>
 
-<Toaster />
+<!-- <Toaster /> -->
 <PopupMenu>
-  {#snippet triggerContent()}
-    <div
+  {#snippet triggerContent(onclick)}
+    <button
+      {onclick}
       class="p-3 hover:bg-gray-700/80 rounded-full transition-all duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-500/40 flex items-center justify-center"
     >
       {#if user?.avatar_url}
@@ -29,14 +30,16 @@
       {:else}
         <UserIcon size={32} />
       {/if}
+    </button>
+  {/snippet}
+  {#snippet staticContent()}
+    <div class="px-4 py-3 border-b border-gray-600">
+      <div class="font-medium truncate">
+        {user?.name || user?.email}
+      </div>
+      <div class="text-sm text-gray-300 truncate">{user?.email}</div>
     </div>
   {/snippet}
-  <div class="px-4 py-3 border-b border-gray-600">
-    <div class="font-medium truncate">
-      {user?.name || user?.email}
-    </div>
-    <div class="text-sm text-gray-300 truncate">{user?.email}</div>
-  </div>
   <PopupMenuOption
     icon={Pencil}
     text="Edytuj profil"

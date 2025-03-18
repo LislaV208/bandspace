@@ -3,7 +3,8 @@
   import type { Snippet } from "svelte";
 
   let {
-    primary,
+    variant = "normal",
+    primary = false,
     icon,
     isLoading,
     fullWidth,
@@ -11,6 +12,7 @@
     children,
     ...props
   }: {
+    variant?: "normal" | "accent" | "danger";
     primary?: boolean;
     icon?: any;
     isLoading?: boolean;
@@ -22,9 +24,14 @@
 
   const IconComponent = $derived(icon);
 
-  let color = primary
-    ? "bg-blue-600 hover:bg-blue-500"
-    : "bg-slate-800 hover:bg-slate-700";
+  variant = primary ? "accent" : variant;
+
+  let color =
+    variant === "accent"
+      ? "bg-blue-600 hover:bg-blue-500"
+      : variant === "danger"
+        ? "bg-red-600 hover:bg-red-500"
+        : "bg-slate-800 hover:bg-slate-700";
 </script>
 
 <button

@@ -2,14 +2,19 @@
   import { enhance } from "$app/forms";
   import { goto } from "$app/navigation";
   import Breadcrumbs from "$lib/components/Breadcrumbs.svelte";
+  import DeleteProjectModal from "$lib/components/projects/DeleteProjectModal.svelte";
+  import LeaveProjectModal from "$lib/components/projects/LeaveProjectModal.svelte";
+  import ProjectInviteModal from "$lib/components/projects/ProjectInviteModal.svelte";
+  import ProjectMembersModal from "$lib/components/projects/ProjectMembersModal.svelte";
+  import DeleteTrackModal from "$lib/components/tracks/DeleteTrackModal.svelte";
   import NoTracksView from "$lib/components/tracks/NoTracksView.svelte";
   import Button from "$lib/components/ui/Button.svelte";
   import PopupMenu from "$lib/components/ui/popup/PopupMenu.svelte";
   import PopupMenuOption from "$lib/components/ui/popup/PopupMenuOption.svelte";
+  import type { Track } from "$lib/types/track";
   import { DataTable } from "@careswitch/svelte-data-table";
   import {
     FileMusic,
-    Link2,
     ListMusic,
     Loader2,
     LogOut,
@@ -19,22 +24,19 @@
     Trash2,
     Users,
   } from "lucide-svelte";
-  import { onMount } from "svelte";
   import toast, { Toaster } from "svelte-french-toast";
   import { fade, slide } from "svelte/transition";
   import type { PageProps } from "./$types";
 
   let isDeleting = $state(false);
-  let isLeavingProject = $state(false);
-  let trackToDelete: (typeof data.tracks)[0] | null = $state(null);
+  let trackToDelete: Track | null = $state(null);
+  let isDeleteTrackModalOpen = $state(false);
   let songName = $state("");
   let selectedFile = $state<File | null>(null);
   let isDragging = $state(false);
   let isUploading = $state(false);
   let isLeaveModalOpen = $state(false);
-  let isProjectMenuOpen = $state(false);
   let isDeleteProjectModalOpen = $state(false);
-  let isDeletingProject = $state(false);
   let isUsersModalOpen = $state(false);
 
   function handleFileSelect(event: Event) {
@@ -127,113 +129,13 @@
 
   let isCreateModalOpen = $state(false);
   let isInviteModalOpen = $state(false);
-  let inviteUrl = $state("");
-  let isCopied = $state(false);
-
-  function openLeaveModal() {
-    isLeaveModalOpen = true;
-    isProjectMenuOpen = false;
-  }
-
-  function closeLeaveModal() {
-    isLeaveModalOpen = false;
-  }
 
   function openDeleteProjectModal() {
     isDeleteProjectModalOpen = true;
-    closeProjectMenu();
   }
 
   function closeDeleteProjectModal() {
     isDeleteProjectModalOpen = false;
-  }
-
-  function openUsersModal() {
-    isUsersModalOpen = true;
-    closeProjectMenu();
-  }
-
-  function closeUsersModal() {
-    isUsersModalOpen = false;
-  }
-
-  function toggleProjectMenu(event: Event) {
-    event.stopPropagation();
-    isProjectMenuOpen = !isProjectMenuOpen;
-  }
-
-  function closeProjectMenu() {
-    isProjectMenuOpen = false;
-  }
-
-  // Obsługa kliknięcia poza menu aby je zamknąć
-  onMount(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (isProjectMenuOpen) {
-        const target = event.target as HTMLElement;
-        const menuContainer = document.getElementById("project-menu-container");
-
-        if (menuContainer && !menuContainer.contains(target)) {
-          isProjectMenuOpen = false;
-        }
-      }
-    };
-
-    document.addEventListener("click", handleClickOutside);
-
-    return () => {
-      document.removeEventListener("click", handleClickOutside);
-    };
-  });
-
-  async function leaveProject() {
-    try {
-      isLeavingProject = true;
-
-      const response = await fetch("/api/project-invites", {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          project_id: data.project.id,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          errorData.message || "Błąd podczas opuszczania projektu"
-        );
-      }
-
-      const responseData = await response.json();
-
-      // Wyświetl komunikat o powodzeniu
-      toast.success(responseData.message || "Pomyślnie opuszczono projekt", {
-        position: "bottom-right",
-        duration: 3000,
-      });
-
-      // Przekieruj do strony głównej po opuszczeniu projektu
-      goto("/");
-    } catch (error) {
-      console.error("Error leaving project:", error);
-
-      // Wyświetl komunikat o błędzie
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Nie udało się opuścić projektu",
-        {
-          position: "bottom-right",
-          duration: 5000,
-        }
-      );
-
-      isLeavingProject = false;
-      closeLeaveModal();
-    }
   }
 
   function openCreateModal() {
@@ -247,72 +149,6 @@
       selectedFile = null;
     }
   }
-
-  function openInviteModal() {
-    isInviteModalOpen = true;
-    // Jeśli nie ma jeszcze wygenerowanego linku, generujemy go automatycznie
-    if (!inviteUrl) {
-      generateInviteLink();
-    }
-  }
-
-  function closeInviteModal() {
-    isInviteModalOpen = false;
-    isCopied = false;
-  }
-
-  async function generateInviteLink() {
-    try {
-      inviteUrl = "";
-      const response = await fetch("/api/project-invites", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          project_id: data.project.id,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Błąd podczas generowania linku");
-      }
-
-      const inviteData = await response.json();
-      inviteUrl = inviteData.invite_url;
-      isCopied = false;
-    } catch (error) {
-      console.error("Error generating invite link:", error);
-      toast.error("Nie udało się wygenerować linku zapraszającego", {
-        position: "bottom-right",
-      });
-    }
-  }
-
-  function copyInviteLink() {
-    if (inviteUrl) {
-      navigator.clipboard
-        .writeText(inviteUrl)
-        .then(() => {
-          isCopied = true;
-          toast.success("Link skopiowany do schowka", {
-            position: "bottom-right",
-            duration: 3000,
-          });
-
-          // Reset stanu po 3 sekundach
-          setTimeout(() => {
-            isCopied = false;
-          }, 3000);
-        })
-        .catch(() => {
-          toast.error("Nie udało się skopiować linku", {
-            position: "bottom-right",
-          });
-        });
-    }
-  }
 </script>
 
 <Toaster />
@@ -323,21 +159,23 @@
   <Breadcrumbs project={data.project} />
 
   <div class="flex flex-col sm:flex-row w-full sm:w-auto gap-4">
-    <Button icon={Share2} onclick={openInviteModal}>Zaproś do projektu</Button>
+    <Button icon={Share2} onclick={() => (isInviteModalOpen = true)}
+      >Zaproś do projektu</Button
+    >
 
     <PopupMenu>
-      {#snippet triggerContent()}
-        <Button icon={Settings}></Button>
+      {#snippet triggerContent(onclick)}
+        <Button icon={Settings} {onclick}></Button>
       {/snippet}
       <PopupMenuOption
         icon={Users}
         text="Członkowie projektu"
-        onclick={openUsersModal}
+        onclick={() => (isUsersModalOpen = true)}
       />
       <PopupMenuOption
         icon={LogOut}
         text="Opuść projekt"
-        onclick={openLeaveModal}
+        onclick={() => (isLeaveModalOpen = true)}
       />
       <PopupMenuOption
         icon={Trash2}
@@ -347,84 +185,6 @@
       />
     </PopupMenu>
 
-    <div class="relative" id="project-menu-container">
-      {#if isProjectMenuOpen}
-        <div
-          class="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-gray-800 ring-1 ring-black ring-opacity-5 divide-y divide-gray-700 z-50"
-          transition:fade={{ duration: 150 }}
-        >
-          <div class="py-1" role="none">
-            <button
-              onclick={openUsersModal}
-              class="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white flex items-center gap-2"
-              role="menuitem"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-              </svg>
-              Członkowie projektu
-            </button>
-            <button
-              onclick={openLeaveModal}
-              class="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white flex items-center gap-2"
-              role="menuitem"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                <polyline points="16 17 21 12 16 7"></polyline>
-                <line x1="21" y1="12" x2="9" y2="12"></line>
-              </svg>
-              Opuść projekt
-            </button>
-            <button
-              onclick={openDeleteProjectModal}
-              class="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-red-400 flex items-center gap-2"
-              role="menuitem"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M3 6h18"></path>
-                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-              </svg>
-              Usuń projekt
-            </button>
-          </div>
-        </div>
-      {/if}
-    </div>
     {#if data.tracks.length !== 0}
       <button
         onclick={openCreateModal}
@@ -587,6 +347,7 @@
                         onclick={(e) => {
                           e.stopPropagation();
                           trackToDelete = track;
+                          isDeleteTrackModalOpen = true;
                         }}
                         title="Usuń utwór"
                       >
@@ -610,89 +371,6 @@
     </div>
   {/if}
 </div>
-
-{#if isInviteModalOpen}
-  <div
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 backdrop-blur-sm z-50"
-    transition:fade={{ duration: 300 }}
-  >
-    <div
-      class="bg-gray-800 rounded-lg p-6 w-full max-w-xl"
-      role="dialog"
-      aria-labelledby="invite-modal-title"
-      aria-modal="true"
-      tabindex="-1"
-      transition:slide={{ duration: 300 }}
-    >
-      <h2 id="invite-modal-title" class="text-xl font-bold mb-6">
-        Zaproś do projektu
-      </h2>
-
-      <div class="space-y-4 mb-6">
-        <p class="text-gray-300">
-          Skopiuj link zapraszający i udostępnij go osobom, które chcesz
-          zaprosić do współpracy przy projekcie <span class="font-semibold"
-            >{project.name}</span
-          >.
-        </p>
-
-        <div class="bg-gray-700 p-3 rounded-lg flex items-center">
-          <input
-            type="text"
-            readonly
-            class="bg-transparent flex-1 outline-none text-sm"
-            value={inviteUrl}
-          />
-          <button
-            class="ml-2 p-2 text-gray-300 hover:text-white hover:bg-gray-600 rounded transition-colors"
-            title="Kopiuj link"
-            disabled={!inviteUrl}
-            onclick={copyInviteLink}
-            aria-label="Kopiuj link zapraszający"
-          >
-            {#if !inviteUrl}
-              <Loader2 class="animate-spin text-blue-400" size={18} />
-            {:else if isCopied}
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="text-green-400"
-                ><polyline points="20 6 9 17 4 12"></polyline></svg
-              >
-            {:else}
-              <Link2 size={18} />
-            {/if}
-          </button>
-        </div>
-        <div class="flex items-center justify-center text-sm mt-4">
-          <span class="text-gray-400">Problem z linkiem?</span>
-          <button
-            onclick={generateInviteLink}
-            class="ml-2 text-blue-400 hover:text-blue-300 transition-colors"
-          >
-            Wygeneruj nowy
-          </button>
-        </div>
-      </div>
-
-      <div class="flex justify-end">
-        <button
-          onclick={closeInviteModal}
-          class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded transition-colors"
-        >
-          Powrót
-        </button>
-      </div>
-    </div>
-  </div>
-{/if}
 
 {#if isCreateModalOpen}
   <div
@@ -867,252 +545,15 @@
   </div>
 {/if}
 
-<!-- Delete Confirmation Modal -->
-{#if trackToDelete}
-  <form
-    action="?/deleteTrack"
-    method="POST"
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 backdrop-blur-sm"
-    transition:fade
-    onsubmit={() => {
-      isDeleting = true;
-    }}
-  >
-    <input type="hidden" name="id" value={trackToDelete.id} />
-    <div
-      class="bg-gray-800 rounded-lg p-6 w-full max-w-md border border-gray-700/50"
-      transition:slide
-    >
-      <h2 class="text-xl font-bold mb-4">Usuń utwór</h2>
-      <p class="text-gray-300 mb-6">
-        Czy na pewno chcesz usunąć "{trackToDelete.name}". Tej czynności nie
-        można cofnąć.
-      </p>
-      <div class="flex space-x-4">
-        <button
-          class="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={isDeleting}
-        >
-          {#if isDeleting}
-            <Loader2 class="animate-spin mx-auto" size={20} />
-          {:else}
-            Usuń
-          {/if}
-        </button>
-        <button
-          type="button"
-          class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
-          onclick={() => (trackToDelete = null)}
-        >
-          Anuluj
-        </button>
-      </div>
-    </div>
-  </form>
-{/if}
-
-<!-- Leave Project Confirmation Modal -->
-{#if isLeaveModalOpen}
-  <div
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 backdrop-blur-sm z-50"
-    transition:fade
-  >
-    <div
-      class="bg-gray-800 rounded-lg p-6 w-full max-w-md border border-gray-700/50"
-      transition:slide
-    >
-      <h2 class="text-xl font-bold mb-4">Opuść projekt</h2>
-      <p class="text-gray-300 mb-6">
-        Czy na pewno chcesz opuścić projekt
-        <span class="font-semibold">{project.name}</span>?
-      </p>
-      <div class="flex space-x-4">
-        <button
-          class="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          onclick={leaveProject}
-          disabled={isLeavingProject}
-        >
-          {#if isLeavingProject}
-            <Loader2 class="animate-spin mx-auto" size={20} />
-          {:else}
-            Opuść projekt
-          {/if}
-        </button>
-        <button
-          class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
-          onclick={closeLeaveModal}
-          disabled={isLeavingProject}
-        >
-          Anuluj
-        </button>
-      </div>
-    </div>
-  </div>
-{/if}
-
-<!-- Delete Project Confirmation Modal -->
-{#if isDeleteProjectModalOpen}
-  <div
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 backdrop-blur-sm z-50"
-    transition:fade={{ duration: 300 }}
-  >
-    <div
-      class="bg-gray-800 rounded-lg p-6 w-full max-w-md border border-gray-700/50"
-      transition:slide={{ duration: 300 }}
-    >
-      <h2 class="text-xl font-bold mb-4">Usuń projekt</h2>
-      <p class="text-gray-300 mb-6">
-        Czy na pewno chcesz usunąć projekt
-        <span class="font-semibold">{data.project.name}</span>? Tej czynności
-        nie można cofnąć. Wszystkie pliki projektu i dane zostaną trwale
-        usunięte.
-      </p>
-      <form
-        action="?/deleteProject"
-        method="POST"
-        class="flex space-x-4"
-        use:enhance={() => {
-          isDeletingProject = true;
-          return async ({ result, update }) => {
-            if (result.type === "error") {
-              toast.error(
-                result.error?.message ||
-                  "Wystąpił błąd podczas usuwania projektu",
-                {
-                  position: "bottom-right",
-                }
-              );
-              isDeletingProject = false;
-              closeDeleteProjectModal();
-            }
-
-            update();
-          };
-        }}
-      >
-        <input type="hidden" name="id" value={data.project.id} />
-        <input type="hidden" name="slug" value={data.project.slug} />
-        <button
-          type="submit"
-          class="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-          disabled={isDeletingProject}
-        >
-          {#if isDeletingProject}
-            <Loader2 class="animate-spin" size={20} />
-          {:else}
-            Usuń projekt
-          {/if}
-        </button>
-        <button
-          type="button"
-          class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
-          onclick={closeDeleteProjectModal}
-        >
-          Anuluj
-        </button>
-      </form>
-    </div>
-  </div>
-{/if}
-
-<!-- Project Users Modal -->
-{#if isUsersModalOpen}
-  <div
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 backdrop-blur-sm z-50"
-    transition:fade={{ duration: 300 }}
-  >
-    <div class="bg-gray-800 rounded-lg p-6 w-full max-w-md" transition:slide>
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-xl font-bold">Członkowie projektu</h2>
-        <button
-          onclick={closeUsersModal}
-          class="text-gray-400 hover:text-gray-300 transition-colors"
-          aria-label="Zamknij modal"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-      </div>
-
-      <div class="space-y-4 max-h-96 overflow-y-auto pr-2">
-        {#if projectUsers && projectUsers.length > 0}
-          <ul class="space-y-3">
-            {#each projectUsers as projectUser}
-              <li
-                class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-700 transition-colors"
-              >
-                <div
-                  class="h-10 w-10 rounded-full flex items-center justify-center text-white text-sm font-medium overflow-hidden"
-                >
-                  {#if projectUser.user.avatar_url}
-                    <img
-                      src={projectUser.user.avatar_url}
-                      alt={projectUser.user.name || projectUser.user.email}
-                      class="h-full w-full object-cover"
-                      aria-label="Obrazek użytkownika"
-                    />
-                  {:else}
-                    {(projectUser.user.name ||
-                      projectUser.user.email ||
-                      "?")[0].toUpperCase()}
-                  {/if}
-                </div>
-                <div class="overflow-hidden">
-                  <div class="font-medium truncate">
-                    {projectUser.user.name || "Bez nazwy"}
-                  </div>
-                  <div class="text-sm text-gray-400 truncate">
-                    {projectUser.user.email}
-                  </div>
-                </div>
-              </li>
-            {/each}
-          </ul>
-        {:else}
-          <div class="text-center text-gray-400 py-8">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="48"
-              height="48"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="mx-auto mb-4"
-            >
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-              <circle cx="9" cy="7" r="4"></circle>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-            </svg>
-            <p>Brak użytkowników w projekcie</p>
-          </div>
-        {/if}
-      </div>
-
-      <div class="mt-6 flex justify-center">
-        <button
-          onclick={closeUsersModal}
-          class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
-          aria-label="Zamknij modal użytkowników"
-        >
-          Powrót
-        </button>
-      </div>
-    </div>
-  </div>
-{/if}
+<ProjectInviteModal {project} bind:isOpen={isInviteModalOpen} />
+<ProjectMembersModal bind:isOpen={isUsersModalOpen} {projectUsers} />
+<LeaveProjectModal {project} bind:isOpen={isLeaveModalOpen} />
+<DeleteProjectModal {project} bind:isOpen={isDeleteProjectModalOpen} />
+<DeleteTrackModal
+  track={trackToDelete}
+  bind:isOpen={isDeleteTrackModalOpen}
+  onClose={() => {
+    trackToDelete = null;
+    isDeleteTrackModalOpen = false;
+  }}
+/>

@@ -33,7 +33,7 @@ export const load: PageServerLoad = async ({ locals: { supabase, user } }) => {
   for (const project of transformedData) {
     const { data: tracks, error: tracksError } = await supabase
       .from("tracks")
-      .select("id, name, created_at")
+      .select()
       .eq("project_id", project.id)
       .order("created_at", { ascending: false })
       .limit(3);

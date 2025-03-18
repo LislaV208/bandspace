@@ -10,8 +10,6 @@
   let userName = $state(user?.name || "");
   let isLoading = $state(false);
 
-  $inspect(isOpen);
-
   async function updateProfile() {
     if (!userName.trim()) {
       toast.error("Nazwa nie może być pusta", { position: "bottom-right" });
@@ -65,30 +63,28 @@
 <Toaster />
 
 <Modal bind:isOpen title="Edytuj profil">
-  <div class="space-y-6">
-    <div>
-      <label
-        for="displayName"
-        class="block text-sm font-medium text-gray-300 mb-1"
-      >
-        Nazwa użytkownika
-      </label>
-      <Input
-        id="displayName"
-        type="text"
-        bind:value={userName}
-        placeholder="Wprowadź swoją nazwę"
-        disabled={isLoading}
-      />
-      <p class="text-xs text-gray-400 mt-1">
-        Ta nazwa będzie widoczna dla innych użytkowników aplikacji.
-      </p>
-    </div>
+  <div>
+    <label
+      for="displayName"
+      class="block text-sm font-medium text-gray-300 mb-1"
+    >
+      Nazwa użytkownika
+    </label>
+    <Input
+      id="displayName"
+      type="text"
+      bind:value={userName}
+      placeholder="Wprowadź swoją nazwę"
+      disabled={isLoading}
+    />
+    <p class="text-xs text-gray-400 mt-1">
+      Ta nazwa będzie widoczna dla innych użytkowników aplikacji.
+    </p>
+  </div>
 
-    <div class="flex justify-end space-x-3 pt-4">
-      <Button primary fullWidth {isLoading} onclick={updateProfile}
-        >Zapisz zmiany</Button
-      >
-    </div>
+  <div class="flex justify-end space-x-3 pt-4">
+    <Button primary fullWidth {isLoading} onclick={updateProfile}
+      >Zapisz zmiany</Button
+    >
   </div>
 </Modal>

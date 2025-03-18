@@ -63,7 +63,7 @@
               <a href="/"> BandSpace </a>
             </button>
           </div>
-          <div class="flex items-center space-x-4">
+          <div class="flex items-center">
             <UserProfileMenu {user} />
           </div>
         </div>
