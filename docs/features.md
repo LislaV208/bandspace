@@ -81,7 +81,10 @@
 ## 8. Profil użytkownika
 - Edycja nazwy użytkownika
 
+## 9. Komentarze do utworu
+- Dodawanie komentarzy do utworu
+
 
 ## BACKLOG:
-  - Notatki/komentarze do utworu
+  - komentarze do utworu - ulepszenie
   - Foldery i/lub tagi

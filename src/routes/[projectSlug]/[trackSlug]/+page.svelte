@@ -3,6 +3,7 @@
   import TrackComments from "$lib/components/tracks/comment/TrackComments.svelte";
   import Button from "$lib/components/ui/Button.svelte";
   import Input from "$lib/components/ui/Input.svelte";
+  import { setSupabaseContext } from "$lib/supabase-context";
   import {
     Download,
     FastForward,
@@ -16,6 +17,8 @@
 
   const { data }: PageProps = $props();
   const { supabase, track } = data;
+
+  setSupabaseContext(supabase);
 
   // Stan odtwarzania
   let isPlaying = $state(false);
@@ -261,7 +264,7 @@
   </div>
 
   <div class="lg:w-5/12">
-    <TrackComments />
+    <TrackComments trackId={track.id} comments={track.comments} />
   </div>
 </div>
 

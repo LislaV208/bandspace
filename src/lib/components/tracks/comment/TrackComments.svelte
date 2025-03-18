@@ -1,16 +1,30 @@
 <script lang="ts">
   import Button from "$lib/components/ui/Button.svelte";
   import Input from "$lib/components/ui/Input.svelte";
+  import { getAuthState } from "$lib/state/auth-state.svelte";
+  import { getSupabaseContext } from "$lib/supabase-context";
   import type { TrackComment } from "$lib/types/track_comment";
   import { formatDistanceToNow } from "date-fns";
   import { pl } from "date-fns/locale";
-  import { MessageCircleDashedIcon, Send } from "lucide-svelte";
+  import { Loader2, MessageCircleDashedIcon, Send } from "lucide-svelte";
 
-  // Przykładowe dane komentarzy
-  const mockComments: TrackComment[] = [];
+  let { trackId, comments }: { trackId: number; comments: TrackComment[] } =
+    $props();
+
+  // Sortowanie komentarzy od najnowszych do najstarszych
+  comments = comments
+    ? [...comments].sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      )
+    : [];
+
+  const supabase = getSupabaseContext();
+  const user = getAuthState().user;
+
+  let sendingComment = $state(false);
 
   // Stan komponentu
-  let comments = $state<TrackComment[]>(mockComments);
   let newCommentText = $state("");
   let currentTimestamp = $state<number | null>(null);
 
@@ -30,34 +44,33 @@
   /**
    * Handles adding a new comment
    */
-  function handleAddComment(): void {
+  async function handleAddComment(): Promise<void> {
     if (!newCommentText.trim()) return;
 
-    // W rzeczywistej implementacji wysłalibyśmy komentarz do API
-    const newComment: TrackComment = {
-      id: Date.now(), // tymczasowe ID
-      content: newCommentText,
-      created_at: new Date().toISOString(),
-      user: {
-        id: "current-user", // w rzeczywistości pobralibyśmy ID zalogowanego użytkownika
-        name: "Użytkownik Bieżący",
-        email: "current@example.com",
-        avatar_url: null,
-        created_at: new Date().toISOString(),
-      },
-    };
+    sendingComment = true;
 
+    const { data: newComment, error } = await supabase
+      .from("track_comments")
+      .insert({
+        content: newCommentText,
+        track_id: trackId,
+        user_id: user!.id,
+        created_at: new Date().toISOString(),
+      })
+      .select("*, user:user_id(*)")
+      .single();
+
+    sendingComment = false;
+
+    if (error) {
+      console.error("Error adding comment:", error);
+      return;
+    }
+
+    // Dodajemy nowy komentarz do listy i sortujemy ponownie
     comments = [newComment, ...comments];
     newCommentText = "";
     currentTimestamp = null;
-  }
-
-  /**
-   * Sets the current timestamp for a new comment
-   * @param seconds - Timestamp in seconds
-   */
-  function setCurrentTimestamp(seconds: number): void {
-    currentTimestamp = seconds;
   }
 
   /**
@@ -97,20 +110,32 @@
         <p>Brak komentarzy. Dodaj pierwszy!</p>
       </div>
     {:else}
-      <div class="space-y-5">
+      <div class="">
         {#each comments as comment (comment.id)}
           <div
             class="group hover:bg-gray-700/20 rounded-lg p-3 -mx-3 transition-colors"
           >
             <div class="flex gap-3">
-              <div
-                class="flex-shrink-0 w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-medium"
-              >
-                {getUserInitials(comment.user)}
-              </div>
+              {#if comment.user.avatar_url}
+                <div
+                  class="flex-shrink-0 w-10 h-10 rounded-full overflow-hidden"
+                >
+                  <img
+                    src={comment.user.avatar_url}
+                    alt={comment.user.name || comment.user.email}
+                    class="w-full h-full object-cover"
+                  />
+                </div>
+              {:else}
+                <div
+                  class="flex-shrink-0 w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-medium"
+                >
+                  {getUserInitials(comment.user)}
+                </div>
+              {/if}
 
               <div class="flex-grow">
-                <div class="flex flex-wrap items-center gap-2 mb-1">
+                <div class="flex justify-between items-center gap-2 mb-1">
                   <span class="font-medium text-white">
                     {comment.user.name || comment.user.email}
                   </span>
@@ -145,10 +170,21 @@
           bind:value={newCommentText}
           placeholder="Dodaj komentarz..."
           className="text-sm"
+          on:keydown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey && newCommentText.trim()) {
+              e.preventDefault();
+              handleAddComment();
+            }
+          }}
         />
       </div>
       <div class="flex-shrink-0">
-        <Button variant="accent" icon={Send} disabled={!newCommentText.trim()}>
+        <Button
+          variant="accent"
+          icon={sendingComment ? Loader2 : Send}
+          disabled={!newCommentText.trim() || sendingComment}
+          class={sendingComment ? "animate-spin" : ""}
+        >
           <span class="sr-only">Wyślij</span>
         </Button>
       </div>

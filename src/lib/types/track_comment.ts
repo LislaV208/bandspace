@@ -3,6 +3,6 @@ import type { User } from "./user";
 
 type dbTrackComment = Database["public"]["Tables"]["track_comments"]["Row"];
 
-export type TrackComment = Omit<dbTrackComment, "track_id" | "user_id"> & {
+export type TrackComment = Omit<dbTrackComment, "user_id"> & {
   user: User;
 };
