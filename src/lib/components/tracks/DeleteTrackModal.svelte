@@ -12,9 +12,6 @@
   }: { isOpen: boolean; track: Track | null; onClose: () => void } = $props();
 
   let isLoading = $state(false);
-
-  $inspect(track);
-  $inspect(isOpen);
 </script>
 
 <Toaster />
@@ -39,7 +36,7 @@
           );
           isLoading = false;
         } else {
-          update();
+          await update();
           onClose?.();
         }
       };

@@ -8,6 +8,7 @@
     title,
     isLoading,
     maxWidth = "max-w-md",
+    hideTitle,
     onClose,
     children,
   }: {
@@ -15,6 +16,7 @@
     title?: string;
     isLoading?: boolean;
     maxWidth?: string;
+    hideTitle?: boolean;
     onClose?: () => void;
     children?: Snippet;
   } = $props();
@@ -44,12 +46,14 @@
       class="bg-gray-800 rounded-lg p-6 w-full {maxWidth} relative"
       transition:slide
     >
-      <div class="flex flex-row justify-between items-center mb-6">
-        <h2 class="text-xl font-bold">{title}</h2>
-        <button onclick={closeModal}>
-          <XIcon />
-        </button>
-      </div>
+      {#if !hideTitle}
+        <div class="flex flex-row justify-between items-center mb-6">
+          <h2 class="text-xl font-bold">{title}</h2>
+          <button onclick={closeModal}>
+            <XIcon />
+          </button>
+        </div>
+      {/if}
       {@render children?.()}
     </div>
   </div>

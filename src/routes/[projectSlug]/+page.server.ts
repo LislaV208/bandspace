@@ -160,8 +160,6 @@ export const actions = {
     }
 
     console.log("usunieto rekord z bazy danych");
-
-    redirect(303, `/${params.projectSlug}`);
   },
 
   // Usuwanie projektu

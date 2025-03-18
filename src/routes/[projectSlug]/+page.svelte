@@ -7,10 +7,12 @@
   import ProjectInviteModal from "$lib/components/projects/ProjectInviteModal.svelte";
   import ProjectMembersModal from "$lib/components/projects/ProjectMembersModal.svelte";
   import DeleteTrackModal from "$lib/components/tracks/DeleteTrackModal.svelte";
+  import NewTrackModal from "$lib/components/tracks/NewTrackModal.svelte";
   import NoTracksView from "$lib/components/tracks/NoTracksView.svelte";
   import Button from "$lib/components/ui/Button.svelte";
   import PopupMenu from "$lib/components/ui/popup/PopupMenu.svelte";
   import PopupMenuOption from "$lib/components/ui/popup/PopupMenuOption.svelte";
+  import { setSupabaseContext } from "$lib/supabase-context";
   import type { Track } from "$lib/types/track";
   import { DataTable } from "@careswitch/svelte-data-table";
   import {
@@ -24,11 +26,19 @@
     Trash2,
     Users,
   } from "lucide-svelte";
+  import { setContext } from "svelte";
   import toast, { Toaster } from "svelte-french-toast";
-  import { fade, slide } from "svelte/transition";
+  import {
+    blur,
+    crossfade,
+    draw,
+    fade,
+    fly,
+    scale,
+    slide,
+  } from "svelte/transition";
   import type { PageProps } from "./$types";
 
-  let isDeleting = $state(false);
   let trackToDelete: Track | null = $state(null);
   let isDeleteTrackModalOpen = $state(false);
   let songName = $state("");
@@ -38,35 +48,6 @@
   let isLeaveModalOpen = $state(false);
   let isDeleteProjectModalOpen = $state(false);
   let isUsersModalOpen = $state(false);
-
-  function handleFileSelect(event: Event) {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      const file = input.files[0];
-      if (file.type.startsWith("audio/")) {
-        selectedFile = file;
-        songName = file.name.split(".").slice(0, -1).join(".");
-        console.log("songName:", songName);
-      } else {
-        toast.error("Wybierz plik audio (MP3, WAV, itp.)", {
-          position: "bottom-right",
-        });
-        input.value = "";
-      }
-    }
-  }
-
-  function handleDragOver(event: DragEvent) {
-    event.preventDefault();
-    event.stopPropagation();
-    isDragging = true;
-  }
-
-  function handleDragLeave(event: DragEvent) {
-    event.preventDefault();
-    event.stopPropagation();
-    isDragging = false;
-  }
 
   function handleDrop(event: DragEvent) {
     event.preventDefault();
@@ -114,6 +95,8 @@
   const project = data.project;
   const projectUsers = data.projectUsers;
 
+  setSupabaseContext(supabase);
+
   // Inicjalizacja DataTable dla listy utworów
   const table = new DataTable({
     data: data.tracks,
@@ -129,14 +112,6 @@
 
   let isCreateModalOpen = $state(false);
   let isInviteModalOpen = $state(false);
-
-  function openDeleteProjectModal() {
-    isDeleteProjectModalOpen = true;
-  }
-
-  function closeDeleteProjectModal() {
-    isDeleteProjectModalOpen = false;
-  }
 
   function openCreateModal() {
     isCreateModalOpen = true;
@@ -159,10 +134,18 @@
   <Breadcrumbs project={data.project} />
 
   <div class="flex flex-col sm:flex-row w-full sm:w-auto gap-4">
+    {#if data.tracks.length !== 0}
+      <button
+        onclick={openCreateModal}
+        class="w-full h-10 sm:w-auto bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
+      >
+        <Plus size={20} />
+        Nowy utwór
+      </button>
+    {/if}
     <Button icon={Share2} onclick={() => (isInviteModalOpen = true)}
       >Zaproś do projektu</Button
     >
-
     <PopupMenu>
       {#snippet triggerContent(onclick)}
         <Button icon={Settings} {onclick}></Button>
@@ -181,19 +164,9 @@
         icon={Trash2}
         className="hover:text-red-500"
         text="Usuń projekt"
-        onclick={openDeleteProjectModal}
+        onclick={() => (isDeleteProjectModalOpen = true)}
       />
     </PopupMenu>
-
-    {#if data.tracks.length !== 0}
-      <button
-        onclick={openCreateModal}
-        class="w-full h-10 sm:w-auto bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
-      >
-        <Plus size={20} />
-        Nowy utwór
-      </button>
-    {/if}
   </div>
 </div>
 
@@ -372,179 +345,6 @@
   {/if}
 </div>
 
-{#if isCreateModalOpen}
-  <div
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 backdrop-blur-sm"
-    transition:fade={{ duration: 300 }}
-    ondragover={handleDragOver}
-    ondragleave={handleDragLeave}
-    ondrop={handleDrop}
-    role="presentation"
-  >
-    <div
-      class="bg-gray-800 rounded-lg p-6 w-full max-w-md ${isDragging
-        ? 'border-2 border-blue-400 bg-blue-950'
-        : ''}"
-      transition:slide={{ duration: 300 }}
-    >
-      {#if isUploading}
-        <!-- Stan uploadu (pokazywany podczas całego procesu) -->
-        <div class="space-y-2">
-          <!-- Faza przygotowania - krećący się spinner -->
-          <div class="flex flex-col items-center justify-center py-2">
-            <Loader2 class="animate-spin" size={30} />
-            <span class="text-sm text-gray-400">Trwa przesyłanie pliku...</span>
-            <p class="text-xs text-gray-500 mt-1">
-              Prosimy nie odświeżać strony
-            </p>
-          </div>
-        </div>
-      {:else}
-        <h2 class="text-xl font-bold mb-6">
-          {isDragging ? "Przeciągnij plik audio aby dodać" : "Dodaj plik audio"}
-        </h2>
-        <input
-          type="file"
-          id="audio-file"
-          name="file"
-          accept=".mp3,.wav,.m4a,.aac,.ogg,.flac,audio/mp3,audio/wav,audio/mpeg,audio/mp4,audio/aac,audio/ogg,audio/flac"
-          class="hidden"
-          onchange={handleFileSelect}
-        />
-        <form
-          action="?/create"
-          method="POST"
-          class="space-y-6"
-          use:enhance={async ({ formElement, formData }) => {
-            isUploading = true;
-            const file = selectedFile;
-            if (!file) {
-              isUploading = false;
-              songName = "";
-              selectedFile = null;
-              formElement.reset();
-              toast.error("No file selected", { position: "bottom-right" });
-              return;
-            }
-            // Sanitize the file name for storage
-            const storageFileName = file.name
-              .replace(/\.[^.]+$/, "") // Remove file extension
-              .replace(/[^a-zA-Z0-9._-]/g, "-") // Replace unsupported chars with underscore
-              .replace(/\s+/g, "-") // Replace spaces with underscore
-              .toLowerCase(); // Convert to lowercase for consistency
-
-            const timestamp = new Date().toISOString().replace(/[:.]/g, "");
-
-            // 1. zapisanie pliku do storage
-            const storagePath = `${project.slug}/${storageFileName}_${timestamp}`;
-            const { error: storageError } = await supabase.storage
-              .from("project_files")
-              .upload(storagePath, file, {
-                contentType: file.type,
-              });
-
-            formData.append("storage_file_path", storagePath);
-
-            if (storageError) {
-              console.error(
-                `Error uploading file in +page.svelte [${project.slug}]:`,
-                storageError
-              );
-              isUploading = false;
-              songName = "";
-              selectedFile = null;
-              formElement.reset();
-              toast.error(storageError.message, { position: "bottom-right" });
-              return;
-            }
-            return async ({ result }) => {
-              console.log("result:", result);
-
-              if (result.type === "error") {
-                await supabase.storage
-                  .from("project_files")
-                  .remove([storagePath]);
-
-                isUploading = false;
-                songName = "";
-                selectedFile = null;
-                formElement.reset();
-                toast.error(result.error.message, { position: "bottom-right" });
-              } else if (result.type === "redirect") {
-                goto(result.location);
-              }
-            };
-          }}
-        >
-          <input type="hidden" name="project_id" value={data.project.id} />
-          <input type="hidden" name="file_name" value={selectedFile?.name} />
-
-          <!-- Drag & Drop Area -->
-          <div
-            class="border-2 border-dashed ${isDragging
-              ? 'border-blue-400 bg-blue-900/20'
-              : 'border-gray-600'} rounded-lg p-6 flex flex-col items-center justify-center text-center transition-colors"
-          >
-            <div class="text-gray-400 mb-4">
-              {selectedFile
-                ? selectedFile.name
-                : "Kliknij poniższy przycisk lub przeciągnij plik"}
-            </div>
-            <button
-              type="button"
-              class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors flex items-center gap-2"
-              onclick={() => document.getElementById("audio-file")?.click()}
-              onkeydown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  document.getElementById("audio-file")?.click();
-                }
-              }}
-            >
-              <Plus size={16} />
-              {selectedFile ? "Zmień plik" : "Wybierz plik"}
-            </button>
-          </div>
-
-          <!-- Optional Name Input -->
-          <div>
-            <label
-              for="song-name"
-              class="block text-sm font-medium text-gray-300 mb-1"
-              >Nazwa utworu</label
-            >
-            <input
-              id="song-name"
-              type="text"
-              name="name"
-              bind:value={songName}
-              class="w-full px-4 py-2 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-            />
-          </div>
-
-          <!-- Action Buttons -->
-          <div class="flex gap-4">
-            <button
-              type="submit"
-              class="flex-1 px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-              disabled={!selectedFile}
-            >
-              Dodaj
-            </button>
-            <button
-              type="button"
-              class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
-              onclick={closeCreateModal}
-            >
-              Anuluj
-            </button>
-          </div>
-        </form>
-      {/if}
-    </div>
-  </div>
-{/if}
-
 <ProjectInviteModal {project} bind:isOpen={isInviteModalOpen} />
 <ProjectMembersModal bind:isOpen={isUsersModalOpen} {projectUsers} />
 <LeaveProjectModal {project} bind:isOpen={isLeaveModalOpen} />
@@ -553,7 +353,9 @@
   track={trackToDelete}
   bind:isOpen={isDeleteTrackModalOpen}
   onClose={() => {
-    trackToDelete = null;
     isDeleteTrackModalOpen = false;
+    trackToDelete = null;
+    window.location.reload();
   }}
 />
+<NewTrackModal bind:isOpen={isCreateModalOpen} {project} />
