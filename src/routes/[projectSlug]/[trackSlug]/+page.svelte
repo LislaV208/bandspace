@@ -134,10 +134,10 @@
 
 <!-- <Breadcrumbs project={data.project} recording={data.recording} /> -->
 
-<div class="flex-1 flex">
-  <div class="w-full">
+<div class="flex-1 flex flex-col lg:flex-row gap-6 p-4">
+  <div class="w-full lg:w-2/3">
     <div
-      class=" bg-gray-800/90 rounded-lg p-6 border border-gray-700/30 shadow-lg max-w-2xl mx-auto"
+      class="bg-gray-800/90 rounded-lg p-4 sm:p-6 border border-gray-700/30 shadow-lg h-full"
     >
       <div class="mb-8">
         <div class="flex flex-col items-start gap-2 mb-4">
@@ -147,15 +147,19 @@
           <p class="text-lg text-gray-400">{data.project.name}</p>
         </div>
 
-        <div class="flex flex-wrap items-center justify-between gap-4">
-          <div class="text-sm text-gray-500 flex flex-wrap items-center gap-3">
-            <span
-              >Dodano przez: {track.uploaded_by.name ||
+        <div
+          class="flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+        >
+          <div class="text-sm text-gray-500 flex flex-wrap items-center gap-2">
+            <span class="whitespace-nowrap">
+              Dodano przez: {track.uploaded_by.name ||
                 track.uploaded_by.email ||
-                "-"}</span
-            >
+                "-"}
+            </span>
             <span class="hidden sm:inline">•</span>
-            <span>{new Date(track.created_at).toLocaleString()}</span>
+            <span class="whitespace-nowrap"
+              >{new Date(track.created_at).toLocaleString()}</span
+            >
           </div>
 
           <button
@@ -224,24 +228,24 @@
           <span>{duration}</span>
         </div>
 
-        <div class="flex items-center justify-center gap-5 mt-4">
+        <div class="flex items-center justify-center gap-3 sm:gap-5 mt-4">
           <button
             class="p-2 text-gray-400 hover:text-white hover:bg-gray-700/40 rounded-full transition-all"
             onclick={skipBackward}
             title="Cofnij 10 sekund"
           >
-            <Rewind />
+            <Rewind size={18} />
           </button>
 
           <button
-            class="w-14 h-14 flex items-center justify-center bg-blue-500 hover:bg-blue-600 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/40 shadow-md"
+            class="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center bg-blue-500 hover:bg-blue-600 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/40 shadow-md"
             onclick={togglePlayback}
             title={isPlaying ? "Pauza" : "Odtwórz"}
           >
             {#if isPlaying}
-              <Pause />
+              <Pause size={20} />
             {:else}
-              <Play />
+              <Play size={20} />
             {/if}
           </button>
 
@@ -250,19 +254,21 @@
             onclick={skipForward}
             title="Przewiń 10 sekund"
           >
-            <FastForward />
+            <FastForward size={18} />
           </button>
         </div>
       </div>
     </div>
   </div>
 
-  <TrackComments />
+  <div class="w-full lg:w-1/3">
+    <TrackComments />
+  </div>
 </div>
 
 {#if loadError}
   <div
-    class="mt-4 p-4 bg-red-500/20 border border-red-500/40 rounded-lg text-red-300 text-sm"
+    class="mt-4 mx-4 p-4 bg-red-500/20 border border-red-500/40 rounded-lg text-red-300 text-sm"
   >
     {loadError}
   </div>
