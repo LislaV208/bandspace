@@ -171,6 +171,10 @@
   let seekDirection = $state<number | null>(null); // -1 dla przewijania w tył, 1 dla przewijania w przód, null gdy brak
   let seekStartTime = $state<number | null>(null); // Czas rozpoczęcia przytrzymania przycisku
   let clickTimeout = $state<number | null>(null); // Timeout dla rozróżnienia kliknięcia od przytrzymania
+  
+  // Zmienne do obsługi paska postępu
+  let isDraggingProgress = $state(false); // Czy użytkownik przeciąga pasek postępu
+  let wasPlayingBeforeDrag = $state(false); // Czy odtwarzanie było aktywne przed rozpoczęciem przeciągania
 
   // Funkcja do obsługi naciśnięcia przycisku przewijania
   function handleSeekStart(direction: number, e: MouseEvent | TouchEvent) {
@@ -262,6 +266,85 @@
     // Resetuj zmienne
     seekDirection = null;
     seekStartTime = null;
+  }
+  
+  // Funkcja do rozpoczęcia przeciągania paska postępu
+  function handleProgressBarStart(e: MouseEvent | TouchEvent) {
+    e.stopPropagation();
+    if (e instanceof TouchEvent) e.preventDefault();
+    
+    if (!audioElement || duration <= 0) return;
+    
+    // Zapisz, czy odtwarzanie było aktywne przed rozpoczęciem przeciągania
+    wasPlayingBeforeDrag = !audioElement.paused;
+    
+    // Ustaw flagę przeciągania i przewijania
+    isDraggingProgress = true;
+    isSeeking = true;
+    
+    // Aktualizuj pozycję na podstawie kliknięcia/dotknięcia
+    updateProgressPosition(e);
+  }
+  
+  // Funkcja do przeciągania paska postępu
+  function handleProgressBarMove(e: MouseEvent | TouchEvent) {
+    e.stopPropagation();
+    if (e instanceof TouchEvent) e.preventDefault();
+    
+    if (!isDraggingProgress || !audioElement || duration <= 0) return;
+    
+    // Aktualizuj pozycję na podstawie ruchu myszy/palca
+    updateProgressPosition(e);
+  }
+  
+  // Funkcja do zakończenia przeciągania paska postępu
+  function handleProgressBarEnd(e: MouseEvent | TouchEvent) {
+    e.stopPropagation();
+    if (e instanceof TouchEvent) e.preventDefault();
+    
+    if (!isDraggingProgress || !audioElement || duration <= 0) return;
+    
+    // Zastosuj ostateczną pozycję
+    if (tempTime !== null) {
+      audioElement.currentTime = tempTime;
+      tempTime = null;
+    }
+    
+    // Resetuj flagi
+    isDraggingProgress = false;
+    isSeeking = false;
+    
+    // Wznów odtwarzanie jeśli było aktywne przed rozpoczęciem przeciągania
+    if (wasPlayingBeforeDrag) {
+      audioElement.play();
+    }
+  }
+  
+  // Funkcja do aktualizacji pozycji na podstawie pozycji myszy/palca
+  function updateProgressPosition(e: MouseEvent | TouchEvent) {
+    if (!audioElement || !isDraggingProgress) return;
+    
+    const progressBar = e.currentTarget as HTMLElement;
+    const rect = progressBar.getBoundingClientRect();
+    
+    // Pobierz pozycję X myszy/palca
+    let clientX: number;
+    if (e instanceof MouseEvent) {
+      clientX = e.clientX;
+    } else {
+      // TouchEvent
+      clientX = e.touches[0].clientX;
+    }
+    
+    // Oblicz pozycję względną (0-1)
+    const relativePosition = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    
+    // Oblicz nowy czas na podstawie pozycji
+    tempTime = relativePosition * duration;
+    
+    // Aktualizuj wyświetlany czas i pasek postępu
+    currentTime = tempTime;
+    progress = relativePosition;
   }
 
   // Ładowanie audio przy pierwszym renderowaniu
@@ -586,7 +669,23 @@
             <span class="text-xs text-gray-400 w-8 text-right"
               >{formatTime(currentTime)}</span
             >
-            <div class="flex-1 h-2 bg-gray-700 rounded-full overflow-hidden">
+            <div 
+              class="flex-1 h-2 bg-gray-700 rounded-full overflow-hidden relative cursor-pointer"
+              role="slider"
+              aria-label="Pasek postępu utworu"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow="{Math.round(progress * 100)}"
+              tabindex="0"
+              onmousedown={(e) => handleProgressBarStart(e)}
+              onmousemove={(e) => handleProgressBarMove(e)}
+              onmouseup={(e) => handleProgressBarEnd(e)}
+              onmouseleave={(e) => handleProgressBarEnd(e)}
+              ontouchstart={(e) => handleProgressBarStart(e)}
+              ontouchmove={(e) => handleProgressBarMove(e)}
+              ontouchend={(e) => handleProgressBarEnd(e)}
+              ontouchcancel={(e) => handleProgressBarEnd(e)}
+            >
               <div
                 class="h-full bg-blue-500"
                 style="width: {progress * 100}%"
@@ -812,7 +911,21 @@
                   >{formatTime(currentTime)}</span
                 >
                 <div
-                  class="flex-1 h-1.5 bg-gray-700 rounded-full overflow-hidden"
+                  class="flex-1 h-1.5 bg-gray-700 rounded-full overflow-hidden relative cursor-pointer"
+                  role="slider"
+                  aria-label="Pasek postępu utworu"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                  aria-valuenow="{Math.round(progress * 100)}"
+                  tabindex="0"
+                  onmousedown={(e) => handleProgressBarStart(e)}
+                  onmousemove={(e) => handleProgressBarMove(e)}
+                  onmouseup={(e) => handleProgressBarEnd(e)}
+                  onmouseleave={(e) => handleProgressBarEnd(e)}
+                  ontouchstart={(e) => handleProgressBarStart(e)}
+                  ontouchmove={(e) => handleProgressBarMove(e)}
+                  ontouchend={(e) => handleProgressBarEnd(e)}
+                  ontouchcancel={(e) => handleProgressBarEnd(e)}
                 >
                   <div
                     class="h-full bg-blue-500"
