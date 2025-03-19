@@ -396,7 +396,7 @@
 
     <!-- Odtwarzacz audio na dole lewej kolumny -->
     <div
-      class="border-t border-gray-700/50 bg-gray-800/80 backdrop-blur-sm flex flex-col sm:flex-row items-center px-5 py-5 sm:py-4 shrink-0"
+      class="border-t border-gray-700/50 bg-gray-800/80 backdrop-blur-sm flex flex-col sm:flex-row items-center px-5 py-2 sm:py-4 shrink-0"
     >
       <!-- Układ mobilny (flex-col) / Układ desktopowy (flex-row) -->
       <div
