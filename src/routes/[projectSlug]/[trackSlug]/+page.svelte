@@ -90,7 +90,7 @@
   // Kategorie plików
   const categories = ["Wszystkie", "Demo", "Instrumenty", "Finał"];
   let selectedCategory = $state("Wszystkie");
-  
+
   // Stan widoczności panelu komentarzy na urządzeniach mobilnych
   let showMobileComments = $state(false);
 
@@ -137,7 +137,11 @@
 <!-- Główny kontener z flexbox dla układu dwukolumnowego -->
 <div class="flex flex-col lg:flex-row h-full bg-gray-900 overflow-hidden">
   <!-- Główna zawartość z odtwarzaczem na dole -->
-  <div class="flex-1 flex flex-col overflow-hidden {showMobileComments ? 'hidden lg:flex' : 'flex'}">
+  <div
+    class="flex-1 flex flex-col overflow-hidden {showMobileComments
+      ? 'hidden lg:flex'
+      : 'flex'}"
+  >
     <!-- Główna zawartość z przewijaniem -->
     <div
       class="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-500"
@@ -145,26 +149,45 @@
       <!-- Nagłówek strony -->
       <div class="p-4 sm:p-6">
         <!-- Breadcrumbs i przyciski akcji -->
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div
+          class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+        >
           <div class="flex-1">
             <Breadcrumbs project={data.project} recording={data.recording} />
           </div>
-          
-          <div class="flex flex-col xs:flex-row w-full sm:w-auto gap-2 mt-2 sm:mt-0">
+
+          <div
+            class="flex flex-col xs:flex-row w-full sm:w-auto gap-2 mt-2 sm:mt-0"
+          >
             <!-- Przycisk komentarzy (tylko na mobilnych i tabletach) -->
             <button
               class="lg:hidden flex items-center justify-center gap-2 py-2 px-3 sm:py-1.5 sm:px-2.5 w-full xs:w-auto bg-gray-700/50 hover:bg-gray-700 text-white rounded-md transition-colors"
-              onclick={() => showMobileComments = true}
+              onclick={() => (showMobileComments = true)}
               aria-label="Pokaż komentarze"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+                ></path>
               </svg>
               <span>Komentarze</span>
-              <span class="bg-blue-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">{comments.length}</span>
+              <span
+                class="bg-blue-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center"
+                >{comments.length}</span
+              >
             </button>
-            
-            <!-- Przycisk dodawania pliku -->  
+
+            <!-- Przycisk dodawania pliku -->
             <button
               class="flex items-center justify-center gap-2 py-2 px-3 sm:py-1.5 sm:px-2.5 w-full xs:w-auto bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
               aria-label="Dodaj plik"
@@ -179,20 +202,21 @@
       <div class="container mx-auto p-4 sm:p-6 max-w-screen-xl">
         <!-- Filtrowanie po kategorii -->
         <div class="mb-6">
-          <div class="flex items-center gap-3 mb-2">
-            <h3 class="text-lg font-medium text-white">Pliki audio</h3>
-            <span class="text-gray-400 text-sm">({audioFiles.length})</span>
-          </div>
-          <div class="flex flex-wrap gap-2">
+          <div class="flex flex-wrap gap-3">
             {#each categories as category}
               <button
-                class="px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedCategory ===
+                class="relative px-4 py-2 rounded-full text-sm transition-all {selectedCategory ===
                 category
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-700/50 text-gray-300 hover:bg-gray-700 hover:text-white'}"
+                  ? 'text-white font-semibold'
+                  : 'text-gray-400 hover:text-white'}"
                 onclick={() => (selectedCategory = category)}
               >
                 {category}
+                {#if selectedCategory === category}
+                  <span
+                    class="absolute -bottom-1 left-0 right-0 h-0.5 bg-blue-400 mx-auto w-3/4 animate-fadeIn"
+                  ></span>
+                {/if}
               </button>
             {/each}
           </div>
@@ -372,35 +396,32 @@
 
     <!-- Odtwarzacz audio na dole lewej kolumny -->
     <div
-      class="h-24 border-t border-gray-700/50 bg-gray-800/80 backdrop-blur-sm flex items-center px-4 py-2 shrink-0"
+      class="border-t border-gray-700/50 bg-gray-800/80 backdrop-blur-sm flex flex-col sm:flex-row items-center px-5 py-5 sm:py-4 shrink-0"
     >
-      <div class="w-full flex items-center gap-4">
-        <!-- Informacje o utworze -->
-        <div class="flex items-center gap-3 w-1/4">
-          <!-- Miniatura utworu -->
-          <div
-            class="w-12 h-12 bg-gray-700 rounded flex-shrink-0 flex items-center justify-center overflow-hidden"
-          >
-            <div class="text-blue-400 text-xl">♪</div>
-          </div>
-
-          <!-- Tytuł i wykonawca -->
-          <div class="min-w-0">
-            <div class="text-white font-medium text-sm truncate">
-              {trackInfo.title}
+      <!-- Układ mobilny (flex-col) / Układ desktopowy (flex-row) -->
+      <div
+        class="w-full flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4"
+      >
+        <!-- Układ mobilny - standardowy -->
+        <div class="flex flex-col w-full gap-3 sm:hidden">
+          <!-- Informacje o utworze -->
+          <div class="flex items-center justify-center">
+            <div class="min-w-0 max-w-[250px]">
+              <div class="text-white font-medium text-sm truncate">
+                {trackInfo.title}
+              </div>
+              <div class="text-gray-400 text-xs truncate">
+                {trackInfo.artist}
+              </div>
             </div>
-            <div class="text-gray-400 text-xs truncate">{trackInfo.artist}</div>
           </div>
-        </div>
 
-        <!-- Kontrolki odtwarzacza -->
-        <div class="flex-1 flex flex-col items-center justify-center gap-1">
           <!-- Pasek postępu -->
-          <div class="w-full flex items-center gap-2 px-4">
+          <div class="w-full flex items-center gap-2">
             <span class="text-xs text-gray-400 w-8 text-right"
               >{formatTime(trackInfo.currentTime)}</span
             >
-            <div class="flex-1 h-1 bg-gray-700 rounded-full overflow-hidden">
+            <div class="flex-1 h-2 bg-gray-700 rounded-full overflow-hidden">
               <div
                 class="h-full bg-blue-500"
                 style="width: {(trackInfo.currentTime / trackInfo.duration) *
@@ -411,17 +432,18 @@
               >{formatTime(trackInfo.duration)}</span
             >
           </div>
+
           <!-- Przyciski kontrolne -->
-          <div class="flex items-center gap-3">
-            <!-- Poprzedni -->
+          <div class="flex items-center justify-center gap-5 py-2">
+            <!-- Przewiń do tyłu -->
             <button
-              class="text-gray-400 hover:text-white transition-colors p-1"
-              aria-label="Poprzedni utwór"
+              class="text-gray-400 hover:text-white transition-colors p-2"
+              aria-label="Przewiń do tyłu"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                width="18"
-                height="18"
+                width="24"
+                height="24"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -429,20 +451,20 @@
                 stroke-linecap="round"
                 stroke-linejoin="round"
               >
-                <polygon points="19 20 9 12 19 4 19 20"></polygon>
-                <line x1="5" y1="19" x2="5" y2="5"></line>
+                <polygon points="11 19 2 12 11 5 11 19"></polygon>
+                <polygon points="22 19 13 12 22 5 22 19"></polygon>
               </svg>
             </button>
 
             <!-- Odtwarzaj/Pauza -->
             <button
-              class="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-2 transition-colors"
+              class="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-3.5 transition-colors"
               aria-label="Odtwarzaj"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
+                width="26"
+                height="26"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -454,15 +476,15 @@
               </svg>
             </button>
 
-            <!-- Następny -->
+            <!-- Przewiń do przodu -->
             <button
-              class="text-gray-400 hover:text-white transition-colors p-1"
-              aria-label="Następny utwór"
+              class="text-gray-400 hover:text-white transition-colors p-2"
+              aria-label="Przewiń do przodu"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                width="18"
-                height="18"
+                width="24"
+                height="24"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -470,57 +492,149 @@
                 stroke-linecap="round"
                 stroke-linejoin="round"
               >
-                <polygon points="5 4 15 12 5 20 5 4"></polygon>
-                <line x1="19" y1="5" x2="19" y2="19"></line>
+                <polygon points="13 5 22 12 13 19 13 5"></polygon>
+                <polygon points="2 5 11 12 2 19 2 5"></polygon>
               </svg>
             </button>
           </div>
         </div>
 
-        <!-- Kontrolki dodatkowe -->
-        <div class="w-1/4 flex justify-end items-center gap-3">
-          <!-- Głośność -->
-          <div class="flex items-center gap-2">
-            <!-- Ikona głośności -->
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="text-gray-400"
-            >
-              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-              <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
-            </svg>
-            <!-- Pasek głośności -->
-            <div class="w-16 h-1 bg-gray-700 rounded-full overflow-hidden">
-              <div class="h-full bg-gray-400" style="width: 70%"></div>
+        <!-- Układ desktopowy - wszystko w jednej linii -->
+        <div class="hidden sm:flex w-full items-center justify-between gap-4">
+          <!-- Informacje o utworze -->
+          <div class="min-w-0 shrink-0">
+            <div class="text-white font-medium text-sm truncate">
+              {trackInfo.title}
+            </div>
+            <div class="text-gray-400 text-xs truncate">{trackInfo.artist}</div>
+          </div>
+
+          <!-- Kontrolki i progres zgrupowane razem -->
+          <div class="flex flex-1 justify-center max-w-7xl">
+            <div class="flex items-center w-full gap-4">
+              <!-- Przyciski kontrolne -->
+              <div class="flex items-center gap-4 shrink-0">
+                <!-- Przewiń do tyłu -->
+                <button
+                  class="text-gray-400 hover:text-white transition-colors p-1"
+                  aria-label="Przewiń do tyłu"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <polygon points="11 19 2 12 11 5 11 19"></polygon>
+                    <polygon points="22 19 13 12 22 5 22 19"></polygon>
+                  </svg>
+                </button>
+
+                <!-- Odtwarzaj/Pauza -->
+                <button
+                  class="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-3 transition-colors"
+                  aria-label="Odtwarzaj"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                  </svg>
+                </button>
+
+                <!-- Przewiń do przodu -->
+                <button
+                  class="text-gray-400 hover:text-white transition-colors p-1"
+                  aria-label="Przewiń do przodu"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <polygon points="13 5 22 12 13 19 13 5"></polygon>
+                    <polygon points="2 5 11 12 2 19 2 5"></polygon>
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Pasek postępu -->
+              <div class="flex-1 flex items-center gap-3">
+                <span class="text-sm text-gray-400 w-12 text-right"
+                  >{formatTime(trackInfo.currentTime)}</span
+                >
+                <div
+                  class="flex-1 h-1.5 bg-gray-700 rounded-full overflow-hidden"
+                >
+                  <div
+                    class="h-full bg-blue-500"
+                    style="width: {(trackInfo.currentTime /
+                      trackInfo.duration) *
+                      100}%"
+                  ></div>
+                </div>
+                <span class="text-sm text-gray-400 w-12"
+                  >{formatTime(trackInfo.duration)}</span
+                >
+              </div>
             </div>
           </div>
+
+          <!-- Pusty element dla zachowania układu -->
+          <div class="shrink-0 hidden lg:block"></div>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Panel komentarzy -->
-  <div class="lg:w-96 border-t lg:border-t-0 lg:border-l border-gray-800 h-full flex flex-col {!showMobileComments ? 'hidden lg:flex' : 'flex'}">
+  <div
+    class="lg:w-96 border-t lg:border-t-0 lg:border-l border-gray-800 h-full flex flex-col {!showMobileComments
+      ? 'hidden lg:flex'
+      : 'flex'}"
+  >
     <!-- Nagłówek panelu komentarzy -->
-    <div class="p-4 border-b border-gray-700/30 flex justify-between items-center">
+    <div
+      class="p-4 border-b border-gray-700/30 flex justify-between items-center"
+    >
       <h2 class="text-xl font-bold text-white">Komentarze</h2>
-      
+
       <!-- Przycisk powrotu (tylko na mobilnych i tabletach) -->
-      <button 
+      <button
         class="lg:hidden p-2 text-gray-400 hover:text-white transition-colors"
-        onclick={() => showMobileComments = false}
+        onclick={() => (showMobileComments = false)}
         aria-label="Powrót do plików audio"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
           <path d="M19 12H5"></path>
           <polyline points="12 19 5 12 12 5"></polyline>
         </svg>
