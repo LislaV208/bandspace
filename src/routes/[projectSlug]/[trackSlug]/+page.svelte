@@ -5,11 +5,14 @@
   import type { TrackCategory } from "$lib/types/track_category";
   import { format } from "date-fns";
   import { Plus, Send } from "lucide-svelte";
+  import { onMount } from "svelte";
+  import toast from "svelte-french-toast";
   import type { PageProps } from "./$types";
 
   const { data }: PageProps = $props();
 
   const {
+    supabase,
     track: { files },
   } = data;
 
@@ -24,6 +27,17 @@
   let commentError = $state<string | null>(null);
 
   let showMobileComments = $state(false);
+
+  // Stan odtwarzacza audio
+  let audioElement: HTMLAudioElement | null = $state(null);
+  let isPlaying = $state(false);
+  let audioUrl = $state<string | null>(null);
+  let currentTime = $state(0); // Aktualny czas w sekundach
+  let duration = $state(0); // Całkowita długość utworu w sekundach
+  let progress = $state(0); // Postęp odtwarzania (0-1)
+  let tempTime = $state<number | null>(null); // Tymczasowy czas przy przewijaniu
+  let seekInterval = $state<number | null>(null); // Identyfikator interwału przewijania
+  let isSeeking = $state(false); // Flaga wskazująca, czy użytkownik aktualnie przewija
 
   async function handleAddComment() {
     if (!commentInputValue.trim()) return;
@@ -60,6 +74,204 @@
       console.error("Błąd dodawania komentarza:", err);
     }
   }
+
+  async function loadAudio() {
+    if (!selectedFile) return;
+
+    isPlaying = false;
+
+    // Jeśli istnieje poprzedni element audio, zatrzymaj go
+    if (audioElement) {
+      audioElement.pause();
+      audioElement.src = "";
+    }
+
+    try {
+      const { data: audio, error: audioError } = await supabase.storage
+        .from("project_files")
+        .createSignedUrl(selectedFile.storage_path, 3600);
+
+      if (audioError) {
+        throw new Error(audioError.message || "Nie udało się załadować audio");
+      }
+
+      audioUrl = audio.signedUrl;
+
+      // Tworzenie nowego elementu audio
+      audioElement = new Audio(audioUrl);
+
+      // Dodanie obsługi zdarzeń
+      audioElement.addEventListener("loadedmetadata", () => {
+        duration = audioElement ? audioElement.duration : 0;
+        console.log("Długość utworu:", duration);
+      });
+
+      // Funkcja aktualizująca czas
+      const updateTimeDisplay = () => {
+        if (audioElement && !isSeeking) {
+          // Aktualizuj tylko gdy użytkownik nie przewija
+          currentTime = audioElement.currentTime;
+          progress = duration > 0 ? currentTime / duration : 0;
+        }
+      };
+
+      // Dodaj nasłuchiwanie na zdarzenie timeupdate
+      audioElement.addEventListener("timeupdate", updateTimeDisplay);
+
+      audioElement.addEventListener("ended", () => {
+        isPlaying = false;
+        progress = 0;
+        currentTime = 0;
+      });
+
+      audioElement.addEventListener("error", (e) => {
+        console.error("Błąd odtwarzania audio:", e);
+        toast.error("Wystąpił błąd podczas odtwarzania pliku audio", {
+          position: "bottom-right",
+        });
+        isPlaying = false;
+      });
+
+      toast.success("Plik audio załadowany pomyślnie", {
+        position: "bottom-right",
+      });
+    } catch (err) {
+      console.error("Błąd podczas ładowania audio:", err);
+      toast.error(
+        err instanceof Error ? err.message : "Nie udało się załadować audio",
+        {
+          position: "bottom-right",
+        }
+      );
+    }
+  }
+
+  // Funkcja do odtwarzania/pauzowania audio
+  function togglePlayPause() {
+    if (!audioElement) {
+      loadAudio();
+      return;
+    }
+
+    if (isPlaying) {
+      audioElement.pause();
+      isPlaying = false;
+    } else {
+      audioElement.play().catch((err) => {
+        console.error("Błąd odtwarzania:", err);
+        toast.error("Nie można odtworzyć pliku audio", {
+          position: "bottom-right",
+        });
+      });
+      isPlaying = true;
+    }
+  }
+
+  // Zmienne do śledzenia stanu przycisków
+  let seekDirection = $state<number | null>(null); // -1 dla przewijania w tył, 1 dla przewijania w przód, null gdy brak
+  let seekStartTime = $state<number | null>(null); // Czas rozpoczęcia przytrzymania przycisku
+  let clickTimeout = $state<number | null>(null); // Timeout dla rozróżnienia kliknięcia od przytrzymania
+
+  // Funkcja do obsługi naciśnięcia przycisku przewijania
+  function handleSeekStart(direction: number, e: MouseEvent | TouchEvent) {
+    e.stopPropagation();
+    if (e instanceof TouchEvent) e.preventDefault();
+
+    if (!audioElement || duration <= 0) return;
+
+    // Zapisz kierunek przewijania i czas rozpoczęcia
+    seekDirection = direction;
+    seekStartTime = Date.now();
+
+    // Ustaw timeout, aby rozróżnić kliknięcie od przytrzymania
+    if (clickTimeout) clearTimeout(clickTimeout);
+
+    clickTimeout = setTimeout(() => {
+      // Jeśli przycisk jest nadal wciśnięty po 200ms, rozpocznij ciągłe przewijanie
+      if (seekDirection !== null && seekStartTime !== null) {
+        // Zatrzymaj poprzedni interwał jeśli istnieje
+        if (seekInterval !== null) {
+          clearInterval(seekInterval);
+          seekInterval = null;
+        }
+
+        // Ustaw flagę przewijania
+        isSeeking = true;
+
+        // Ustaw tymczasowy czas na aktualny czas
+        tempTime = audioElement?.currentTime ?? 0;
+
+        // Rozpocznij interwał przewijania
+        seekInterval = setInterval(() => {
+          if (tempTime !== null) {
+            // Aktualizuj tymczasowy czas (0.5 sekundy na każde 100ms dla płynności)
+            tempTime = Math.max(
+              0,
+              Math.min(duration, tempTime + direction * 0.5)
+            );
+
+            // Aktualizuj wyświetlany czas i pasek postępu bez zmiany faktycznego czasu odtwarzania
+            currentTime = tempTime;
+            progress = duration > 0 ? tempTime / duration : 0;
+          }
+        }, 100) as unknown as number;
+      }
+    }, 200) as unknown as number;
+  }
+
+  // Funkcja do obsługi zwolnienia przycisku przewijania
+  function handleSeekEnd(e: MouseEvent | TouchEvent) {
+    e.stopPropagation();
+    if (e instanceof TouchEvent) e.preventDefault();
+
+    if (!audioElement || duration <= 0) return;
+
+    // Sprawdź, czy było to kliknięcie czy przytrzymanie
+    const wasClick = seekStartTime !== null && Date.now() - seekStartTime < 200;
+
+    // Wyczyść timeout jeśli istnieje
+    if (clickTimeout !== null) {
+      clearTimeout(clickTimeout);
+      clickTimeout = null;
+    }
+
+    // Zatrzymaj interwał jeśli istnieje
+    if (seekInterval !== null) {
+      clearInterval(seekInterval);
+      seekInterval = null;
+
+      // Jeśli było to przytrzymanie, zastosuj tymczasowy czas
+      if (tempTime !== null && !wasClick) {
+        audioElement.currentTime = tempTime;
+        tempTime = null;
+      }
+
+      // Resetuj flagę przewijania
+      isSeeking = false;
+    }
+    // Jeśli było to kliknięcie, przewiń o 5 sekund
+    else if (wasClick && seekDirection !== null) {
+      const seconds = seekDirection * 5; // 5 sekund w odpowiednim kierunku
+      const newTime = Math.max(
+        0,
+        Math.min(duration, audioElement.currentTime + seconds)
+      );
+      audioElement.currentTime = newTime;
+    }
+
+    // Resetuj zmienne
+    seekDirection = null;
+    seekStartTime = null;
+  }
+
+  // Ładowanie audio przy pierwszym renderowaniu
+  onMount(() => {
+    if (selectedFile) {
+      loadAudio();
+    }
+  });
+
+  // Usunięcie efektu, który powodował zapętlenie
 
   // Formatowanie czasu (mm:ss)
   function formatTime(seconds: number): string {
@@ -175,10 +387,33 @@
         <div class="space-y-3">
           {#each files.filter((file) => selectedCategory === null || file.category.id === selectedCategory.id) as file}
             <div
-              class="group relative bg-gray-800/50 hover:bg-gray-800/80 rounded-lg border border-gray-700/30 transition-all overflow-hidden"
+              class="group relative bg-gray-800/50 hover:bg-gray-800/80 rounded-lg border border-gray-700/30 transition-all overflow-hidden cursor-pointer"
+              onclick={() => {
+                if (selectedFile?.id !== file.id) {
+                  selectedFile = file;
+                  loadAudio();
+                }
+              }}
+              aria-label="Wybierz plik"
+              role="button"
+              tabindex="0"
+              onkeydown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  if (selectedFile?.id !== file.id) {
+                    selectedFile = file;
+                    loadAudio();
+                  }
+                }
+              }}
             >
-              <!-- Pasek boczny wskazujący kategorię pliku -->
-              <div class="absolute left-0 top-0 bottom-0 w-1"></div>
+              <!-- Pasek boczny wskazujący czy plik jest wybrany -->
+              <div
+                class="absolute left-0 top-0 bottom-0 w-1 {selectedFile?.id ===
+                file.id
+                  ? 'bg-blue-400'
+                  : ''}"
+              ></div>
 
               <!-- Główna zawartość -->
               <div class="pl-4 pr-3 py-3">
@@ -349,12 +584,16 @@
           <!-- Pasek postępu -->
           <div class="w-full flex items-center gap-2">
             <span class="text-xs text-gray-400 w-8 text-right"
-              >{formatTime(0)}</span
+              >{formatTime(currentTime)}</span
             >
             <div class="flex-1 h-2 bg-gray-700 rounded-full overflow-hidden">
-              <div class="h-full bg-blue-500" style="width: {0 * 100}%"></div>
+              <div
+                class="h-full bg-blue-500"
+                style="width: {progress * 100}%"
+              ></div>
             </div>
-            <span class="text-xs text-gray-400 w-8">{formatTime(0)}</span>
+            <span class="text-xs text-gray-400 w-8">{formatTime(duration)}</span
+            >
           </div>
 
           <!-- Przyciski kontrolne -->
@@ -363,6 +602,12 @@
             <button
               class="text-gray-400 hover:text-white transition-colors p-2"
               aria-label="Przewiń do tyłu"
+              onmousedown={(e) => handleSeekStart(-1, e)}
+              onmouseup={(e) => handleSeekEnd(e)}
+              onmouseleave={(e) => handleSeekEnd(e)}
+              ontouchstart={(e) => handleSeekStart(-1, e)}
+              ontouchend={(e) => handleSeekEnd(e)}
+              ontouchcancel={(e) => handleSeekEnd(e)}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -383,27 +628,53 @@
             <!-- Odtwarzaj/Pauza -->
             <button
               class="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-3.5 transition-colors"
-              aria-label="Odtwarzaj"
+              aria-label={isPlaying ? "Pauza" : "Odtwarzaj"}
+              onclick={togglePlayPause}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="26"
-                height="26"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <polygon points="5 3 19 12 5 21 5 3"></polygon>
-              </svg>
+              {#if isPlaying}
+                <!-- Ikona pauzy -->
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="26"
+                  height="26"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="6" y="4" width="4" height="16"></rect>
+                  <rect x="14" y="4" width="4" height="16"></rect>
+                </svg>
+              {:else}
+                <!-- Ikona odtwarzania -->
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="26"
+                  height="26"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+              {/if}
             </button>
 
             <!-- Przewiń do przodu -->
             <button
               class="text-gray-400 hover:text-white transition-colors p-2"
               aria-label="Przewiń do przodu"
+              onmousedown={(e) => handleSeekStart(1, e)}
+              onmouseup={(e) => handleSeekEnd(e)}
+              onmouseleave={(e) => handleSeekEnd(e)}
+              ontouchstart={(e) => handleSeekStart(1, e)}
+              ontouchend={(e) => handleSeekEnd(e)}
+              ontouchcancel={(e) => handleSeekEnd(e)}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -444,6 +715,12 @@
                 <button
                   class="text-gray-400 hover:text-white transition-colors p-1"
                   aria-label="Przewiń do tyłu"
+                  onmousedown={(e) => handleSeekStart(-1, e)}
+                  onmouseup={(e) => handleSeekEnd(e)}
+                  onmouseleave={(e) => handleSeekEnd(e)}
+                  ontouchstart={(e) => handleSeekStart(-1, e)}
+                  ontouchend={(e) => handleSeekEnd(e)}
+                  ontouchcancel={(e) => handleSeekEnd(e)}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -464,27 +741,53 @@
                 <!-- Odtwarzaj/Pauza -->
                 <button
                   class="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-3 transition-colors"
-                  aria-label="Odtwarzaj"
+                  aria-label={isPlaying ? "Pauza" : "Odtwarzaj"}
+                  onclick={togglePlayPause}
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="22"
-                    height="22"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                  </svg>
+                  {#if isPlaying}
+                    <!-- Ikona pauzy -->
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="22"
+                      height="22"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <rect x="6" y="4" width="4" height="16"></rect>
+                      <rect x="14" y="4" width="4" height="16"></rect>
+                    </svg>
+                  {:else}
+                    <!-- Ikona odtwarzania -->
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="22"
+                      height="22"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                  {/if}
                 </button>
 
                 <!-- Przewiń do przodu -->
                 <button
                   class="text-gray-400 hover:text-white transition-colors p-1"
                   aria-label="Przewiń do przodu"
+                  onmousedown={(e) => handleSeekStart(1, e)}
+                  onmouseup={(e) => handleSeekEnd(e)}
+                  onmouseleave={(e) => handleSeekEnd(e)}
+                  ontouchstart={(e) => handleSeekStart(1, e)}
+                  ontouchend={(e) => handleSeekEnd(e)}
+                  ontouchcancel={(e) => handleSeekEnd(e)}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -503,20 +806,22 @@
                 </button>
               </div>
 
-              <!-- Pasek postępu -->
+              <!-- Wyświetlanie czasu i pasek postępu -->
               <div class="flex-1 flex items-center gap-3">
                 <span class="text-sm text-gray-400 w-12 text-right"
-                  >{formatTime(0)}</span
+                  >{formatTime(currentTime)}</span
                 >
                 <div
                   class="flex-1 h-1.5 bg-gray-700 rounded-full overflow-hidden"
                 >
                   <div
                     class="h-full bg-blue-500"
-                    style="width: {0 * 100}%"
+                    style="width: {progress * 100}%"
                   ></div>
                 </div>
-                <span class="text-sm text-gray-400 w-12">{formatTime(0)}</span>
+                <span class="text-sm text-gray-400 w-12"
+                  >{formatTime(duration)}</span
+                >
               </div>
             </div>
           </div>
