@@ -282,10 +282,8 @@
     isDraggingProgress = true;
     isSeeking = true;
     
-    // Zatrzymaj odtwarzanie na czas przeciągania
-    if (wasPlayingBeforeDrag) {
-      audioElement.pause();
-    }
+    // Nie zatrzymujemy odtwarzania podczas przeciągania
+    // Odtwarzanie będzie kontynuowane w czasie rzeczywistym
     
     // Zapisz referencję do paska postępu
     progressBarElement = e.currentTarget as HTMLElement;
@@ -361,10 +359,7 @@
     isSeeking = false;
     progressBarElement = null; // Resetuj referencję do paska postępu
     
-    // Wznów odtwarzanie jeśli było aktywne przed rozpoczęciem przeciągania
-    if (wasPlayingBeforeDrag && audioElement) {
-      audioElement.play();
-    }
+    // Nie musimy wznawiać odtwarzania, ponieważ go nie zatrzymaliśmy
     
     // Usuń klasę CSS z ciała dokumentu
     document.body.classList.remove("no-select");
