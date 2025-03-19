@@ -1,6 +1,7 @@
 <script lang="ts">
   import Breadcrumbs from "$lib/components/Breadcrumbs.svelte";
   import Button from "$lib/components/ui/Button.svelte";
+  import FileUploadModal from "$lib/components/ui/FileUploadModal.svelte";
   import UserAvatar from "$lib/components/UserAvatar.svelte";
   import type { TrackCategory } from "$lib/types/track_category";
   import { format } from "date-fns";
@@ -38,6 +39,8 @@
   let tempTime = $state<number | null>(null); // Tymczasowy czas przy przewijaniu
   let seekInterval = $state<number | null>(null); // Identyfikator interwału przewijania
   let isSeeking = $state(false); // Flaga wskazująca, czy użytkownik aktualnie przewija
+
+  let isFileUploadModalOpen = $state(false);
 
   async function handleAddComment() {
     if (!commentInputValue.trim()) return;
@@ -272,22 +275,22 @@
   function handleProgressBarStart(e: MouseEvent | TouchEvent) {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (!audioElement || duration <= 0) return;
-    
+
     // Zapisz, czy odtwarzanie było aktywne przed rozpoczęciem przeciągania
     wasPlayingBeforeDrag = !audioElement.paused;
-    
+
     // Ustaw flagę przeciągania i przewijania
     isDraggingProgress = true;
     isSeeking = true;
-    
+
     // Nie zatrzymujemy odtwarzania podczas przeciągania
     // Odtwarzanie będzie kontynuowane w czasie rzeczywistym
-    
+
     // Zapisz referencję do paska postępu
     progressBarElement = e.currentTarget as HTMLElement;
-    
+
     // Aktualizuj pozycję na podstawie kliknięcia/dotknięcia
     let clientX: number;
     if (e instanceof MouseEvent) {
@@ -297,22 +300,24 @@
       clientX = e.touches[0].clientX;
     }
     updateProgressBarPosition(clientX);
-    
+
     // Dodaj klasę CSS do ciała dokumentu, aby zapobiec zaznaczaniu tekstu
     document.body.classList.add("no-select");
-    
+
     // Dodaj globalne nasłuchiwanie zdarzeń
     document.addEventListener("mousemove", handleProgressBarMove);
     document.addEventListener("mouseup", handleProgressBarEnd);
-    document.addEventListener("touchmove", handleProgressBarMove, { passive: false });
+    document.addEventListener("touchmove", handleProgressBarMove, {
+      passive: false,
+    });
     document.addEventListener("touchend", handleProgressBarEnd);
     document.addEventListener("touchcancel", handleProgressBarEnd);
   }
-  
+
   function handleProgressBarMove(e: MouseEvent | TouchEvent) {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (isDraggingProgress) {
       let clientX: number;
       if (e instanceof MouseEvent) {
@@ -324,13 +329,13 @@
       updateProgressBarPosition(clientX);
     }
   }
-  
+
   function handleProgressBarEnd(e: MouseEvent | TouchEvent) {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (!isDraggingProgress) return;
-    
+
     // Aktualizuj ostateczną pozycję
     let clientX: number;
     if (e instanceof MouseEvent) {
@@ -342,28 +347,28 @@
       // Jeśli nie możemy uzyskać pozycji, po prostu kończymy
       clientX = 0;
     }
-    
+
     // Tylko jeśli mamy poprawną pozycję X
     if (clientX > 0) {
       updateProgressBarPosition(clientX);
     }
-    
+
     // Zastosuj nową pozycję
     if (tempTime !== null && audioElement) {
       audioElement.currentTime = tempTime;
       tempTime = null;
     }
-    
+
     // Resetuj flagi
     isDraggingProgress = false;
     isSeeking = false;
     progressBarElement = null; // Resetuj referencję do paska postępu
-    
+
     // Nie musimy wznawiać odtwarzania, ponieważ go nie zatrzymaliśmy
-    
+
     // Usuń klasę CSS z ciała dokumentu
     document.body.classList.remove("no-select");
-    
+
     // Usuń globalne nasłuchiwanie zdarzeń
     document.removeEventListener("mousemove", handleProgressBarMove);
     document.removeEventListener("mouseup", handleProgressBarEnd);
@@ -371,22 +376,25 @@
     document.removeEventListener("touchend", handleProgressBarEnd);
     document.removeEventListener("touchcancel", handleProgressBarEnd);
   }
-  
+
   // Zmienna do przechowywania referencji do paska postępu
   let progressBarElement: HTMLElement | null = null;
 
   function updateProgressBarPosition(clientX: number) {
     if (!audioElement || !isDraggingProgress || !progressBarElement) return;
-    
+
     // Pobierz wymiary paska postępu
     const progressBarRect = progressBarElement.getBoundingClientRect();
-    
+
     // Oblicz pozycję względną (0-1)
-    const relativePosition = Math.max(0, Math.min(1, (clientX - progressBarRect.left) / progressBarRect.width));
-    
+    const relativePosition = Math.max(
+      0,
+      Math.min(1, (clientX - progressBarRect.left) / progressBarRect.width)
+    );
+
     // Oblicz nowy czas na podstawie pozycji
     tempTime = relativePosition * duration;
-    
+
     // Aktualizuj wyświetlany czas i pasek postępu
     currentTime = tempTime;
     progress = relativePosition;
@@ -407,6 +415,10 @@
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   }
+
+  async function uploadFile(file: File) {}
+
+  async function onFileUploaded() {}
 </script>
 
 <!-- Główny kontener z flexbox dla układu dwukolumnowego -->
@@ -466,6 +478,7 @@
             <button
               class="flex items-center justify-center gap-2 py-2 px-3 sm:py-1.5 sm:px-2.5 w-full xs:w-auto bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
               aria-label="Dodaj plik"
+              onclick={() => (isFileUploadModalOpen = true)}
             >
               <Plus size={18} />
               <span>Dodaj plik</span>
@@ -1097,6 +1110,12 @@
     </div>
   </div>
 </div>
+
+<FileUploadModal
+  bind:isOpen={isFileUploadModalOpen}
+  {uploadFile}
+  {onFileUploaded}
+/>
 
 <style>
   /* Styl zapobiegający zaznaczaniu tekstu podczas przeciągania paska postępu */
