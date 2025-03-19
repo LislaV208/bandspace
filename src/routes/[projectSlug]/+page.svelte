@@ -129,7 +129,7 @@
 <Toaster />
 
 <div
-  class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-6 sm:mb-8"
+  class="p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-6 sm:mb-8"
 >
   <Breadcrumbs project={data.project} />
 
@@ -170,7 +170,7 @@
   </div>
 </div>
 
-<div class="flex flex-col lg:flex-row my-4 gap-6">
+<div class="container mx-auto flex flex-col lg:flex-row my-4 gap-6">
   {#if data.tracks.length === 0}
     <NoTracksView onAddTrack={openCreateModal} />
   {:else}
@@ -180,7 +180,7 @@
         <div class="relative w-full max-w-md">
           <input
             type="text"
-            placeholder="Wyszukaj utwory..."
+            placeholder="Szukaj..."
             class="w-full px-3 py-2 bg-gray-800/70 border border-gray-700/50 rounded-md text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             bind:value={table.globalFilter}
           />
