@@ -171,11 +171,10 @@
   let seekDirection = $state<number | null>(null); // -1 dla przewijania w tył, 1 dla przewijania w przód, null gdy brak
   let seekStartTime = $state<number | null>(null); // Czas rozpoczęcia przytrzymania przycisku
   let clickTimeout = $state<number | null>(null); // Timeout dla rozróżnienia kliknięcia od przytrzymania
-  
+
   // Zmienne do obsługi paska postępu
   let isDraggingProgress = $state(false); // Czy użytkownik przeciąga pasek postępu
   let wasPlayingBeforeDrag = $state(false); // Czy odtwarzanie było aktywne przed rozpoczęciem przeciągania
-  let progressBarElement = $state<HTMLElement | null>(null); // Referencja do elementu paska postępu
 
   // Funkcja do obsługi naciśnięcia przycisku przewijania
   function handleSeekStart(direction: number, e: MouseEvent | TouchEvent) {
@@ -268,16 +267,13 @@
     seekDirection = null;
     seekStartTime = null;
   }
-  
-  // Funkcja do rozpoczęcia przeciągania paska postępu
+
+  // Funkcje do obsługi paska postępu
   function handleProgressBarStart(e: MouseEvent | TouchEvent) {
+    e.preventDefault();
     e.stopPropagation();
-    if (e instanceof TouchEvent) e.preventDefault();
     
     if (!audioElement || duration <= 0) return;
-    
-    // Zapisz referencję do elementu paska postępu
-    progressBarElement = e.currentTarget as HTMLElement;
     
     // Zapisz, czy odtwarzanie było aktywne przed rozpoczęciem przeciągania
     wasPlayingBeforeDrag = !audioElement.paused;
@@ -286,101 +282,15 @@
     isDraggingProgress = true;
     isSeeking = true;
     
-    // Aktualizuj pozycję na podstawie kliknięcia/dotknięcia
-    updateProgressPosition(e);
-    
-    // Dodaj globalne nasłuchiwanie zdarzeń na całym dokumencie
-    document.addEventListener('mousemove', handleGlobalMouseMove);
-    document.addEventListener('mouseup', handleGlobalMouseUp);
-    document.addEventListener('touchmove', handleGlobalTouchMove, { passive: false });
-    document.addEventListener('touchend', handleGlobalTouchEnd);
-    document.addEventListener('touchcancel', handleGlobalTouchEnd);
-  }
-  
-  // Globalne funkcje obsługi zdarzeń
-  function handleGlobalMouseMove(e: MouseEvent) {
-    if (isDraggingProgress && progressBarElement) {
-      e.preventDefault();
-      e.stopPropagation();
-      updateProgressPositionGlobal(e.clientX);
-    }
-  }
-  
-  function handleGlobalTouchMove(e: TouchEvent) {
-    if (isDraggingProgress && progressBarElement) {
-      e.preventDefault();
-      e.stopPropagation();
-      updateProgressPositionGlobal(e.touches[0].clientX);
-    }
-  }
-  
-  function handleGlobalMouseUp(e: MouseEvent) {
-    if (isDraggingProgress) {
-      e.preventDefault();
-      e.stopPropagation();
-      endProgressDrag();
-    }
-  }
-  
-  function handleGlobalTouchEnd(e: TouchEvent) {
-    if (isDraggingProgress) {
-      e.preventDefault();
-      e.stopPropagation();
-      endProgressDrag();
-    }
-  }
-  
-  // Funkcja do przeciągania paska postępu (lokalna - tylko dla zdarzeń na pasku)
-  function handleProgressBarMove(e: MouseEvent | TouchEvent) {
-    e.stopPropagation();
-    if (e instanceof TouchEvent) e.preventDefault();
-    
-    // Ta funkcja jest teraz tylko dla zdarzeń na samym pasku
-    // Główna logika jest w handleGlobalMouseMove i handleGlobalTouchMove
-  }
-  
-  // Funkcja do zakończenia przeciągania paska postępu (lokalna - tylko dla zdarzeń na pasku)
-  function handleProgressBarEnd(e: MouseEvent | TouchEvent) {
-    e.stopPropagation();
-    if (e instanceof TouchEvent) e.preventDefault();
-    
-    // Ta funkcja jest teraz tylko dla zdarzeń na samym pasku
-    // Główna logika jest w handleGlobalMouseUp i handleGlobalTouchEnd
-  }
-  
-  // Funkcja do zakończenia przeciągania paska postępu (globalna)
-  function endProgressDrag() {
-    if (!isDraggingProgress || !audioElement || duration <= 0) return;
-    
-    // Zastosuj ostateczną pozycję
-    if (tempTime !== null) {
-      audioElement.currentTime = tempTime;
-      tempTime = null;
-    }
-    
-    // Resetuj flagi
-    isDraggingProgress = false;
-    isSeeking = false;
-    progressBarElement = null;
-    
-    // Wznów odtwarzanie jeśli było aktywne przed rozpoczęciem przeciągania
+    // Zatrzymaj odtwarzanie na czas przeciągania
     if (wasPlayingBeforeDrag) {
-      audioElement.play();
+      audioElement.pause();
     }
     
-    // Usuń globalne nasłuchiwanie zdarzeń
-    document.removeEventListener('mousemove', handleGlobalMouseMove);
-    document.removeEventListener('mouseup', handleGlobalMouseUp);
-    document.removeEventListener('touchmove', handleGlobalTouchMove);
-    document.removeEventListener('touchend', handleGlobalTouchEnd);
-    document.removeEventListener('touchcancel', handleGlobalTouchEnd);
-  }
-  
-  // Funkcja do aktualizacji pozycji na podstawie pozycji X myszy/palca (lokalna)
-  function updateProgressPosition(e: MouseEvent | TouchEvent) {
-    if (!audioElement || !isDraggingProgress || !progressBarElement) return;
+    // Zapisz referencję do paska postępu
+    progressBarElement = e.currentTarget as HTMLElement;
     
-    // Pobierz pozycję X myszy/palca
+    // Aktualizuj pozycję na podstawie kliknięcia/dotknięcia
     let clientX: number;
     if (e instanceof MouseEvent) {
       clientX = e.clientX;
@@ -388,18 +298,96 @@
       // TouchEvent
       clientX = e.touches[0].clientX;
     }
+    updateProgressBarPosition(clientX);
     
-    updateProgressPositionGlobal(clientX);
+    // Dodaj klasę CSS do ciała dokumentu, aby zapobiec zaznaczaniu tekstu
+    document.body.classList.add("no-select");
+    
+    // Dodaj globalne nasłuchiwanie zdarzeń
+    document.addEventListener("mousemove", handleProgressBarMove);
+    document.addEventListener("mouseup", handleProgressBarEnd);
+    document.addEventListener("touchmove", handleProgressBarMove, { passive: false });
+    document.addEventListener("touchend", handleProgressBarEnd);
+    document.addEventListener("touchcancel", handleProgressBarEnd);
   }
   
-  // Funkcja do aktualizacji pozycji na podstawie pozycji X myszy/palca (globalna)
-  function updateProgressPositionGlobal(clientX: number) {
+  function handleProgressBarMove(e: MouseEvent | TouchEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (isDraggingProgress) {
+      let clientX: number;
+      if (e instanceof MouseEvent) {
+        clientX = e.clientX;
+      } else {
+        // TouchEvent
+        clientX = e.touches[0].clientX;
+      }
+      updateProgressBarPosition(clientX);
+    }
+  }
+  
+  function handleProgressBarEnd(e: MouseEvent | TouchEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!isDraggingProgress) return;
+    
+    // Aktualizuj ostateczną pozycję
+    let clientX: number;
+    if (e instanceof MouseEvent) {
+      clientX = e.clientX;
+    } else if (e.changedTouches && e.changedTouches.length > 0) {
+      // TouchEvent - używamy changedTouches dla touchend
+      clientX = e.changedTouches[0].clientX;
+    } else {
+      // Jeśli nie możemy uzyskać pozycji, po prostu kończymy
+      clientX = 0;
+    }
+    
+    // Tylko jeśli mamy poprawną pozycję X
+    if (clientX > 0) {
+      updateProgressBarPosition(clientX);
+    }
+    
+    // Zastosuj nową pozycję
+    if (tempTime !== null && audioElement) {
+      audioElement.currentTime = tempTime;
+      tempTime = null;
+    }
+    
+    // Resetuj flagi
+    isDraggingProgress = false;
+    isSeeking = false;
+    progressBarElement = null; // Resetuj referencję do paska postępu
+    
+    // Wznów odtwarzanie jeśli było aktywne przed rozpoczęciem przeciągania
+    if (wasPlayingBeforeDrag && audioElement) {
+      audioElement.play();
+    }
+    
+    // Usuń klasę CSS z ciała dokumentu
+    document.body.classList.remove("no-select");
+    
+    // Usuń globalne nasłuchiwanie zdarzeń
+    document.removeEventListener("mousemove", handleProgressBarMove);
+    document.removeEventListener("mouseup", handleProgressBarEnd);
+    document.removeEventListener("touchmove", handleProgressBarMove);
+    document.removeEventListener("touchend", handleProgressBarEnd);
+    document.removeEventListener("touchcancel", handleProgressBarEnd);
+  }
+  
+  // Zmienna do przechowywania referencji do paska postępu
+  let progressBarElement: HTMLElement | null = null;
+
+  function updateProgressBarPosition(clientX: number) {
     if (!audioElement || !isDraggingProgress || !progressBarElement) return;
     
-    const rect = progressBarElement.getBoundingClientRect();
+    // Pobierz wymiary paska postępu
+    const progressBarRect = progressBarElement.getBoundingClientRect();
     
-    // Oblicz pozycję względną (0-1), ograniczając do zakresu paska
-    const relativePosition = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    // Oblicz pozycję względną (0-1)
+    const relativePosition = Math.max(0, Math.min(1, (clientX - progressBarRect.left) / progressBarRect.width));
     
     // Oblicz nowy czas na podstawie pozycji
     tempTime = relativePosition * duration;
@@ -731,13 +719,13 @@
             <span class="text-xs text-gray-400 w-8 text-right"
               >{formatTime(currentTime)}</span
             >
-            <div 
+            <div
               class="flex-1 h-2 bg-gray-700 rounded-full overflow-hidden relative cursor-pointer"
               role="slider"
               aria-label="Pasek postępu utworu"
               aria-valuemin="0"
               aria-valuemax="100"
-              aria-valuenow="{Math.round(progress * 100)}"
+              aria-valuenow={Math.round(progress * 100)}
               tabindex="0"
               onmousedown={(e) => handleProgressBarStart(e)}
               onmousemove={(e) => handleProgressBarMove(e)}
@@ -978,16 +966,10 @@
                   aria-label="Pasek postępu utworu"
                   aria-valuemin="0"
                   aria-valuemax="100"
-                  aria-valuenow="{Math.round(progress * 100)}"
+                  aria-valuenow={Math.round(progress * 100)}
                   tabindex="0"
                   onmousedown={(e) => handleProgressBarStart(e)}
-                  onmousemove={(e) => handleProgressBarMove(e)}
-                  onmouseup={(e) => handleProgressBarEnd(e)}
-                  onmouseleave={(e) => handleProgressBarEnd(e)}
                   ontouchstart={(e) => handleProgressBarStart(e)}
-                  ontouchmove={(e) => handleProgressBarMove(e)}
-                  ontouchend={(e) => handleProgressBarEnd(e)}
-                  ontouchcancel={(e) => handleProgressBarEnd(e)}
                 >
                   <div
                     class="h-full bg-blue-500"
@@ -1120,3 +1102,13 @@
     </div>
   </div>
 </div>
+
+<style>
+  /* Styl zapobiegający zaznaczaniu tekstu podczas przeciągania paska postępu */
+  :global(.no-select) {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+  }
+</style>
