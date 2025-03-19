@@ -18,7 +18,7 @@ export const load: PageServerLoad = async ({
   const { data: track, error: trackError } = await supabase
     .from("tracks")
     .select(
-      "*, uploaded_by(name, email), comments:track_comments(*, user:user_id(*))"
+      "*, uploaded_by(*), comments:track_comments(*, user:user_id(*)), files:track_files(*, uploaded_by(*), category:category_id(*))"
     )
     .eq("project_id", project.id)
     .eq("slug", params.trackSlug)
@@ -28,5 +28,13 @@ export const load: PageServerLoad = async ({
     throw error(500, trackError.message);
   }
 
-  return { track };
+  const { data: categories, error: categoriesError } = await supabase
+    .from("track_categories")
+    .select("*");
+
+  if (categoriesError) {
+    throw error(500, categoriesError.message);
+  }
+
+  return { track, categories };
 };

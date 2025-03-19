@@ -1,95 +1,102 @@
 <script lang="ts">
   import Breadcrumbs from "$lib/components/Breadcrumbs.svelte";
   import Button from "$lib/components/ui/Button.svelte";
+  import type { TrackCategory } from "$lib/types/track_category";
+  import { format } from "date-fns";
   import { Plus, Send } from "lucide-svelte";
   import type { PageProps } from "./$types";
 
   const { data }: PageProps = $props();
 
+  const {
+    track: { files },
+  } = data;
+
+  const { categories } = data;
+
   // Przykładowe pliki audio dla utworu
-  const audioFiles = [
-    {
-      id: 1,
-      name: "Wokal główny - wersja finalna",
-      category: "Finał",
-      author: "Jan Kowalski",
-      date: "19.03.2025",
-      duration: 237, // w sekundach
-      size: "12.4 MB",
-      format: "WAV",
-      description: "Ostateczna wersja wokalu głównego po korekcie i kompresji",
-    },
-    {
-      id: 2,
-      name: "Demo - pierwsza wersja",
-      category: "Demo",
-      author: "Anna Nowak",
-      date: "15.03.2025",
-      duration: 232,
-      size: "8.7 MB",
-      format: "MP3",
-      description: "Pierwsza wersja demo nagrana na próbie",
-    },
-    {
-      id: 3,
-      name: "Gitara rytmiczna",
-      category: "Instrumenty",
-      author: "Tomasz Wieczorek",
-      date: "17.03.2025",
-      duration: 237,
-      size: "15.2 MB",
-      format: "WAV",
-      description: "Ścieżka gitary rytmicznej nagrana przez Tomka",
-    },
-    {
-      id: 4,
-      name: "Bas",
-      category: "Instrumenty",
-      author: "Karolina Lis",
-      date: "18.03.2025",
-      duration: 237,
-      size: "14.1 MB",
-      format: "WAV",
-      description: "Ścieżka basu nagrana przez Karolinę",
-    },
-    {
-      id: 5,
-      name: "Perkusja",
-      category: "Instrumenty",
-      author: "Marcin Zieliński",
-      date: "16.03.2025",
-      duration: 237,
-      size: "18.6 MB",
-      format: "WAV",
-      description: "Ścieżka perkusji nagrana przez Marcina",
-    },
-    {
-      id: 6,
-      name: "Mix instrumentalny",
-      category: "Finał",
-      author: "Jan Kowalski",
-      date: "18.03.2025",
-      duration: 237,
-      size: "16.8 MB",
-      format: "WAV",
-      description: "Mix wszystkich instrumentów bez wokalu",
-    },
-    {
-      id: 7,
-      name: "Wokal - wersja robocza",
-      category: "Demo",
-      author: "Anna Nowak",
-      date: "16.03.2025",
-      duration: 235,
-      size: "11.2 MB",
-      format: "WAV",
-      description: "Robocza wersja wokalu przed korektą",
-    },
-  ];
+  // const audioFiles = [
+  //   {
+  //     id: 1,
+  //     name: "Wokal główny - wersja finalna",
+  //     category: "Finał",
+  //     author: "Jan Kowalski",
+  //     date: "19.03.2025",
+  //     duration: 237, // w sekundach
+  //     size: "12.4 MB",
+  //     format: "WAV",
+  //     description: "Ostateczna wersja wokalu głównego po korekcie i kompresji",
+  //   },
+  //   {
+  //     id: 2,
+  //     name: "Demo - pierwsza wersja",
+  //     category: "Demo",
+  //     author: "Anna Nowak",
+  //     date: "15.03.2025",
+  //     duration: 232,
+  //     size: "8.7 MB",
+  //     format: "MP3",
+  //     description: "Pierwsza wersja demo nagrana na próbie",
+  //   },
+  //   {
+  //     id: 3,
+  //     name: "Gitara rytmiczna",
+  //     category: "Instrumenty",
+  //     author: "Tomasz Wieczorek",
+  //     date: "17.03.2025",
+  //     duration: 237,
+  //     size: "15.2 MB",
+  //     format: "WAV",
+  //     description: "Ścieżka gitary rytmicznej nagrana przez Tomka",
+  //   },
+  //   {
+  //     id: 4,
+  //     name: "Bas",
+  //     category: "Instrumenty",
+  //     author: "Karolina Lis",
+  //     date: "18.03.2025",
+  //     duration: 237,
+  //     size: "14.1 MB",
+  //     format: "WAV",
+  //     description: "Ścieżka basu nagrana przez Karolinę",
+  //   },
+  //   {
+  //     id: 5,
+  //     name: "Perkusja",
+  //     category: "Instrumenty",
+  //     author: "Marcin Zieliński",
+  //     date: "16.03.2025",
+  //     duration: 237,
+  //     size: "18.6 MB",
+  //     format: "WAV",
+  //     description: "Ścieżka perkusji nagrana przez Marcina",
+  //   },
+  //   {
+  //     id: 6,
+  //     name: "Mix instrumentalny",
+  //     category: "Finał",
+  //     author: "Jan Kowalski",
+  //     date: "18.03.2025",
+  //     duration: 237,
+  //     size: "16.8 MB",
+  //     format: "WAV",
+  //     description: "Mix wszystkich instrumentów bez wokalu",
+  //   },
+  //   {
+  //     id: 7,
+  //     name: "Wokal - wersja robocza",
+  //     category: "Demo",
+  //     author: "Anna Nowak",
+  //     date: "16.03.2025",
+  //     duration: 235,
+  //     size: "11.2 MB",
+  //     format: "WAV",
+  //     description: "Robocza wersja wokalu przed korektą",
+  //   },
+  // ];
 
   // Kategorie plików
-  const categories = ["Wszystkie", "Demo", "Instrumenty", "Finał"];
-  let selectedCategory = $state("Wszystkie");
+  let selectedCategory: TrackCategory | null = $state(null);
 
   // Stan widoczności panelu komentarzy na urządzeniach mobilnych
   let showMobileComments = $state(false);
@@ -118,13 +125,7 @@
     };
   });
 
-  // Przykładowe dane utworu
-  const trackInfo = {
-    title: "Przykładowy utwór",
-    artist: "Zespół testowy",
-    duration: 237, // w sekundach
-    currentTime: 85, // w sekundach
-  };
+  let selectedFile = $state(files.find((file) => file.is_primary));
 
   // Formatowanie czasu (mm:ss)
   function formatTime(seconds: number): string {
@@ -203,16 +204,30 @@
         <!-- Filtrowanie po kategorii -->
         <div class="mb-6">
           <div class="flex flex-wrap gap-3">
+            <button
+              class="relative px-4 py-2 rounded-full text-sm transition-all {selectedCategory ===
+              null
+                ? 'text-white font-semibold'
+                : 'text-gray-400 hover:text-white'}"
+              onclick={() => (selectedCategory = null)}
+            >
+              Wszystkie
+              {#if selectedCategory === null}
+                <span
+                  class="absolute -bottom-1 left-0 right-0 h-0.5 bg-blue-400 mx-auto w-3/4 animate-fadeIn"
+                ></span>
+              {/if}
+            </button>
             {#each categories as category}
               <button
-                class="relative px-4 py-2 rounded-full text-sm transition-all {selectedCategory ===
-                category
+                class="relative px-4 py-2 rounded-full text-sm transition-all {selectedCategory?.id ===
+                category.id
                   ? 'text-white font-semibold'
                   : 'text-gray-400 hover:text-white'}"
                 onclick={() => (selectedCategory = category)}
               >
-                {category}
-                {#if selectedCategory === category}
+                {category.name}
+                {#if selectedCategory?.id === category.id}
                   <span
                     class="absolute -bottom-1 left-0 right-0 h-0.5 bg-blue-400 mx-auto w-3/4 animate-fadeIn"
                   ></span>
@@ -224,19 +239,12 @@
 
         <!-- Lista plików audio -->
         <div class="space-y-3">
-          {#each audioFiles.filter((file) => selectedCategory === "Wszystkie" || file.category === selectedCategory) as file}
+          {#each files.filter((file) => selectedCategory === null || file.category.id === selectedCategory.id) as file}
             <div
               class="group relative bg-gray-800/50 hover:bg-gray-800/80 rounded-lg border border-gray-700/30 transition-all overflow-hidden"
             >
               <!-- Pasek boczny wskazujący kategorię pliku -->
-              <div
-                class="absolute left-0 top-0 bottom-0 w-1 bg-{file.category ===
-                'Demo'
-                  ? 'yellow'
-                  : file.category === 'Instrumenty'
-                    ? 'green'
-                    : 'blue'}-600"
-              ></div>
+              <div class="absolute left-0 top-0 bottom-0 w-1"></div>
 
               <!-- Główna zawartość -->
               <div class="pl-4 pr-3 py-3">
@@ -246,7 +254,7 @@
                     class="w-12 h-12 mr-3 mt-1 bg-gray-700/50 rounded-md flex items-center justify-center flex-shrink-0"
                   >
                     <div class="text-center font-medium text-sm">
-                      {file.format}
+                      {file.file_name.split(".").pop()}
                     </div>
                   </div>
 
@@ -257,7 +265,7 @@
                       <h3
                         class="text-base font-medium text-white truncate max-w-full"
                       >
-                        {file.name}
+                        {file.file_name}
                       </h3>
                     </div>
 
@@ -288,7 +296,7 @@
                             d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                           ></path>
                         </svg>
-                        {file.author}
+                        {file.uploaded_by.name}
                       </span>
 
                       <!-- Data dodania -->
@@ -307,7 +315,7 @@
                             d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                           ></path>
                         </svg>
-                        {file.date}
+                        {format(new Date(file.created_at), "dd-MM-yyyy")}
                       </span>
 
                       <!-- Kategoria -->
@@ -321,21 +329,9 @@
                             ? 'green'
                             : 'blue'}-300 px-2 py-0.5 rounded-full" -->
                       <span
-                        class="{file.category === 'Demo'
-                          ? 'bg-yellow-500/20'
-                          : file.category === 'Instrumenty'
-                            ? 'bg-green-500/20'
-                            : 'bg-blue-500/20'} {file.category === 'Demo'
-                          ? 'text-yellow-400'
-                          : file.category === 'Instrumenty'
-                            ? 'text-green-400'
-                            : 'text-blue-400'} {file.category === 'Demo'
-                          ? 'hover:text-yellow-300'
-                          : file.category === 'Instrumenty'
-                            ? 'hover:text-green-300'
-                            : 'hover:text-blue-300'} px-2 py-0.5 rounded-full transition-colors"
+                        class="bg-blue-500/20 text-blue-400 hover:text-blue-300 px-2 py-0.5 rounded-full transition-colors"
                       >
-                        {file.category}
+                        {file.category.name}
                       </span>
                     </div>
                   </div>
@@ -408,10 +404,10 @@
           <div class="flex items-center justify-center">
             <div class="min-w-0 max-w-[250px]">
               <div class="text-white font-medium text-sm truncate">
-                {trackInfo.title}
+                {selectedFile?.file_name}
               </div>
               <div class="text-gray-400 text-xs truncate">
-                {trackInfo.artist}
+                {data.project.name}
               </div>
             </div>
           </div>
@@ -419,18 +415,12 @@
           <!-- Pasek postępu -->
           <div class="w-full flex items-center gap-2">
             <span class="text-xs text-gray-400 w-8 text-right"
-              >{formatTime(trackInfo.currentTime)}</span
+              >{formatTime(0)}</span
             >
             <div class="flex-1 h-2 bg-gray-700 rounded-full overflow-hidden">
-              <div
-                class="h-full bg-blue-500"
-                style="width: {(trackInfo.currentTime / trackInfo.duration) *
-                  100}%"
-              ></div>
+              <div class="h-full bg-blue-500" style="width: {0 * 100}%"></div>
             </div>
-            <span class="text-xs text-gray-400 w-8"
-              >{formatTime(trackInfo.duration)}</span
-            >
+            <span class="text-xs text-gray-400 w-8">{formatTime(0)}</span>
           </div>
 
           <!-- Przyciski kontrolne -->
@@ -504,9 +494,11 @@
           <!-- Informacje o utworze -->
           <div class="min-w-0 shrink-0">
             <div class="text-white font-medium text-sm truncate">
-              {trackInfo.title}
+              {selectedFile?.file_name}
             </div>
-            <div class="text-gray-400 text-xs truncate">{trackInfo.artist}</div>
+            <div class="text-gray-400 text-xs truncate">
+              {data.project.name}
+            </div>
           </div>
 
           <!-- Kontrolki i progres zgrupowane razem -->
@@ -580,21 +572,17 @@
               <!-- Pasek postępu -->
               <div class="flex-1 flex items-center gap-3">
                 <span class="text-sm text-gray-400 w-12 text-right"
-                  >{formatTime(trackInfo.currentTime)}</span
+                  >{formatTime(0)}</span
                 >
                 <div
                   class="flex-1 h-1.5 bg-gray-700 rounded-full overflow-hidden"
                 >
                   <div
                     class="h-full bg-blue-500"
-                    style="width: {(trackInfo.currentTime /
-                      trackInfo.duration) *
-                      100}%"
+                    style="width: {0 * 100}%"
                   ></div>
                 </div>
-                <span class="text-sm text-gray-400 w-12"
-                  >{formatTime(trackInfo.duration)}</span
-                >
+                <span class="text-sm text-gray-400 w-12">{formatTime(0)}</span>
               </div>
             </div>
           </div>
