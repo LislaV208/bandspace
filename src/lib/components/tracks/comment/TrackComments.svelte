@@ -92,7 +92,7 @@
 </script>
 
 <div
-  class="flex flex-col bg-gray-800/90 rounded-lg border border-gray-700/30 shadow-lg h-[69vh]"
+  class=" flex flex-col bg-gray-800/90 rounded-lg border border-gray-700/30 shadow-lg"
 >
   <div class="p-4 border-b border-gray-700/30">
     <h2 class="text-xl font-bold text-white">Komentarze</h2>
@@ -113,13 +113,11 @@
       <div class="">
         {#each comments as comment (comment.id)}
           <div
-            class="group hover:bg-gray-700/20 rounded-lg p-3 -mx-3 transition-colors"
+            class="group hover:bg-gray-700/20 rounded-lg py-2 px-2.5 -mx-3 mb-1.5 transition-colors"
           >
-            <div class="flex gap-3">
+            <div class="flex gap-2">
               {#if comment.user.avatar_url}
-                <div
-                  class="flex-shrink-0 w-10 h-10 rounded-full overflow-hidden"
-                >
+                <div class="flex-shrink-0 w-8 h-8 rounded-full overflow-hidden">
                   <img
                     src={comment.user.avatar_url}
                     alt={comment.user.name || comment.user.email}
@@ -128,27 +126,31 @@
                 </div>
               {:else}
                 <div
-                  class="flex-shrink-0 w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-medium"
+                  class="flex-shrink-0 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-medium"
                 >
                   {getUserInitials(comment.user)}
                 </div>
               {/if}
 
-              <div class="flex-grow">
-                <div class="flex justify-between items-center gap-2 mb-1">
-                  <span class="font-medium text-white">
+              <div class="flex-grow min-w-0">
+                <div class="flex justify-between items-center gap-2">
+                  <span class="font-medium text-white text-sm truncate">
                     {comment.user.name || comment.user.email}
                   </span>
 
-                  <span class="text-xs text-gray-500">
-                    {formatDistanceToNow(new Date(comment.created_at), {
-                      addSuffix: true,
-                      locale: pl,
+                  <span class="text-xs text-gray-500 whitespace-nowrap">
+                    {new Date(comment.created_at).toLocaleDateString([], {
+                      day: "2-digit",
+                      month: "2-digit",
+                    })}
+                    {new Date(comment.created_at).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
                     })}
                   </span>
                 </div>
 
-                <p class="text-gray-300 whitespace-pre-line">
+                <p class="text-gray-300 text-sm whitespace-pre-line">
                   {comment.content}
                 </p>
               </div>

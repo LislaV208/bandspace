@@ -48,13 +48,13 @@
 </script>
 
 <div
-  class="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white relative"
+  class="h-screen flex flex-col bg-gradient-to-b from-gray-900 to-gray-800 text-white relative"
 >
   {#if user != null}
     <header
       class="bg-gray-800/70 shadow-lg top-0 z-50 border-b border-gray-600/50"
     >
-      <nav class="container mx-auto px-6 py-3">
+      <nav class="px-6 py-3">
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-6">
             <button
@@ -71,13 +71,13 @@
     </header>
   {/if}
 
-  <main class="container mx-auto px-6 py-8 pb-16">
+  <main class="flex-1 overflow-hidden">
     {@render children?.()}
   </main>
 
-  <footer
+  <!-- <footer
     class="text-center py-3 text-gray-500 text-xs absolute bottom-0 w-full"
   >
     <p>BandSpace v{version}</p>
-  </footer>
+  </footer> -->
 </div>
