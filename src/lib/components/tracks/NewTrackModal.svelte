@@ -87,17 +87,23 @@
 
   // Dodajemy i usuwamy globalne listenery
   onMount(() => {
-    window.addEventListener("dragenter", handleGlobalDragEnter);
-    window.addEventListener("dragleave", handleGlobalDragLeave);
-    window.addEventListener("dragover", handleGlobalDragOver);
-    window.addEventListener("drop", handleGlobalDrop);
+    // Sprawdzamy, czy kod jest wykonywany w środowisku przeglądarki
+    if (typeof window !== "undefined") {
+      window.addEventListener("dragenter", handleGlobalDragEnter);
+      window.addEventListener("dragleave", handleGlobalDragLeave);
+      window.addEventListener("dragover", handleGlobalDragOver);
+      window.addEventListener("drop", handleGlobalDrop);
+    }
   });
 
   onDestroy(() => {
-    window.removeEventListener("dragenter", handleGlobalDragEnter);
-    window.removeEventListener("dragleave", handleGlobalDragLeave);
-    window.removeEventListener("dragover", handleGlobalDragOver);
-    window.removeEventListener("drop", handleGlobalDrop);
+    // Sprawdzamy, czy kod jest wykonywany w środowisku przeglądarki
+    if (typeof window !== "undefined") {
+      window.removeEventListener("dragenter", handleGlobalDragEnter);
+      window.removeEventListener("dragleave", handleGlobalDragLeave);
+      window.removeEventListener("dragover", handleGlobalDragOver);
+      window.removeEventListener("drop", handleGlobalDrop);
+    }
   });
 
   function handleFileSelect(event: Event) {

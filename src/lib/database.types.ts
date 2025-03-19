@@ -98,6 +98,35 @@ export type Database = {
           },
         ]
       }
+      track_categories: {
+        Row: {
+          id: number
+          name: string
+          parent_id: number | null
+          slug: string
+        }
+        Insert: {
+          id?: number
+          name: string
+          parent_id?: number | null
+          slug: string
+        }
+        Update: {
+          id?: number
+          name?: string
+          parent_id?: number | null
+          slug?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "track_categories_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "track_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       track_comments: {
         Row: {
           content: string
@@ -131,6 +160,76 @@ export type Database = {
           {
             foreignKeyName: "track_comments_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      track_files: {
+        Row: {
+          category_id: number
+          created_at: string
+          description: string | null
+          duration: number | null
+          file_extension: string
+          file_name: string
+          file_size: number
+          file_url: string
+          id: number
+          is_primary: boolean
+          track_id: number
+          updated_at: string
+          uploaded_by: string
+        }
+        Insert: {
+          category_id: number
+          created_at?: string
+          description?: string | null
+          duration?: number | null
+          file_extension: string
+          file_name: string
+          file_size: number
+          file_url: string
+          id?: number
+          is_primary?: boolean
+          track_id: number
+          updated_at?: string
+          uploaded_by?: string
+        }
+        Update: {
+          category_id?: number
+          created_at?: string
+          description?: string | null
+          duration?: number | null
+          file_extension?: string
+          file_name?: string
+          file_size?: number
+          file_url?: string
+          id?: number
+          is_primary?: boolean
+          track_id?: number
+          updated_at?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "track_files_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "track_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "track_files_track_id_fkey"
+            columns: ["track_id"]
+            isOneToOne: false
+            referencedRelation: "tracks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "track_files_uploaded_by_fkey"
+            columns: ["uploaded_by"]
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
