@@ -646,10 +646,10 @@
       class="flex-1 overflow-y-auto px-4 py-3 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-500"
     >
       <!-- Przykładowe komentarze -->
-      <div class="space-y-1.5">
-        {#each comments as comment}
+      <div class="space-y-0">
+        {#each comments as comment, index}
           <div
-            class="group hover:bg-gray-700/20 rounded-lg py-2 px-2.5 -mx-3 mb-1.5 transition-colors"
+            class="group hover:bg-gray-700/40 rounded-lg py-2.5 px-3 -mx-3 transition-colors"
           >
             <div class="flex gap-2">
               <div
@@ -673,6 +673,11 @@
               </div>
             </div>
           </div>
+          {#if index < comments.length - 1}
+            <div class="py-2">
+              <div class="border-b border-gray-700/30"></div>
+            </div>
+          {/if}
         {/each}
       </div>
     </div>
