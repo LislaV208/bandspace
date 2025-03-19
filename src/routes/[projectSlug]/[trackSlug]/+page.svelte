@@ -90,6 +90,9 @@
   // Kategorie plików
   const categories = ["Wszystkie", "Demo", "Instrumenty", "Finał"];
   let selectedCategory = $state("Wszystkie");
+  
+  // Stan widoczności panelu komentarzy na urządzeniach mobilnych
+  let showMobileComments = $state(false);
 
   // Przykładowe komentarze
   const comments = Array.from({ length: 15 }, (_, i) => {
@@ -132,18 +135,45 @@
 </script>
 
 <!-- Główny kontener z flexbox dla układu dwukolumnowego -->
-<div class="flex h-full bg-gray-900 overflow-hidden">
-  <!-- Lewa kolumna - główna zawartość z odtwarzaczem na dole -->
-  <div class="flex-1 flex flex-col overflow-hidden">
+<div class="flex flex-col lg:flex-row h-full bg-gray-900 overflow-hidden">
+  <!-- Główna zawartość z odtwarzaczem na dole -->
+  <div class="flex-1 flex flex-col overflow-hidden {showMobileComments ? 'hidden lg:flex' : 'flex'}">
     <!-- Główna zawartość z przewijaniem -->
     <div
       class="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-500"
     >
-      <div class="flex justify-between items-center gap-2 p-4 sm:p-6">
-        <div class="flex-1">
-          <Breadcrumbs project={data.project} recording={data.recording} />
+      <!-- Nagłówek strony -->
+      <div class="p-4 sm:p-6">
+        <!-- Breadcrumbs i przyciski akcji -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div class="flex-1">
+            <Breadcrumbs project={data.project} recording={data.recording} />
+          </div>
+          
+          <div class="flex flex-col xs:flex-row w-full sm:w-auto gap-2 mt-2 sm:mt-0">
+            <!-- Przycisk komentarzy (tylko na mobilnych i tabletach) -->
+            <button
+              class="lg:hidden flex items-center justify-center gap-2 py-2 px-3 sm:py-1.5 sm:px-2.5 w-full xs:w-auto bg-gray-700/50 hover:bg-gray-700 text-white rounded-md transition-colors"
+              onclick={() => showMobileComments = true}
+              aria-label="Pokaż komentarze"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <span>Komentarze</span>
+              <span class="bg-blue-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">{comments.length}</span>
+            </button>
+            
+            <!-- Przycisk dodawania pliku -->  
+            <button
+              class="flex items-center justify-center gap-2 py-2 px-3 sm:py-1.5 sm:px-2.5 w-full xs:w-auto bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+              aria-label="Dodaj plik"
+            >
+              <Plus size={18} />
+              <span>Dodaj plik</span>
+            </button>
+          </div>
         </div>
-        <Button primary><Plus /> Dodaj plik</Button>
       </div>
       <!-- Główna zawartość strony -->
       <div class="container mx-auto p-4 sm:p-6 max-w-screen-xl">
@@ -478,11 +508,23 @@
     </div>
   </div>
 
-  <!-- Prawa kolumna - panel komentarzy (stała szerokość) -->
-  <div class="w-80 md:w-96 border-l border-gray-800 h-full flex flex-col">
+  <!-- Panel komentarzy -->
+  <div class="lg:w-96 border-t lg:border-t-0 lg:border-l border-gray-800 h-full flex flex-col {!showMobileComments ? 'hidden lg:flex' : 'flex'}">
     <!-- Nagłówek panelu komentarzy -->
-    <div class="p-4 border-b border-gray-700/30">
+    <div class="p-4 border-b border-gray-700/30 flex justify-between items-center">
       <h2 class="text-xl font-bold text-white">Komentarze</h2>
+      
+      <!-- Przycisk powrotu (tylko na mobilnych i tabletach) -->
+      <button 
+        class="lg:hidden p-2 text-gray-400 hover:text-white transition-colors"
+        onclick={() => showMobileComments = false}
+        aria-label="Powrót do plików audio"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5"></path>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+      </button>
     </div>
 
     <!-- Lista komentarzy z przewijaniem -->
