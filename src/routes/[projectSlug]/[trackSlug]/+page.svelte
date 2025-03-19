@@ -6,6 +6,7 @@
   import UserAvatar from "$lib/components/UserAvatar.svelte";
   import { setSupabaseContext } from "$lib/supabase-context";
   import type { TrackCategory } from "$lib/types/track_category";
+  import type { TrackFile } from "$lib/types/track_file";
   import { format } from "date-fns";
   import { Plus, Send } from "lucide-svelte";
   import { onMount } from "svelte";
@@ -436,10 +437,34 @@
       });
     }
   }
+
+  async function downloadFile(file: TrackFile) {
+    const { data, error } = await supabase.storage
+      .from("project_files")
+      .download(file.storage_path);
+
+    if (error) {
+      toast.error("Nie udało się pobrać pliku.", {
+        position: "bottom-right",
+      });
+      return;
+    }
+
+    const url = URL.createObjectURL(data);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = file.file_name;
+    link.click();
+    URL.revokeObjectURL(url);
+
+    toast.success("Rozpoczęto pobieranie pliku.", {
+      position: "bottom-right",
+    });
+  }
 </script>
 
 <!-- Główny kontener z flexbox dla układu dwukolumnowego -->
-<div class="flex flex-col lg:flex-row h-full bg-gray-900 overflow-hidden">
+<div class="flex flex-col lg:flex-row h-full overflow-hidden">
   <!-- Główna zawartość z odtwarzaczem na dole -->
   <div
     class="flex-1 flex flex-col overflow-hidden {showMobileComments
@@ -669,6 +694,7 @@
                     <button
                       class="p-2.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 hover:text-blue-300 rounded-full transition-colors"
                       aria-label="Pobierz plik"
+                      onclick={() => downloadFile(file)}
                     >
                       <svg
                         width="18"
