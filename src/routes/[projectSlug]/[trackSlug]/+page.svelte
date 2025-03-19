@@ -1,6 +1,7 @@
 <script lang="ts">
   import Breadcrumbs from "$lib/components/Breadcrumbs.svelte";
   import Button from "$lib/components/ui/Button.svelte";
+  import UserAvatar from "$lib/components/UserAvatar.svelte";
   import type { TrackCategory } from "$lib/types/track_category";
   import { format } from "date-fns";
   import { Plus, Send } from "lucide-svelte";
@@ -14,118 +15,51 @@
 
   const { categories } = data;
 
-  // Przykładowe pliki audio dla utworu
-  // const audioFiles = [
-  //   {
-  //     id: 1,
-  //     name: "Wokal główny - wersja finalna",
-  //     category: "Finał",
-  //     author: "Jan Kowalski",
-  //     date: "19.03.2025",
-  //     duration: 237, // w sekundach
-  //     size: "12.4 MB",
-  //     format: "WAV",
-  //     description: "Ostateczna wersja wokalu głównego po korekcie i kompresji",
-  //   },
-  //   {
-  //     id: 2,
-  //     name: "Demo - pierwsza wersja",
-  //     category: "Demo",
-  //     author: "Anna Nowak",
-  //     date: "15.03.2025",
-  //     duration: 232,
-  //     size: "8.7 MB",
-  //     format: "MP3",
-  //     description: "Pierwsza wersja demo nagrana na próbie",
-  //   },
-  //   {
-  //     id: 3,
-  //     name: "Gitara rytmiczna",
-  //     category: "Instrumenty",
-  //     author: "Tomasz Wieczorek",
-  //     date: "17.03.2025",
-  //     duration: 237,
-  //     size: "15.2 MB",
-  //     format: "WAV",
-  //     description: "Ścieżka gitary rytmicznej nagrana przez Tomka",
-  //   },
-  //   {
-  //     id: 4,
-  //     name: "Bas",
-  //     category: "Instrumenty",
-  //     author: "Karolina Lis",
-  //     date: "18.03.2025",
-  //     duration: 237,
-  //     size: "14.1 MB",
-  //     format: "WAV",
-  //     description: "Ścieżka basu nagrana przez Karolinę",
-  //   },
-  //   {
-  //     id: 5,
-  //     name: "Perkusja",
-  //     category: "Instrumenty",
-  //     author: "Marcin Zieliński",
-  //     date: "16.03.2025",
-  //     duration: 237,
-  //     size: "18.6 MB",
-  //     format: "WAV",
-  //     description: "Ścieżka perkusji nagrana przez Marcina",
-  //   },
-  //   {
-  //     id: 6,
-  //     name: "Mix instrumentalny",
-  //     category: "Finał",
-  //     author: "Jan Kowalski",
-  //     date: "18.03.2025",
-  //     duration: 237,
-  //     size: "16.8 MB",
-  //     format: "WAV",
-  //     description: "Mix wszystkich instrumentów bez wokalu",
-  //   },
-  //   {
-  //     id: 7,
-  //     name: "Wokal - wersja robocza",
-  //     category: "Demo",
-  //     author: "Anna Nowak",
-  //     date: "16.03.2025",
-  //     duration: 235,
-  //     size: "11.2 MB",
-  //     format: "WAV",
-  //     description: "Robocza wersja wokalu przed korektą",
-  //   },
-  // ];
+  let comments = $state(data.track.comments || []);
 
-  // Kategorie plików
   let selectedCategory: TrackCategory | null = $state(null);
+  let selectedFile = $state(files.find((file) => file.is_primary));
 
-  // Stan widoczności panelu komentarzy na urządzeniach mobilnych
+  let commentInputValue = $state("");
+  let commentError = $state<string | null>(null);
+
   let showMobileComments = $state(false);
 
-  // Przykładowe komentarze
-  const comments = Array.from({ length: 15 }, (_, i) => {
-    const id = i + 1;
-    const users = [
-      { initials: "JK", name: "Jan Kowalski", color: "blue" },
-      { initials: "AN", name: "Anna Nowak", color: "green" },
-      { initials: "TW", name: "Tomasz Wieczorek", color: "purple" },
-      { initials: "KL", name: "Karolina Lis", color: "red" },
-      { initials: "MZ", name: "Marcin Zieliński", color: "yellow" },
-    ];
+  async function handleAddComment() {
+    if (!commentInputValue.trim()) return;
 
-    const userIndex = i % users.length;
-    const minutes = 10 + Math.floor(i / 12) * 1;
-    const seconds = 30 + (i % 12) * 5;
+    commentError = null;
 
-    return {
-      id,
-      user: users[userIndex],
-      timestamp: `19.03.2025 ${minutes}:${seconds < 10 ? "0" + seconds : seconds}`,
-      content:
-        "To jest przykładowy komentarz do utworu. Może zawierać sugestie dotyczące miksu, pytania o proces nagrywania lub inne uwagi związane z utworem.",
-    };
-  });
+    try {
+      const response = await fetch(`/api/tracks/${data.track.id}/comments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          content: commentInputValue.trim(),
+        }),
+      });
 
-  let selectedFile = $state(files.find((file) => file.is_primary));
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Nie udało się dodać komentarza");
+      }
+
+      const newComment = await response.json();
+
+      comments = [...comments, newComment];
+
+      commentInputValue = "";
+    } catch (err) {
+      if (err instanceof Error) {
+        commentError = err.message;
+      } else {
+        commentError = "Wystąpił nieznany błąd podczas dodawania komentarza";
+      }
+      console.error("Błąd dodawania komentarza:", err);
+    }
+  }
 
   // Formatowanie czasu (mm:ss)
   function formatTime(seconds: number): string {
@@ -640,19 +574,17 @@
             class="group hover:bg-gray-700/40 rounded-lg py-2.5 px-3 -mx-3 transition-colors"
           >
             <div class="flex gap-2">
-              <div
-                class="flex-shrink-0 w-8 h-8 bg-{comment.user
-                  .color}-600 rounded-full flex items-center justify-center text-white text-sm font-medium"
-              >
-                {comment.user.initials}
-              </div>
+              <UserAvatar user={comment.user} />
               <div class="flex-grow min-w-0">
                 <div class="flex justify-between items-center gap-2">
                   <span class="font-medium text-white text-sm truncate"
                     >{comment.user.name}</span
                   >
                   <span class="text-xs text-gray-500 whitespace-nowrap"
-                    >{comment.timestamp}</span
+                    >{format(
+                      new Date(comment.created_at),
+                      "dd.MM.yyyy HH:mm"
+                    )}</span
                   >
                 </div>
                 <p class="text-gray-300 text-sm whitespace-pre-line">
@@ -672,9 +604,23 @@
 
     <!-- Formularz dodawania komentarza -->
     <div class="p-3 border-t border-gray-700/30 bg-gray-800/20">
-      <form class="flex items-center gap-2">
+      {#if commentError}
+        <div
+          class="mb-3 p-2 bg-red-900/30 border border-red-900/50 rounded-md text-red-200 text-sm"
+        >
+          {commentError}
+        </div>
+      {/if}
+      <form
+        class="flex items-center gap-2"
+        onsubmit={(e) => {
+          e.preventDefault();
+          handleAddComment();
+        }}
+      >
         <div class="flex-1 min-w-0">
           <textarea
+            bind:value={commentInputValue}
             placeholder="Dodaj komentarz..."
             class="w-full h-10 bg-gray-800/70 border border-gray-700/50 rounded-md px-3 py-2 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none overflow-hidden"
             rows="1"
@@ -683,8 +629,9 @@
         <div class="flex-shrink-0 self-start">
           <button
             type="submit"
-            class="bg-blue-600 hover:bg-blue-700 text-white rounded-md p-2 text-sm font-medium transition-colors flex items-center justify-center h-10"
+            class="bg-blue-600 hover:bg-blue-700 text-white rounded-md p-2 text-sm font-medium transition-colors flex items-center justify-center h-10 disabled:opacity-50 disabled:cursor-not-allowed"
             aria-label="Wyślij komentarz"
+            disabled={!commentInputValue}
           >
             <Send size={18} />
           </button>
