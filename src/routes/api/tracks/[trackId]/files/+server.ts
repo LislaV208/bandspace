@@ -59,6 +59,7 @@ export const POST: RequestHandler = async ({
       file_name,
       file_size,
     })
+    .select("*, uploaded_by(*), category:category_id(*)")
     .single();
 
   if (trackFileError) {
@@ -66,6 +67,8 @@ export const POST: RequestHandler = async ({
       message: trackFileError.message || "Nie udało się dodać pliku do utworu.",
     });
   }
+
+  console.log("File uploaded:", trackFile);
 
   return json(trackFile);
 };

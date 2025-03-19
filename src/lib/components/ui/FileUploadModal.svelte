@@ -23,8 +23,8 @@
     acceptedFileTypes?: string;
     maxSizeInMB?: number;
     onClose?: () => void;
-    uploadFile: (file: File) => Promise<void>;
-    onFileUploaded?: () => void;
+    uploadFile: (file: File) => Promise<any | null>;
+    onFileUploaded?: (uploadedFile?: any) => void;
     beforeFilePreview?: Snippet;
     afterFilePreview?: Snippet;
     additionalFields?: Snippet;
@@ -190,10 +190,10 @@
       throw new Error("Nie wybrano pliku");
     }
 
-    await uploadFile(selectedFile);
+    const uploadedFile = await uploadFile(selectedFile);
 
     if (onFileUploaded) {
-      onFileUploaded();
+      onFileUploaded(uploadedFile);
     }
 
     handleClose();

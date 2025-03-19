@@ -16,17 +16,15 @@
 
   setSupabaseContext(data.supabase);
 
-  const {
-    supabase,
-    track: { files },
-  } = data;
+  const { supabase, track } = data;
 
   const { categories } = data;
 
-  let comments = $state(data.track.comments || []);
+  let comments = $state(track.comments || []);
+  let files = $state(track.files || []);
 
   let selectedCategory: TrackCategory | null = $state(null);
-  let selectedFile = $state(files.find((file) => file.is_primary));
+  let selectedFile = $state(() => files.find((file) => file.is_primary));
 
   let commentInputValue = $state("");
   let commentError = $state<string | null>(null);
@@ -52,7 +50,7 @@
     commentError = null;
 
     try {
-      const response = await fetch(`/api/tracks/${data.track.id}/comments`, {
+      const response = await fetch(`/api/tracks/${track.id}/comments`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -83,7 +81,7 @@
   }
 
   async function loadAudio() {
-    if (!selectedFile) return;
+    if (!selectedFile()) return;
 
     isPlaying = false;
 
@@ -96,7 +94,7 @@
     try {
       const { data: audio, error: audioError } = await supabase.storage
         .from("project_files")
-        .createSignedUrl(selectedFile.storage_path, 3600);
+        .createSignedUrl(selectedFile()!.storage_path, 3600);
 
       if (audioError) {
         throw new Error(audioError.message || "Nie udało się załadować audio");
@@ -131,17 +129,17 @@
         currentTime = 0;
       });
 
-      audioElement.addEventListener("error", (e) => {
-        console.error("Błąd odtwarzania audio:", e);
-        toast.error("Wystąpił błąd podczas odtwarzania pliku audio", {
-          position: "bottom-right",
-        });
-        isPlaying = false;
-      });
+      // audioElement.addEventListener("error", (e) => {
+      //   console.error("Błąd odtwarzania audio:", e);
+      //   toast.error("Wystąpił błąd podczas odtwarzania pliku audio", {
+      //     position: "bottom-right",
+      //   });
+      //   isPlaying = false;
+      // });
 
-      toast.success("Plik audio załadowany pomyślnie", {
-        position: "bottom-right",
-      });
+      // toast.success("Plik audio załadowany pomyślnie", {
+      //   position: "bottom-right",
+      // });
     } catch (err) {
       console.error("Błąd podczas ładowania audio:", err);
       toast.error(
@@ -406,7 +404,7 @@
 
   // Ładowanie audio przy pierwszym renderowaniu
   onMount(() => {
-    if (selectedFile) {
+    if (selectedFile()) {
       loadAudio();
     }
   });
@@ -420,9 +418,23 @@
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   }
 
-  async function onFileUploaded() {
-    // odswiez strone
-    window.location.reload();
+  async function onFileUploaded(uploadedFile: any) {
+    console.log("File uploaded:", uploadedFile);
+    // Dodaj nowy plik do listy plików
+    if (uploadedFile) {
+      // Dodaj nowy plik do istniejącej listy
+      files = [...files, uploadedFile];
+
+      // Jeśli nie ma wybranego pliku lub nowy plik jest główny, wybierz go
+      if (!selectedFile() || uploadedFile.is_primary) {
+        selectedFile = () => uploadedFile;
+        await loadAudio();
+      }
+
+      toast.success("Plik został dodany do utworu.", {
+        position: "bottom-right",
+      });
+    }
   }
 </script>
 
@@ -535,8 +547,8 @@
             <div
               class="group relative bg-gray-800/50 hover:bg-gray-800/80 rounded-lg border border-gray-700/30 transition-all overflow-hidden cursor-pointer"
               onclick={() => {
-                if (selectedFile?.id !== file.id) {
-                  selectedFile = file;
+                if (selectedFile()?.id !== file.id) {
+                  selectedFile = () => file;
                   loadAudio();
                 }
               }}
@@ -546,8 +558,8 @@
               onkeydown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
-                  if (selectedFile?.id !== file.id) {
-                    selectedFile = file;
+                  if (selectedFile()?.id !== file.id) {
+                    selectedFile = () => file;
                     loadAudio();
                   }
                 }
@@ -555,8 +567,8 @@
             >
               <!-- Pasek boczny wskazujący czy plik jest wybrany -->
               <div
-                class="absolute left-0 top-0 bottom-0 w-1 {selectedFile?.id ===
-                file.id
+                class="absolute left-0 top-0 bottom-0 w-1 {selectedFile()
+                  ?.id === file.id
                   ? 'bg-blue-400'
                   : ''}"
               ></div>
@@ -719,7 +731,7 @@
           <div class="flex items-center justify-center">
             <div class="min-w-0 max-w-[250px]">
               <div class="text-white font-medium text-sm truncate">
-                {selectedFile?.file_name}
+                {selectedFile()?.file_name}
               </div>
               <div class="text-gray-400 text-xs truncate">
                 {data.project.name}
@@ -861,7 +873,7 @@
           <!-- Informacje o utworze -->
           <div class="min-w-0 shrink-0">
             <div class="text-white font-medium text-sm truncate">
-              {selectedFile?.file_name}
+              {selectedFile()?.file_name}
             </div>
             <div class="text-gray-400 text-xs truncate">
               {data.project.name}

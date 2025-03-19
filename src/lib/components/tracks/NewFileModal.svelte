@@ -18,7 +18,7 @@
     trackId: number;
     projectSlug: string;
     categories: TrackCategory[];
-    onFileUploaded?: () => void;
+    onFileUploaded?: (uploadedFile: any) => void;
   } = $props();
 
   let selectedCategory: TrackCategory | null = $state(null);
@@ -27,8 +27,8 @@
 
   const supabase = getSupabaseContext();
 
-  // Funkcja obsługująca upload pliku (na razie pusta)
-  async function uploadFile(file: File): Promise<void> {
+  // Funkcja obsługująca upload pliku
+  async function uploadFile(file: File): Promise<any | null> {
     console.log("uploading file", file);
     const storageFileName = file.name
       .replace(/\.[^.]+$/, "") // Remove file extension
@@ -49,7 +49,7 @@
       toast.error("Nie udało się dodać pliku do projektu.", {
         position: "bottom-right",
       });
-      return;
+      return null;
     }
 
     const response = await fetch(`/api/tracks/${trackId}/files`, {
@@ -75,20 +75,25 @@
       toast.error(error.message || "Nie udało się dodać pliku do utworu.", {
         position: "bottom-right",
       });
-      return;
+      return null;
     }
+
+    // Zwracamy utworzony plik
+    return await response.json();
   }
 
   // Funkcja wywoływana po zakończeniu uploadu
-  function handleFileUploaded() {
+  function handleFileUploaded(uploadedFile: any) {
     // Reset stanu
     selectedCategory = null;
     isPrimary = false;
     description = "";
 
-    // Wywołaj callback, jeśli istnieje
-    if (onFileUploaded) {
-      onFileUploaded();
+    // Wywołaj callback z nowo utworzonym plikiem, jeśli istnieje
+    console.log("File uploaded:", uploadedFile);
+    if (onFileUploaded && uploadedFile) {
+      console.log("File uploaded");
+      onFileUploaded(uploadedFile);
     }
   }
 </script>
