@@ -1,7 +1,8 @@
 <script lang="ts">
   import FileUploadModal from "$lib/components/ui/FileUploadModal.svelte";
+  import Tooltip from "$lib/components/ui/Tooltip.svelte";
   import type { TrackCategory } from "$lib/types/track_category";
-  import { CheckSquare, Info, Square, Tag, User } from "lucide-svelte";
+  import { CheckSquare, Info, Square, Tag } from "lucide-svelte";
   import type { Snippet } from "svelte";
 
   let {
@@ -90,7 +91,7 @@
       <div class="flex items-center gap-2 mt-2">
         <button
           type="button"
-          class="text-gray-300 hover:text-white transition-colors"
+          class="text-gray-300 hover:text-white transition-colors flex-shrink-0"
           onclick={() => (isPrimary = !isPrimary)}
           aria-label="Główny plik utworu"
         >
@@ -101,8 +102,11 @@
           {/if}
         </button>
         <label for="primary-checkbox" class="text-sm text-gray-200"
-          >Ustaw jako główny plik utworu</label
+          >Główny plik utworu</label
         >
+        <Tooltip 
+          content="Główny plik utworu jest domyślnie odtwarzany przy wejściu na stronę utworu. Jest to zazwyczaj finalna wersja utworu lub jego najważniejsza część."
+        />
         <input
           id="primary-checkbox"
           type="checkbox"
