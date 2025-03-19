@@ -2,6 +2,7 @@
   import Modal from "$lib/components/ui/Modal.svelte";
   import { FileMusic, Loader2, Music, Upload } from "lucide-svelte";
   import { onDestroy, onMount } from "svelte";
+  import type { Snippet } from "svelte";
   import toast from "svelte-french-toast";
   import Button from "./Button.svelte";
 
@@ -13,6 +14,9 @@
     onClose,
     uploadFile,
     onFileUploaded,
+    beforeFilePreview,
+    afterFilePreview,
+    additionalFields,
   }: {
     isOpen: boolean;
     title?: string;
@@ -21,6 +25,9 @@
     onClose?: () => void;
     uploadFile: (file: File) => Promise<void>;
     onFileUploaded?: () => void;
+    beforeFilePreview?: Snippet;
+    afterFilePreview?: Snippet;
+    additionalFields?: Snippet;
   } = $props();
 
   let selectedFile = $state<File | null>(null);
@@ -275,6 +282,9 @@
   {:else}
     <!-- Podgląd wybranego pliku -->
     <div class="space-y-6">
+      <!-- Snippet przed podglądem pliku -->
+      {@render beforeFilePreview?.()}
+
       <div
         class="bg-gray-800/50 rounded-lg border border-gray-700/30 p-4 flex items-center gap-4"
       >
@@ -300,6 +310,16 @@
           Zmień
         </button>
       </div>
+
+      <!-- Snippet po podglądzie pliku -->
+      {@render afterFilePreview?.()}
+
+      <!-- Dodatkowe pola formularza -->
+      {#if additionalFields}
+        <div class="mt-4 space-y-4">
+          {@render additionalFields()}
+        </div>
+      {/if}
 
       <!-- Przycisk akcji -->
       <Button

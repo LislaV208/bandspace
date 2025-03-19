@@ -1,5 +1,6 @@
 <script lang="ts">
   import Breadcrumbs from "$lib/components/Breadcrumbs.svelte";
+  import NewFileModal from "$lib/components/tracks/NewFileModal.svelte";
   import Button from "$lib/components/ui/Button.svelte";
   import FileUploadModal from "$lib/components/ui/FileUploadModal.svelte";
   import UserAvatar from "$lib/components/UserAvatar.svelte";
@@ -1111,9 +1112,10 @@
   </div>
 </div>
 
-<FileUploadModal
+<NewFileModal
   bind:isOpen={isFileUploadModalOpen}
-  {uploadFile}
+  trackId={data.track.id}
+  {categories}
   {onFileUploaded}
 />
 
