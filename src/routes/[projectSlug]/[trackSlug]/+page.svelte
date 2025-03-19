@@ -6,26 +6,90 @@
 
   const { data }: PageProps = $props();
 
-  // Przykładowe sekcje głównej zawartości
-  const contentSections = Array.from({ length: 11 }, (_, i) => {
-    const id = i + 1;
+  // Przykładowe pliki audio dla utworu
+  const audioFiles = [
+    {
+      id: 1,
+      name: "Wokal główny - wersja finalna",
+      category: "Finał",
+      author: "Jan Kowalski",
+      date: "19.03.2025",
+      duration: 237, // w sekundach
+      size: "12.4 MB",
+      format: "WAV",
+      description: "Ostateczna wersja wokalu głównego po korekcie i kompresji",
+    },
+    {
+      id: 2,
+      name: "Demo - pierwsza wersja",
+      category: "Demo",
+      author: "Anna Nowak",
+      date: "15.03.2025",
+      duration: 232,
+      size: "8.7 MB",
+      format: "MP3",
+      description: "Pierwsza wersja demo nagrana na próbie",
+    },
+    {
+      id: 3,
+      name: "Gitara rytmiczna",
+      category: "Instrumenty",
+      author: "Tomasz Wieczorek",
+      date: "17.03.2025",
+      duration: 237,
+      size: "15.2 MB",
+      format: "WAV",
+      description: "Ścieżka gitary rytmicznej nagrana przez Tomka",
+    },
+    {
+      id: 4,
+      name: "Bas",
+      category: "Instrumenty",
+      author: "Karolina Lis",
+      date: "18.03.2025",
+      duration: 237,
+      size: "14.1 MB",
+      format: "WAV",
+      description: "Ścieżka basu nagrana przez Karolinę",
+    },
+    {
+      id: 5,
+      name: "Perkusja",
+      category: "Instrumenty",
+      author: "Marcin Zieliński",
+      date: "16.03.2025",
+      duration: 237,
+      size: "18.6 MB",
+      format: "WAV",
+      description: "Ścieżka perkusji nagrana przez Marcina",
+    },
+    {
+      id: 6,
+      name: "Mix instrumentalny",
+      category: "Finał",
+      author: "Jan Kowalski",
+      date: "18.03.2025",
+      duration: 237,
+      size: "16.8 MB",
+      format: "WAV",
+      description: "Mix wszystkich instrumentów bez wokalu",
+    },
+    {
+      id: 7,
+      name: "Wokal - wersja robocza",
+      category: "Demo",
+      author: "Anna Nowak",
+      date: "16.03.2025",
+      duration: 235,
+      size: "11.2 MB",
+      format: "WAV",
+      description: "Robocza wersja wokalu przed korektą",
+    },
+  ];
 
-    let title = `Sekcja ${id}`;
-    let content =
-      id <= 3
-        ? `Przykładowa zawartość sekcji ${id}. Może to być ${
-            id === 1
-              ? "player audio, lista plików"
-              : id === 2
-                ? "formularz, informacje o utworze"
-                : "lista powiązanych utworów"
-          }, itp.`
-        : id === 7
-          ? "Ostatnia sekcja testowa. Tutaj mogą znajdować się informacje o planach wydawniczych i promocyjnych."
-          : "Dodatkowa sekcja do przewijania. Zawiera informacje o procesie nagrywania utworu.";
-
-    return { id, title, content };
-  });
+  // Kategorie plików
+  const categories = ["Wszystkie", "Demo", "Instrumenty", "Finał"];
+  let selectedCategory = $state("Wszystkie");
 
   // Przykładowe komentarze
   const comments = Array.from({ length: 15 }, (_, i) => {
@@ -82,19 +146,194 @@
         <Button primary><Plus /> Dodaj plik</Button>
       </div>
       <!-- Główna zawartość strony -->
-      <div class="container mx-auto p-4 sm:p-6">
-        <!-- Przykładowa zawartość -->
-        <div class="space-y-4">
-          {#each contentSections as section}
+      <div class="container mx-auto p-4 sm:p-6 max-w-screen-xl">
+        <!-- Filtrowanie po kategorii -->
+        <div class="mb-6">
+          <div class="flex items-center gap-3 mb-2">
+            <h3 class="text-lg font-medium text-white">Pliki audio</h3>
+            <span class="text-gray-400 text-sm">({audioFiles.length})</span>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            {#each categories as category}
+              <button
+                class="px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedCategory ===
+                category
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-700/50 text-gray-300 hover:bg-gray-700 hover:text-white'}"
+                onclick={() => (selectedCategory = category)}
+              >
+                {category}
+              </button>
+            {/each}
+          </div>
+        </div>
+
+        <!-- Lista plików audio -->
+        <div class="space-y-3">
+          {#each audioFiles.filter((file) => selectedCategory === "Wszystkie" || file.category === selectedCategory) as file}
             <div
-              class="bg-gray-800/70 rounded-lg border border-gray-700/30 p-4"
+              class="group relative bg-gray-800/50 hover:bg-gray-800/80 rounded-lg border border-gray-700/30 transition-all overflow-hidden"
             >
-              <h3 class="text-lg font-medium text-white mb-2">
-                {section.title}
-              </h3>
-              <p class="text-gray-300">
-                {section.content}
-              </p>
+              <!-- Pasek boczny wskazujący kategorię pliku -->
+              <div
+                class="absolute left-0 top-0 bottom-0 w-1 bg-{file.category ===
+                'Demo'
+                  ? 'yellow'
+                  : file.category === 'Instrumenty'
+                    ? 'green'
+                    : 'blue'}-600"
+              ></div>
+
+              <!-- Główna zawartość -->
+              <div class="pl-4 pr-3 py-3">
+                <div class="flex items-start">
+                  <!-- Format pliku -->
+                  <div
+                    class="w-12 h-12 mr-3 mt-1 bg-gray-700/50 rounded-md flex items-center justify-center flex-shrink-0"
+                  >
+                    <div class="text-center font-medium text-sm">
+                      {file.format}
+                    </div>
+                  </div>
+
+                  <!-- Środkowa część z informacjami o pliku -->
+                  <div class="flex-grow min-w-0 overflow-hidden pr-3">
+                    <div class="flex flex-wrap items-center gap-2 mb-1">
+                      <!-- Nazwa pliku -->
+                      <h3
+                        class="text-base font-medium text-white truncate max-w-full"
+                      >
+                        {file.name}
+                      </h3>
+                    </div>
+
+                    <!-- Opis pliku (zawsze widoczny) -->
+                    {#if file.description}
+                      <p class="text-gray-400 text-sm line-clamp-1 mb-1.5">
+                        {file.description}
+                      </p>
+                    {/if}
+
+                    <!-- Dodatkowe informacje -->
+                    <div
+                      class="flex items-center text-xs text-gray-400 flex-wrap gap-x-3 gap-y-1.5 mt-1.5"
+                    >
+                      <!-- Autor -->
+                      <span class="flex items-center">
+                        <svg
+                          class="w-3 h-3 mr-1"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                          ></path>
+                        </svg>
+                        {file.author}
+                      </span>
+
+                      <!-- Data dodania -->
+                      <span class="flex items-center">
+                        <svg
+                          class="w-3 h-3 mr-1"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          ></path>
+                        </svg>
+                        {file.date}
+                      </span>
+
+                      <!-- Kategoria -->
+                      <!-- class="bg-{file.category === 'Demo'
+                          ? 'yellow-300'
+                          : file.category === 'Instrumenty'
+                            ? 'green'
+                            : 'blue'}-500/20 text-{file.category === 'Demo'
+                          ? 'yellow-600'
+                          : file.category === 'Instrumenty'
+                            ? 'green'
+                            : 'blue'}-300 px-2 py-0.5 rounded-full" -->
+                      <span
+                        class="{file.category === 'Demo'
+                          ? 'bg-yellow-500/20'
+                          : file.category === 'Instrumenty'
+                            ? 'bg-green-500/20'
+                            : 'bg-blue-500/20'} {file.category === 'Demo'
+                          ? 'text-yellow-400'
+                          : file.category === 'Instrumenty'
+                            ? 'text-green-400'
+                            : 'text-blue-400'} {file.category === 'Demo'
+                          ? 'hover:text-yellow-300'
+                          : file.category === 'Instrumenty'
+                            ? 'hover:text-green-300'
+                            : 'hover:text-blue-300'} px-2 py-0.5 rounded-full transition-colors"
+                      >
+                        {file.category}
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Prawa strona z akcjami -->
+                  <div class="flex-shrink-0 ml-2 flex items-center">
+                    <!-- Pobierz (zawsze widoczny) -->
+                    <button
+                      class="p-2.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 hover:text-blue-300 rounded-full transition-colors"
+                      aria-label="Pobierz plik"
+                    >
+                      <svg
+                        width="18"
+                        height="18"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                        ></path>
+                      </svg>
+                    </button>
+
+                    <!-- Więcej opcji (widoczne po najechaniu) -->
+                    <!-- <button
+                      class="p-2 ml-1 text-gray-400 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                      aria-label="Więcej opcji"
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+                        ></path>
+                      </svg>
+                    </button> -->
+                  </div>
+                </div>
+              </div>
             </div>
           {/each}
         </div>
