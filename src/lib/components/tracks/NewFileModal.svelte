@@ -1,18 +1,22 @@
 <script lang="ts">
   import FileUploadModal from "$lib/components/ui/FileUploadModal.svelte";
   import Tooltip from "$lib/components/ui/Tooltip.svelte";
+  import { getSupabaseContext } from "$lib/supabase-context";
   import type { TrackCategory } from "$lib/types/track_category";
   import { CheckSquare, Info, Square, Tag } from "lucide-svelte";
   import type { Snippet } from "svelte";
+  import toast from "svelte-french-toast";
 
   let {
     isOpen = $bindable(),
     trackId,
+    projectSlug,
     categories = [],
     onFileUploaded,
   }: {
     isOpen: boolean;
     trackId: number;
+    projectSlug: string;
     categories: TrackCategory[];
     onFileUploaded?: () => void;
   } = $props();
@@ -21,17 +25,58 @@
   let isPrimary = $state(false);
   let description = $state("");
 
+  const supabase = getSupabaseContext();
+
   // Funkcja obsługująca upload pliku (na razie pusta)
   async function uploadFile(file: File): Promise<void> {
-    // Tutaj będzie implementacja uploadu pliku
-    console.log("Uploading file:", file);
-    console.log("Track ID:", trackId);
-    console.log("Category:", selectedCategory);
-    console.log("Is Primary:", isPrimary);
-    console.log("Description:", description);
+    console.log("uploading file", file);
+    const storageFileName = file.name
+      .replace(/\.[^.]+$/, "") // Remove file extension
+      .replace(/[^a-zA-Z0-9._-]/g, "-") // Replace unsupported chars with dash
+      .replace(/\s+/g, "-") // Replace spaces with dash
+      .toLowerCase(); // Convert to lowercase for consistency
 
-    // Symulacja uploadu
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "");
+
+    const storagePath = `${projectSlug}/${storageFileName}_${timestamp}`;
+    const { error: storageError } = await supabase.storage
+      .from("project_files")
+      .upload(storagePath, file, {
+        contentType: file.type,
+      });
+
+    if (storageError) {
+      toast.error("Nie udało się dodać pliku do projektu.", {
+        position: "bottom-right",
+      });
+      return;
+    }
+
+    const response = await fetch(`/api/tracks/${trackId}/files`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        storage_path: storagePath,
+        category_id: selectedCategory?.id,
+        is_primary: isPrimary,
+        description: description,
+        file_extension: file.type,
+        file_name: file.name,
+        file_size: file.size,
+      }),
+    });
+
+    if (!response.ok) {
+      // Usuń plik ze storage w razie niepowodzenia
+      await supabase.storage.from("project_files").remove([storagePath]);
+      const error = await response.json();
+      toast.error(error.message || "Nie udało się dodać pliku do utworu.", {
+        position: "bottom-right",
+      });
+      return;
+    }
   }
 
   // Funkcja wywoływana po zakończeniu uploadu
@@ -50,7 +95,7 @@
 
 <FileUploadModal
   bind:isOpen
-  title="Szczegóły utworu"
+  title="Dodaj nowy plik do utworu"
   acceptedFileTypes=".mp3,.wav,.m4a,.aac,.ogg,.flac,audio/*"
   maxSizeInMB={50}
   {uploadFile}
@@ -104,8 +149,8 @@
         <label for="primary-checkbox" class="text-sm text-gray-200"
           >Główny plik utworu</label
         >
-        <Tooltip 
-          content="Główny plik utworu jest domyślnie odtwarzany przy wejściu na stronę utworu. Jest to zazwyczaj finalna wersja utworu lub jego najważniejsza część."
+        <Tooltip
+          content="Główny plik utworu jest domyślnie odtwarzany przy wejściu na stronę utworu."
         />
         <input
           id="primary-checkbox"

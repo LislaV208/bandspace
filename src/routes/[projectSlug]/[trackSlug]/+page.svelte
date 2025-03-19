@@ -4,6 +4,7 @@
   import Button from "$lib/components/ui/Button.svelte";
   import FileUploadModal from "$lib/components/ui/FileUploadModal.svelte";
   import UserAvatar from "$lib/components/UserAvatar.svelte";
+  import { setSupabaseContext } from "$lib/supabase-context";
   import type { TrackCategory } from "$lib/types/track_category";
   import { format } from "date-fns";
   import { Plus, Send } from "lucide-svelte";
@@ -12,6 +13,8 @@
   import type { PageProps } from "./$types";
 
   const { data }: PageProps = $props();
+
+  setSupabaseContext(data.supabase);
 
   const {
     supabase,
@@ -417,9 +420,10 @@
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   }
 
-  async function uploadFile(file: File) {}
-
-  async function onFileUploaded() {}
+  async function onFileUploaded() {
+    // odswiez strone
+    window.location.reload();
+  }
 </script>
 
 <!-- Główny kontener z flexbox dla układu dwukolumnowego -->
@@ -1114,6 +1118,7 @@
 
 <NewFileModal
   bind:isOpen={isFileUploadModalOpen}
+  projectSlug={data.project.slug}
   trackId={data.track.id}
   {categories}
   {onFileUploaded}

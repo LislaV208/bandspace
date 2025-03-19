@@ -1,11 +1,7 @@
 import type { TrackFile } from "$lib/types/track_file";
 import { error, json, type RequestHandler } from "@sveltejs/kit";
 
-export const GET: RequestHandler = async ({
-  request,
-  locals: { supabase, user },
-  params,
-}) => {
+export const GET: RequestHandler = async ({ locals: { supabase }, params }) => {
   const trackId = parseInt(params.trackId ?? "");
 
   const { data, error: trackFileError } = await supabase
@@ -22,4 +18,54 @@ export const GET: RequestHandler = async ({
   }
 
   return json(trackFiles);
+};
+
+export const POST: RequestHandler = async ({
+  request,
+  locals: { supabase },
+  params,
+}) => {
+  const trackId = parseInt(params.trackId ?? "");
+
+  const {
+    storage_path,
+    category_id,
+    is_primary,
+    description,
+    file_extension,
+    file_name,
+    file_size,
+  } = await request.json();
+
+  console.log("uploading file", {
+    storage_path,
+    category_id,
+    is_primary,
+    description,
+    file_extension,
+    file_name,
+    file_size,
+  });
+
+  const { data: trackFile, error: trackFileError } = await supabase
+    .from("track_files")
+    .insert({
+      track_id: trackId,
+      storage_path,
+      category_id,
+      is_primary,
+      description,
+      file_extension,
+      file_name,
+      file_size,
+    })
+    .single();
+
+  if (trackFileError) {
+    throw error(500, {
+      message: trackFileError.message || "Nie udało się dodać pliku do utworu.",
+    });
+  }
+
+  return json(trackFile);
 };
