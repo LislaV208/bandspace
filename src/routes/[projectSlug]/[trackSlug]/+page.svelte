@@ -153,7 +153,7 @@
           class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
         >
           <div class="flex-1">
-            <Breadcrumbs project={data.project} recording={data.recording} />
+            <Breadcrumbs project={data.project} track={data.track} />
           </div>
 
           <div

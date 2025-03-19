@@ -1,7 +1,9 @@
 import type { Database } from "$lib/database.types";
 import type { Project } from "$lib/types/project";
+import type { TrackFile, TrackFileCreate } from "$lib/types/track_file";
 import type { User } from "$lib/types/user";
 import { error, redirect, type Actions } from "@sveltejs/kit";
+import file from "lucide-svelte/icons/file";
 import type { PageServerLoad } from "./$types";
 
 type Track = Database["public"]["Tables"]["tracks"]["Row"];
@@ -57,58 +59,28 @@ export const load: PageServerLoad = async ({
   console.log("Tracks:", tracks);
   console.log("Project users:", projectUsers);
 
+  // Pobranie kategorii utworów
+  const { data: categories, error: categoriesError } = await supabase
+    .from("track_categories")
+    .select();
+
+  if (categoriesError) {
+    console.error(
+      `Error fetching categories in +page.server.ts [${params.projectSlug}]:`,
+      categoriesError
+    );
+    throw categoriesError;
+  }
+
   return {
     project: project as Project,
     tracks,
+    categories,
     projectUsers: projectUsers.map((pu) => pu.user as User),
   };
 };
 
 export const actions = {
-  // Tworzenie nowego utworu
-  create: async ({ request, locals: { supabase, user }, params }) => {
-    const formData = await request.formData();
-
-    const name = formData.get("name")?.toString();
-    const file_name = formData.get("file_name")?.toString();
-    const projectId = formData.get("project_id")?.toString();
-    const storagePath = formData.get("storage_file_path")?.toString();
-
-    if (!file_name) {
-      throw error(400, { message: "No file name" });
-    }
-
-    if (!projectId) {
-      throw error(400, { message: "No project id" });
-    }
-
-    if (!storagePath) {
-      throw error(400, { message: "No storage file path" });
-    }
-
-    //  2. dodanie rekordu w bazie danych
-    const trackToCreate: NewTrack = {
-      name: name ? name : file_name,
-      project_id: parseInt(projectId),
-      uploaded_by: user!.id,
-      file_name: file_name,
-      storage_file_path: storagePath,
-    };
-
-    const { data: track, error: trackError } = await supabase
-      .from("tracks")
-      .insert([trackToCreate])
-      .select()
-      .single();
-
-    if (!track || trackError) {
-      throw error(500, { message: trackError.message });
-    }
-
-    // 3. przekierowanie do strony utworu
-    redirect(303, `/${params.projectSlug}/${track.slug}`);
-  },
-
   // Usuwanie utworu
   deleteTrack: async ({ request, locals: { supabase }, params }) => {
     const formData = await request.formData();
@@ -138,7 +110,7 @@ export const actions = {
     // Usun plik z storage
     const { data: storageData, error: storageError } = await supabase.storage
       .from("project_files")
-      .remove([track.storage_file_path]);
+      .remove([track?.storage_file_path ?? ""]);
 
     console.log("odpoiedz po usunieciu:", storageData, storageError);
 

@@ -3,7 +3,7 @@ import type { LayoutServerLoad } from "./$types";
 
 // interface BreadcrumbsData {
 //     projectName: string;
-//     recordingName: string | null;
+//     trackName: string | null;
 // }
 
 export const load: LayoutServerLoad = async ({
@@ -23,14 +23,14 @@ export const load: LayoutServerLoad = async ({
     throw error(500, "Internal Server Error");
   }
 
-  let recordingId = null;
-  let recordingName = null;
-  const recordingSlug = params.trackSlug ?? null;
-  if (recordingSlug) {
+  let trackId = null;
+  let trackName = null;
+  const trackSlug = params.trackSlug ?? null;
+  if (trackSlug) {
     const { data, error: fileError } = await supabase
       .from("tracks")
       .select("id, name")
-      .eq("slug", recordingSlug)
+      .eq("slug", trackSlug)
       .single();
     if (fileError) {
       console.error(
@@ -40,8 +40,8 @@ export const load: LayoutServerLoad = async ({
       throw error(500, "Internal Server Error");
     }
 
-    recordingId = data.id;
-    recordingName = data.name;
+    trackId = data.id;
+    trackName = data.name;
   }
 
   return {
@@ -50,10 +50,10 @@ export const load: LayoutServerLoad = async ({
       name: project.name,
       slug: params.projectSlug,
     },
-    recording: {
-      id: recordingId,
-      name: recordingName,
-      slug: recordingSlug,
+    track: {
+      id: trackId,
+      name: trackName,
+      slug: trackSlug,
     },
   };
 };

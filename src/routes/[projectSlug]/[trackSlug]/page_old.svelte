@@ -173,7 +173,7 @@
   ];
 </script>
 
-<Breadcrumbs project={data.project} recording={data.recording} />
+<Breadcrumbs project={data.project} track={data.track} />
 <div class="flex-1 pt-8 pb-8">
   <!-- System zakładek -->
   <div class="mb-6">

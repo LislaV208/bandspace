@@ -53,7 +53,7 @@
   </div>
 </div>
 
-<!-- <Breadcrumbs project={data.project} recording={data.recording} /> -->
+<!-- <Breadcrumbs project={data.project} track={data.track} /> -->
 <div class="h-full flex bg-gray-600">
   <!-- Panel z zawartością zakładek -->
   <!-- class="flex-1 bg-gray-800/90 rounded-lg border border-gray-700/30 shadow-lg" -->

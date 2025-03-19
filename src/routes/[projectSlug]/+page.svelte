@@ -94,6 +94,7 @@
   const supabase = data.supabase;
   const project = data.project;
   const projectUsers = data.projectUsers;
+  const categories = data.categories;
 
   setSupabaseContext(supabase);
 
@@ -358,4 +359,4 @@
     window.location.reload();
   }}
 />
-<NewTrackModal bind:isOpen={isCreateModalOpen} {project} />
+<NewTrackModal bind:isOpen={isCreateModalOpen} {project} {categories} />

@@ -1,9 +1,11 @@
 <script lang="ts">
-  import { enhance } from "$app/forms";
   import { goto } from "$app/navigation";
   import Modal from "$lib/components/ui/Modal.svelte";
   import { getSupabaseContext } from "$lib/supabase-context";
   import type { Project } from "$lib/types/project";
+  import type { Track } from "$lib/types/track";
+  import type { TrackCategory } from "$lib/types/track_category";
+  import type { TrackFileCreate } from "$lib/types/track_file";
   import {
     FileMusic,
     Info,
@@ -18,19 +20,25 @@
   import Button from "../ui/Button.svelte";
   import Input from "../ui/Input.svelte";
 
-  let { isOpen = $bindable(), project }: { isOpen: boolean; project: Project } =
-    $props();
+  let {
+    isOpen = $bindable(),
+    project,
+    categories,
+  }: {
+    isOpen: boolean;
+    project: Project;
+    categories: TrackCategory[];
+  } = $props();
 
   let selectedFile = $state<File | null>(null);
   let songName = $state("");
-  let category = $state("Demo");
+  let category = $state(categories[0]);
   let description = $state("");
   let isUploading = $state(false);
   let currentStep = $state(1); // 1: wybór pliku, 2: szczegóły utworu
   let dragActive = $state(false);
   let globalDragCounter = $state(0);
 
-  const categories = ["Demo", "Instrumenty", "Wokal", "Mix", "Finał"];
   const supabase = getSupabaseContext();
 
   // Obsługa globalnego przeciągania plików
@@ -154,7 +162,7 @@
           selectedFile = null;
           songName = "";
           description = "";
-          category = "Demo";
+          category = categories[0];
           currentStep = 1;
           dragActive = false;
           globalDragCounter = 0;
@@ -261,19 +269,17 @@
     </div>
   {:else if currentStep === 2}
     <form
-      action="?/create"
-      method="POST"
       class="space-y-6"
-      use:enhance={async ({ formElement, formData }) => {
+      onsubmit={async () => {
         isUploading = true;
-        const file = selectedFile;
-        if (!file) {
+
+        if (!selectedFile) {
           isUploading = false;
           toast.error("Nie wybrano pliku", { position: "bottom-right" });
           return;
         }
 
-        const { storagePath, storageError } = await uploadFile(file);
+        const { storagePath, storageError } = await uploadFile(selectedFile);
 
         if (storageError) {
           isUploading = false;
@@ -281,19 +287,53 @@
           return;
         }
 
-        formData.append("storage_file_path", storagePath);
-        formData.append("category", category);
-        formData.append("description", description);
+        const trackFileToCreate: TrackFileCreate = {
+          storage_path: storagePath,
+          category_id: category.id,
+          description,
+          duration: 0,
+          file_size: selectedFile.size,
+          file_extension: selectedFile.type,
+          file_name: selectedFile.name,
+          is_primary: true,
+        };
 
-        return async ({ result }) => {
-          if (result.type === "error") {
+        try {
+          const response = await fetch("/api/tracks", {
+            method: "POST",
+            body: JSON.stringify({
+              projectId: project.id,
+              trackName: songName,
+              categoryId: category.id,
+              file: trackFileToCreate,
+            }),
+          });
+
+          if (!response.ok) {
+            console.log(response);
+            const error = await response.json();
+            console.error("Error creating track:", error);
             await supabase.storage.from("project_files").remove([storagePath]);
             isUploading = false;
-            toast.error(result.error.message, { position: "bottom-right" });
-          } else if (result.type === "redirect") {
-            goto(result.location);
+            toast.error(error.message, { position: "bottom-right" });
+            return;
           }
-        };
+
+          const track = (await response.json()) as Track;
+          console.log("Created track:", track);
+          const redirectUrl = `/${project.slug}/${track.slug}`;
+          goto(redirectUrl);
+        } catch (error) {
+          console.error("Catched error creating track:", error);
+          toast.error(
+            error instanceof Error
+              ? error.message
+              : "Błąd podczas tworzenia utworu",
+            { position: "bottom-right" }
+          );
+          await supabase.storage.from("project_files").remove([storagePath]);
+          isUploading = false;
+        }
       }}
     >
       <input type="hidden" name="project_id" value={project.id} />
@@ -360,13 +400,13 @@
               {#each categories as cat}
                 <button
                   type="button"
-                  class="px-3 py-1.5 rounded-full text-sm transition-all {category ===
-                  cat
+                  class="px-3 py-1.5 rounded-full text-sm transition-all {category.id ===
+                  cat.id
                     ? 'text-white font-semibold bg-blue-600'
                     : 'bg-gray-700/50 text-gray-300 hover:bg-gray-700 hover:text-white'}"
                   onclick={() => (category = cat)}
                 >
-                  {cat}
+                  {cat.name}
                 </button>
               {/each}
             </div>

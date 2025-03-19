@@ -175,9 +175,9 @@ export type Database = {
           file_extension: string
           file_name: string
           file_size: number
-          file_url: string
           id: number
           is_primary: boolean
+          storage_path: string
           track_id: number
           updated_at: string
           uploaded_by: string
@@ -190,9 +190,9 @@ export type Database = {
           file_extension: string
           file_name: string
           file_size: number
-          file_url: string
           id?: number
           is_primary?: boolean
+          storage_path: string
           track_id: number
           updated_at?: string
           uploaded_by?: string
@@ -205,9 +205,9 @@ export type Database = {
           file_extension?: string
           file_name?: string
           file_size?: number
-          file_url?: string
           id?: number
           is_primary?: boolean
+          storage_path?: string
           track_id?: number
           updated_at?: string
           uploaded_by?: string
@@ -239,32 +239,32 @@ export type Database = {
       tracks: {
         Row: {
           created_at: string
-          file_name: string
+          file_name: string | null
           id: number
           name: string
           project_id: number
           slug: string
-          storage_file_path: string
+          storage_file_path: string | null
           uploaded_by: string
         }
         Insert: {
           created_at?: string
-          file_name: string
+          file_name?: string | null
           id?: number
           name?: string
           project_id: number
           slug?: string
-          storage_file_path?: string
+          storage_file_path?: string | null
           uploaded_by?: string
         }
         Update: {
           created_at?: string
-          file_name?: string
+          file_name?: string | null
           id?: number
           name?: string
           project_id?: number
           slug?: string
-          storage_file_path?: string
+          storage_file_path?: string | null
           uploaded_by?: string
         }
         Relationships: [
