@@ -84,23 +84,24 @@
 ## 9. Komentarze do utworu
 - Dodawanie komentarzy do utworu
 
+## 10. Przypisanie wielu plików do utworu
+- Modyfikacja struktury bazy danych umożliwiająca przechowywanie wielu plików dla jednego utworu
+- Implementacja podstawowej kategoryzacji plików
+- Interfejs listy plików dla utworu z podstawowymi informacjami 
+- Możliwość odtwarzania każdego pliku bezpośrednio w aplikacji
+- Oznaczanie pliku jako "głównego" dla utworu
+- Filtrowanie plików po kategorii
+
 
 ## BACKLOG:
   - komentarze do utworu - ulepszenie
 
+
 ### Przypisanie wielu plików do utworu
-
-#### Priorytet 1 (Core)
-- Modyfikacja struktury bazy danych umożliwiająca przechowywanie wielu plików dla jednego utworu
-- Implementacja podstawowej kategoryzacji plików (Demo, Instrumenty, Finał)
-- Interfejs listy plików dla utworu z podstawowymi informacjami (nazwa, data, autor)
-- Możliwość odtwarzania każdego pliku bezpośrednio w aplikacji
-- Oznaczanie pliku jako "głównego" dla utworu
-
 #### Priorytet 2 (Przydatne)
 - Rozszerzona kategoryzacja plików (podkategorie instrumentów, fragmenty, próby, mix/master)
 - Komentarze do poszczególnych plików (nie tylko do głównego utworu)
-- Filtrowanie plików po kategorii, dacie, autorze
+- Filtrowanie plików po dacie, autorze
 - Sortowanie listy plików według różnych kryteriów
 - Dodatkowe metadane plików (tempo, tonacja, długość)
 

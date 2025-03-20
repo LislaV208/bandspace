@@ -1,3 +1,7 @@
+# 0.3.0
+- przypisanie wielu plików do utworu
+- zmiany w layoucie strony
+
 # 0.2.0
 - komentarze do utworu
 
