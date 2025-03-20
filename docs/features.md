@@ -94,8 +94,18 @@
 
 
 ## BACKLOG:
-  - komentarze do utworu - ulepszenie
-
+### MUST-HAVE
+- poprawki związane z głównym plikiem utworu
+- komentarze real-time
+- komentarze do plików utworu 
+- oznaczanie użytkowników w komentarzach
+- usunięcie komentarza
+- edycja nazwy utworu
+- edycja pliku (nazwa, kategoria, opis)
+- usunięcie pliku
+- usunięcie projektu tylko kiedy wszyscy go opuszczą
+- zmiana hasła użytkownika
+- przypomnienie hasła użytkownika
 
 ### Przypisanie wielu plików do utworu
 #### Priorytet 2 (Przydatne)
@@ -113,3 +123,5 @@
 - System powiadomień o nowych plikach
 - Prosty edytor audio online
 
+
+  - komentarze do utworu - ulepszenie

@@ -56,12 +56,15 @@
     >
       <nav class="px-6 py-3">
         <div class="flex items-center justify-between">
-          <div class="flex items-center space-x-6">
+          <div class="flex items-center space-x-6 relative">
             <button
               class="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-gray-400 to-gray-300"
             >
               <a href="/"> BandSpace </a>
             </button>
+            <div class="absolute -bottom-3 -right-3 text-xs text-gray-400/50">
+              v{version}
+            </div>
           </div>
           <div class="flex items-center">
             <UserProfileMenu {user} />
