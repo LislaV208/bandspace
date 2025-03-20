@@ -1,15 +1,17 @@
 <script lang="ts">
   import { HelpCircle } from "lucide-svelte";
-  import { onMount } from "svelte";
+  import { onMount, type Snippet } from "svelte";
 
   let {
     content,
     position = "bottom",
     width = "w-64",
+    children,
   }: {
     content: string;
     position?: "top" | "bottom" | "left" | "right";
     width?: string;
+    children?: Snippet;
   } = $props();
 
   let isVisible = $state(false);
@@ -25,32 +27,35 @@
 
   onMount(() => {
     isMobile = detectMobile();
-    
+
     // Nasłuchiwanie kliknięć poza tooltipem na urządzeniach mobilnych
     const handleClickOutside = (event: MouseEvent) => {
-      if (isMobile && isMobileVisible && 
-          tooltipRef && 
-          buttonRef && 
-          !tooltipRef.contains(event.target as Node) && 
-          !buttonRef.contains(event.target as Node)) {
+      if (
+        isMobile &&
+        isMobileVisible &&
+        tooltipRef &&
+        buttonRef &&
+        !tooltipRef.contains(event.target as Node) &&
+        !buttonRef.contains(event.target as Node)
+      ) {
         isMobileVisible = false;
       }
     };
-    
+
     // Nasłuchiwanie klawisza Escape
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && (isVisible || isMobileVisible)) {
+      if (event.key === "Escape" && (isVisible || isMobileVisible)) {
         isVisible = false;
         isMobileVisible = false;
       }
     };
-    
-    document.addEventListener('click', handleClickOutside);
-    document.addEventListener('keydown', handleKeyDown);
-    
+
+    document.addEventListener("click", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+
     return () => {
-      document.removeEventListener('click', handleClickOutside);
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener("click", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   });
 
@@ -70,7 +75,7 @@
   };
 </script>
 
-<div class="relative inline-flex items-center">
+<div class="relative inline-flex items-center overflow-visible">
   <button
     bind:this={buttonRef}
     type="button"
@@ -80,14 +85,20 @@
     onclick={toggleMobileVisibility}
     aria-label="Pokaż więcej informacji"
   >
-    <HelpCircle size={16} />
+    {#if children}
+      {@render children()}
+    {:else}
+      <HelpCircle size={16} />
+    {/if}
   </button>
-  
+
   {#if isVisible || isMobileVisible}
     <!-- Używamy elementu div tylko do wyświetlania treści, bez interaktywności -->
-    <div 
+    <div
       bind:this={tooltipRef}
-      class="absolute z-50 {positionClasses[position]} p-2 bg-gray-900 text-gray-200 text-xs rounded-md shadow-lg {width} border border-gray-700"
+      class="absolute z-50 {positionClasses[
+        position
+      ]} p-2 bg-gray-900 text-gray-200 text-xs rounded-md shadow-lg {width} border border-gray-700"
       role="tooltip"
       aria-live="polite"
     >

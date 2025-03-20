@@ -3,13 +3,14 @@
   import NewFileModal from "$lib/components/tracks/NewFileModal.svelte";
   import Button from "$lib/components/ui/Button.svelte";
   import FileUploadModal from "$lib/components/ui/FileUploadModal.svelte";
+  import Tooltip from "$lib/components/ui/Tooltip.svelte";
   import UserAvatar from "$lib/components/UserAvatar.svelte";
   import { setSupabaseContext } from "$lib/supabase-context";
   import type { TrackCategory } from "$lib/types/track_category";
   import type { TrackFile } from "$lib/types/track_file";
   import { format } from "date-fns";
-  import { Plus, Send } from "lucide-svelte";
-  import { onMount, onDestroy } from "svelte";
+  import { CircleCheckBig, Plus, Send, Star } from "lucide-svelte";
+  import { onDestroy, onMount } from "svelte";
   import toast from "svelte-french-toast";
   import type { PageProps } from "./$types";
 
@@ -53,7 +54,7 @@
       audioElement.src = "";
       isPlaying = false;
     }
-    
+
     // Czyszczenie interwałów, jeśli istnieją
     if (seekInterval !== null) {
       clearInterval(seekInterval);
@@ -63,10 +64,10 @@
 
   function autoResizeTextarea() {
     if (!commentTextarea) return;
-    
+
     // Resetuj wysokość, aby uzyskać prawidłową wysokość scrollHeight
-    commentTextarea.style.height = 'auto';
-    
+    commentTextarea.style.height = "auto";
+
     // Ustaw nową wysokość na podstawie zawartości, ale z maksymalną wysokością
     const newHeight = Math.min(commentTextarea.scrollHeight, 128); // 128px to około 4 linii
     commentTextarea.style.height = `${newHeight}px`;
@@ -595,7 +596,12 @@
 
         <!-- Lista plików audio -->
         <div class="space-y-3">
-          {#each files.filter((file) => selectedCategory === null || file.category.id === selectedCategory.id) as file}
+          {#each files
+            .filter((file) => selectedCategory === null || file.category.id === selectedCategory.id)
+            .sort( (a, b) => (a.is_primary ? -1 : b.is_primary ? 1 : 0) ) as file, index}
+            {#if index === 1 && files.some((f) => f.is_primary && (selectedCategory === null || f.category.id === selectedCategory.id))}
+              <div class=" border-t border-gray-700/50 m-4"></div>
+            {/if}
             <div
               class="group relative bg-gray-800/50 hover:bg-gray-800/80 rounded-lg border border-gray-700/30 transition-all overflow-hidden cursor-pointer"
               onclick={() => {
@@ -638,7 +644,7 @@
                   </div>
 
                   <!-- Środkowa część z informacjami o pliku -->
-                  <div class="flex-grow min-w-0 overflow-hidden pr-3">
+                  <div class="flex-grow min-w-0 overflow-visible pr-3">
                     <div class="flex flex-wrap items-center gap-2 mb-1">
                       <!-- Nazwa pliku -->
                       <h3
@@ -646,6 +652,20 @@
                       >
                         {file.file_name}
                       </h3>
+                      {#if file.is_primary}
+                        <div class="inline-flex items-center ml-1">
+                          <Tooltip
+                            content="Plik domyślny"
+                            position="right"
+                            width="w-32"
+                          >
+                            <CircleCheckBig
+                              size={16}
+                              class="text-blue-400 hover:text-blue-300"
+                            />
+                          </Tooltip>
+                        </div>
+                      {/if}
                     </div>
 
                     <!-- Opis pliku (zawsze widoczny) -->
@@ -1167,7 +1187,7 @@
             rows="1"
             oninput={autoResizeTextarea}
             onkeydown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
+              if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
                 if (commentInputValue.trim()) {
                   handleAddComment();
