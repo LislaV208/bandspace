@@ -9,7 +9,7 @@
   import type { TrackFile } from "$lib/types/track_file";
   import { format } from "date-fns";
   import { Plus, Send } from "lucide-svelte";
-  import { onMount } from "svelte";
+  import { onMount, onDestroy } from "svelte";
   import toast from "svelte-french-toast";
   import type { PageProps } from "./$types";
 
@@ -45,6 +45,21 @@
   let isSeeking = $state(false); // Flaga wskazująca, czy użytkownik aktualnie przewija
 
   let isFileUploadModalOpen = $state(false);
+
+  // Funkcja do zatrzymywania odtwarzania audio przy opuszczeniu strony
+  onDestroy(() => {
+    if (audioElement) {
+      audioElement.pause();
+      audioElement.src = "";
+      isPlaying = false;
+    }
+    
+    // Czyszczenie interwałów, jeśli istnieją
+    if (seekInterval !== null) {
+      clearInterval(seekInterval);
+      seekInterval = null;
+    }
+  });
 
   function autoResizeTextarea() {
     if (!commentTextarea) return;
