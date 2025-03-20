@@ -29,6 +29,7 @@
 
   let commentInputValue = $state("");
   let commentError = $state<string | null>(null);
+  let commentTextarea: HTMLTextAreaElement;
 
   let showMobileComments = $state(false);
 
@@ -44,6 +45,17 @@
   let isSeeking = $state(false); // Flaga wskazująca, czy użytkownik aktualnie przewija
 
   let isFileUploadModalOpen = $state(false);
+
+  function autoResizeTextarea() {
+    if (!commentTextarea) return;
+    
+    // Resetuj wysokość, aby uzyskać prawidłową wysokość scrollHeight
+    commentTextarea.style.height = 'auto';
+    
+    // Ustaw nową wysokość na podstawie zawartości, ale z maksymalną wysokością
+    const newHeight = Math.min(commentTextarea.scrollHeight, 128); // 128px to około 4 linii
+    commentTextarea.style.height = `${newHeight}px`;
+  }
 
   async function handleAddComment() {
     if (!commentInputValue.trim()) return;
@@ -1134,9 +1146,19 @@
         <div class="flex-1 min-w-0">
           <textarea
             bind:value={commentInputValue}
+            bind:this={commentTextarea}
             placeholder="Dodaj komentarz..."
-            class="w-full h-10 bg-gray-800/70 border border-gray-700/50 rounded-md px-3 py-2 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none overflow-hidden"
+            class="w-full min-h-10 max-h-32 bg-gray-800/70 border border-gray-700/50 rounded-md px-3 py-2 text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none overflow-auto"
             rows="1"
+            oninput={autoResizeTextarea}
+            onkeydown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (commentInputValue.trim()) {
+                  handleAddComment();
+                }
+              }
+            }}
           ></textarea>
         </div>
         <div class="flex-shrink-0 self-start">
