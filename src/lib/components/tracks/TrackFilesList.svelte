@@ -3,12 +3,14 @@
   import type { TrackFile } from "$lib/types/track_file";
   import { format } from "date-fns";
   import { CircleCheckBig } from "lucide-svelte";
-  import { fade, slide } from "svelte/transition";
-  import { crossfade } from "svelte/transition";
+  import { crossfade, fade, slide } from "svelte/transition";
   import Tooltip from "../ui/Tooltip.svelte";
-  
+
   // Tworzę niestandardowe przejście, które łączy fade i slide
-  function fadeSlide(node: HTMLElement, { delay = 0, duration = 300 }: { delay?: number; duration?: number }) {
+  function fadeSlide(
+    node: HTMLElement,
+    { delay = 50, duration = 400 }: { delay?: number; duration?: number }
+  ) {
     return {
       delay,
       duration,
@@ -18,7 +20,7 @@
           opacity: ${eased};
           transform: translateY(${(1 - eased) * 15}px);
         `;
-      }
+      },
     };
   }
 

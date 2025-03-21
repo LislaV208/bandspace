@@ -3,7 +3,7 @@
   import type { Snippet } from "svelte";
 
   let {
-    variant = "normal",
+    variant = "primary",
     primary = false,
     icon,
     isLoading,
@@ -12,7 +12,7 @@
     children,
     ...props
   }: {
-    variant?: "normal" | "accent" | "danger";
+    variant?: "primary" | "accent" | "danger";
     primary?: boolean;
     icon?: any;
     isLoading?: boolean;
@@ -24,10 +24,10 @@
 
   const IconComponent = $derived(icon);
 
-  variant = primary ? "accent" : variant;
+  variant = primary ? "primary" : variant;
 
   let color =
-    variant === "accent"
+    variant === "accent" || variant === "primary"
       ? "bg-blue-600 hover:bg-blue-500"
       : variant === "danger"
         ? "bg-red-600 hover:bg-red-500"

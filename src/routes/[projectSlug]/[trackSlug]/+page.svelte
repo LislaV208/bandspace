@@ -4,6 +4,7 @@
   import NewFileModal from "$lib/components/tracks/NewFileModal.svelte";
   import TrackFilesList from "$lib/components/tracks/TrackFilesList.svelte";
   import AudioPlayer from "$lib/components/ui/AudioPlayer.svelte";
+  import ConfirmModal from "$lib/components/ui/ConfirmModal.svelte";
   import { setSupabaseContext } from "$lib/supabase-context";
   import type { TrackFile } from "$lib/types/track_file";
   import { Plus } from "lucide-svelte";
@@ -33,6 +34,10 @@
   let isFileUploadModalOpen = $state(false);
 
   let audioUrl = $state<string | null>(null);
+
+  let isDeleteModalOpen = $state(false);
+  let isDeleteDefaultModalOpen = $state(false);
+  let fileToDelete: TrackFile | null = null;
 
   onMount(() => {
     if (selectedFile) {
@@ -120,9 +125,7 @@
       selectedFile = uploadedFile;
       getAudioUrl();
 
-      toast.success("Plik został dodany do utworu.", {
-        position: "bottom-right",
-      });
+      toast.success("Plik został dodany");
     }
   }
 
@@ -182,24 +185,31 @@
   }
 
   async function deleteFile(file: TrackFile) {
-    toast.error("Not implemented");
-    return;
-    const response = await fetch(`/api/tracks/${track.id}/files/${file.id}`, {
-      method: "DELETE",
-    });
+    console.trace("Usuwanie pliku:", file);
+    await supabase.storage.from("track_files").remove([file.storage_path]);
+
+    const response = await toast.promise(
+      fetch(`/api/files/${file.id}`, {
+        method: "DELETE",
+      }),
+      {
+        loading: "Usuwanie pliku...",
+        success: "Plik został usunięty.",
+        error: "Nie udało się usunąć pliku.",
+      }
+    );
 
     if (!response.ok) {
-      toast.error("Nie udało się usunąć pliku.", {
-        position: "bottom-right",
-      });
+      toast.error("Nie udało się usunąć pliku.");
       return;
     }
 
-    track = await response.json();
-
-    toast.success("Plik został usunięty.", {
-      position: "bottom-right",
-    });
+    if (selectedFile.id === file.id) {
+      const file = files.find((f) => f.id !== defaultFileId);
+      selectedFile = file ?? files[0];
+    }
+    files = files.filter((f) => f.id !== file.id);
+    fileToDelete = null;
   }
 </script>
 
@@ -277,7 +287,14 @@
           {onFileSelected}
           {changeDefaultFile}
           {downloadFile}
-          {deleteFile}
+          deleteFile={(file) => {
+            if (file.id === defaultFileId) {
+              isDeleteDefaultModalOpen = true;
+            } else {
+              isDeleteModalOpen = true;
+              fileToDelete = file;
+            }
+          }}
         />
       </div>
     </div>
@@ -294,6 +311,37 @@
   {categories}
   {onFileUploaded}
 />
+
+<!-- Modal usuwania pliku -->
+<ConfirmModal
+  bind:isOpen={isDeleteModalOpen}
+  onClose={() => {
+    isDeleteModalOpen = false;
+    console.log("isDeleteModalOpen onClose", isDeleteModalOpen);
+  }}
+  onConfirm={() => {
+    if (fileToDelete) deleteFile(fileToDelete);
+  }}
+  title="Usuń plik"
+  buttonVariant="danger"
+  buttonText="Usuń"
+>
+  <p>Czy na pewno chcesz usunąć ten plik? Tej operacji nie można cofnąć.</p>
+</ConfirmModal>
+
+<!-- Modal usuwania domyślnefgo pliku -->
+<ConfirmModal
+  bind:isOpen={isDeleteDefaultModalOpen}
+  onClose={() => {
+    isDeleteDefaultModalOpen = false;
+  }}
+  onConfirm={() => {}}
+  title="Usuń plik"
+  buttonText="Usuń utwór"
+  buttonVariant="danger"
+>
+  <p>Usunięcie tego pliku spowoduje usunięcie całego utworu. Kontynuować?</p>
+</ConfirmModal>
 
 <style>
   /* Styl zapobiegający zaznaczaniu tekstu podczas przeciągania paska postępu */
