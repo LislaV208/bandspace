@@ -516,6 +516,31 @@
       position: "bottom-right",
     });
   }
+
+  async function setFileDefault(file: TrackFile) {
+    const response = await fetch(`/api/tracks/${track.id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        defaultFileId: file.id,
+      }),
+    });
+
+    if (!response.ok) {
+      toast.error("Nie udało się ustawić pliku jako domyślny.", {
+        position: "bottom-right",
+      });
+      return;
+    }
+
+    track = await response.json();
+
+    toast.success("Plik został ustawiony jako domyślny.", {
+      position: "bottom-right",
+    });
+  }
 </script>
 
 <!-- Główny kontener z flexbox dla układu dwukolumnowego -->
@@ -630,8 +655,7 @@
               <div class=" border-t border-gray-700/50 m-4"></div>
             {/if}
             <div
-              in:fade={{ duration: 500 }}
-              out:slide={{ duration: 500 }}
+              transition:fade={{ duration: 500 }}
               class="group relative bg-gray-800/50 hover:bg-gray-800/80 rounded-lg border border-gray-700/30 transition-all overflow-hidden cursor-pointer"
               onclick={() => {
                 if (selectedFile()?.id !== file.id) {
@@ -765,12 +789,54 @@
                   </div>
 
                   <!-- Prawa strona z akcjami -->
-                  <div class="flex-shrink-0 ml-2 flex items-center">
+                  <div class="flex-shrink-0 ml-2 flex items-center gap-2">
+                    <!-- Ustaw plik jako domyślny (widoczne tylko po najechaniu) -->
+                    {#if !isFilePrimary(file)}
+                      <button
+                        class="p-2.5 bg-blue-500/10 hover:bg-blue-500/20 text-gray-400 hover:text-gray-300 rounded-full transition-all opacity-0 group-hover:opacity-100"
+                        aria-label="Ustaw plik jako domyślny"
+                        onclick={(e) => {
+                          e.stopPropagation();
+                          setFileDefault(file);
+                        }}
+                      >
+                        <CircleCheckBig size={18} />
+                      </button>
+                    {/if}
+                    <!-- Usuń plik (widoczne tylko po najechaniu) -->
+                    <button
+                      class="p-2.5 bg-red-500/10 hover:bg-red-500/20 text-gray-400 hover:text-red-300 rounded-full transition-all opacity-0 group-hover:opacity-100"
+                      aria-label="Usuń plik"
+                      onclick={(e) => {
+                        e.stopPropagation();
+                        // Tutaj będzie funkcja do usuwania pliku
+                        // deleteFile(file);
+                      }}
+                    >
+                      <svg
+                        width="18"
+                        height="18"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        ></path>
+                      </svg>
+                    </button>
                     <!-- Pobierz (zawsze widoczny) -->
                     <button
                       class="p-2.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 hover:text-blue-300 rounded-full transition-colors"
                       aria-label="Pobierz plik"
-                      onclick={() => downloadFile(file)}
+                      onclick={(e) => {
+                        e.stopPropagation();
+                        downloadFile(file);
+                      }}
                     >
                       <svg
                         width="18"

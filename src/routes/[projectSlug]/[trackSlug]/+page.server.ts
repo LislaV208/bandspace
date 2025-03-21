@@ -18,11 +18,21 @@ export const load: PageServerLoad = async ({
   const { data: track, error: trackError } = await supabase
     .from("tracks")
     .select(
-      "*, uploaded_by(*), comments:track_comments(*, user:user_id(*)), files:track_files(*, uploaded_by(*), category:category_id(*))"
+      `*, 
+      uploaded_by(*), 
+      comments:track_comments(*, user:user_id(*)), 
+      files:track_files(*, uploaded_by(*), category:category_id(*))`
     )
     .eq("project_id", project.id)
     .eq("slug", params.trackSlug)
     .single();
+
+  // Sortujemy pliki po created_at (od najnowszych do najstarszych)
+  if (track && track.files) {
+    track.files.sort((a, b) => {
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+  }
 
   if (trackError) {
     throw error(500, trackError.message);
