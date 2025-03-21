@@ -87,12 +87,12 @@
   {#each files
     .filter((file) => selectedCategory === null || file.category.id === selectedCategory.id)
     .sort( (a, b) => (isFileDefault(a) ? -1 : isFileDefault(b) ? 1 : 0) ) as file, index (file.id)}
-    <div transition:slide={{ duration: 500 }}>
+    <div>
       {#if index === 1 && files.some((f) => isFileDefault(f) && (selectedCategory === null || f.category.id === selectedCategory.id))}
-        <div class=" border-t border-gray-700/50 m-4"></div>
+        <div class="border-t border-gray-700/50 my-4"></div>
       {/if}
       <div
-        transition:fade={{ duration: 500 }}
+        in:fade={{ duration: 300, delay: 50 }}
         class="group relative bg-gray-800/50 hover:bg-gray-800/80 rounded-lg border border-gray-700/30 transition-all overflow-hidden cursor-pointer"
         onclick={() => {
           if (selectedFile.id !== file.id) {
