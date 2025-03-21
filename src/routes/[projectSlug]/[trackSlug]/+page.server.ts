@@ -30,7 +30,18 @@ export const load: PageServerLoad = async ({
   // Sortujemy pliki po created_at (od najnowszych do najstarszych)
   if (track && track.files) {
     track.files.sort((a, b) => {
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      return (
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+    });
+  }
+
+  // Sortujemy komentarze po created_at (od najnowszych do najstarszych)
+  if (track && track.comments) {
+    track.comments.sort((a, b) => {
+      return (
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
     });
   }
 
