@@ -4,7 +4,23 @@
   import { format } from "date-fns";
   import { CircleCheckBig } from "lucide-svelte";
   import { fade, slide } from "svelte/transition";
+  import { crossfade } from "svelte/transition";
   import Tooltip from "../ui/Tooltip.svelte";
+  
+  // Tworzę niestandardowe przejście, które łączy fade i slide
+  function fadeSlide(node: HTMLElement, { delay = 0, duration = 300 }: { delay?: number; duration?: number }) {
+    return {
+      delay,
+      duration,
+      css: (t: number) => {
+        const eased = t * (2 - t); // easing function
+        return `
+          opacity: ${eased};
+          transform: translateY(${(1 - eased) * 15}px);
+        `;
+      }
+    };
+  }
 
   let {
     files = $bindable(),
@@ -92,7 +108,8 @@
         <div class="border-t border-gray-700/50 my-4"></div>
       {/if}
       <div
-        in:fade={{ duration: 300, delay: 50 }}
+        in:fadeSlide|local={{ duration: 300, delay: 50 }}
+        out:fadeSlide|local={{ duration: 200, delay: 0 }}
         class="group relative bg-gray-800/50 hover:bg-gray-800/80 rounded-lg border border-gray-700/30 transition-all overflow-hidden cursor-pointer"
         onclick={() => {
           if (selectedFile.id !== file.id) {
