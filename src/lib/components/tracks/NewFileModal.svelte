@@ -22,7 +22,7 @@
   } = $props();
 
   let selectedCategory: TrackCategory | null = $state(null);
-  let isPrimary = $state(false);
+  let isDefault = $state(false);
   let description = $state("");
 
   const supabase = getSupabaseContext();
@@ -60,7 +60,7 @@
       body: JSON.stringify({
         storage_path: storagePath,
         category_id: selectedCategory?.id,
-        is_primary: isPrimary,
+        is_default: isDefault,
         description: description,
         file_extension: file.type,
         file_name: file.name,
@@ -86,7 +86,7 @@
   function handleFileUploaded(uploadedFile: any) {
     // Reset stanu
     selectedCategory = null;
-    isPrimary = false;
+    isDefault = false;
     description = "";
 
     // Wywołaj callback z nowo utworzonym plikiem, jeśli istnieje
@@ -142,26 +142,26 @@
         <button
           type="button"
           class="text-gray-300 hover:text-white transition-colors flex-shrink-0"
-          onclick={() => (isPrimary = !isPrimary)}
+          onclick={() => (isDefault = !isDefault)}
           aria-label="Główny plik utworu"
         >
-          {#if isPrimary}
+          {#if isDefault}
             <CheckSquare size={20} class="text-blue-500" />
           {:else}
             <Square size={20} />
           {/if}
         </button>
         <label for="primary-checkbox" class="text-sm text-gray-200"
-          >Główny plik utworu</label
+          >Domyślny plik utworu</label
         >
         <Tooltip
-          content="Główny plik utworu jest domyślnie odtwarzany przy wejściu na stronę utworu."
+          content="Domyślnie ustawiany jako wybrany plik przy wejściu na stronę utworu."
         />
         <input
           id="primary-checkbox"
           type="checkbox"
           class="hidden"
-          bind:checked={isPrimary}
+          bind:checked={isDefault}
         />
       </div>
 

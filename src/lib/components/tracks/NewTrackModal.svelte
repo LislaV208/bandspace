@@ -295,7 +295,6 @@
           file_size: selectedFile.size,
           file_extension: selectedFile.type,
           file_name: selectedFile.name,
-          is_primary: true,
         };
 
         try {

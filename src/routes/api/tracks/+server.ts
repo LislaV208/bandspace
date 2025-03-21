@@ -56,19 +56,40 @@ export const POST: RequestHandler = async ({
   }
 
   // 2. Utwórz wpis w tabeli track_files
-  const { error: fileError } = await supabase.from("track_files").insert([
-    {
-      ...file,
-      track_id: track.id,
-      uploaded_by: user.id,
-    },
-  ]);
+  const { data: trackFile, error: fileError } = await supabase
+    .from("track_files")
+    .insert([
+      {
+        ...file,
+        track_id: track.id,
+        uploaded_by: user.id,
+      },
+    ])
+    .select("id")
+    .single();
 
   if (fileError) {
     // Usuń utwór, jeśli dodanie wpisu się nie powiodło
     await supabase.from("tracks").delete().eq("id", track.id);
     throw error(500, {
       message: "Błąd podczas dodawania pliku: " + fileError.message,
+    });
+  }
+
+  // 3. Ustaw plik domyślny
+  const { error: defaultFileError } = await supabase
+    .from("tracks")
+    .update({
+      default_file_id: trackFile.id,
+    })
+    .eq("id", track.id);
+
+  if (defaultFileError) {
+    await supabase.from("track_files").delete().eq("id", trackFile.id);
+    await supabase.from("tracks").delete().eq("id", track.id);
+    throw error(500, {
+      message:
+        "Błąd podczas ustawiania pliku domyślnego: " + defaultFileError.message,
     });
   }
 

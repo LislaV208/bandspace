@@ -12,5 +12,11 @@ export type TrackFile = Omit<dbTrackFile, "category_id" | "uploaded_by"> & {
 
 export type TrackFileCreate = Omit<
   dbTrackFile,
-  "id" | "track_id" | "uploaded_by" | "created_at" | "updated_at"
+  | "id"
+  | "track_id"
+  | "uploaded_by"
+  | "created_at"
+  | "updated_at"
+  | "default_file_id"
+  | "is_primary" // TODO: remove
 >;

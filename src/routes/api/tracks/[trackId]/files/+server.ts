@@ -30,22 +30,12 @@ export const POST: RequestHandler = async ({
   const {
     storage_path,
     category_id,
-    is_primary,
+    is_default,
     description,
     file_extension,
     file_name,
     file_size,
   } = await request.json();
-
-  console.log("uploading file", {
-    storage_path,
-    category_id,
-    is_primary,
-    description,
-    file_extension,
-    file_name,
-    file_size,
-  });
 
   const { data: trackFile, error: trackFileError } = await supabase
     .from("track_files")
@@ -53,7 +43,6 @@ export const POST: RequestHandler = async ({
       track_id: trackId,
       storage_path,
       category_id,
-      is_primary,
       description,
       file_extension,
       file_name,
@@ -66,6 +55,32 @@ export const POST: RequestHandler = async ({
     throw error(500, {
       message: trackFileError.message || "Nie udało się dodać pliku do utworu.",
     });
+  }
+
+  if (is_default) {
+    const { error: trackError } = await supabase
+      .from("tracks")
+      .update({ default_file_id: trackFile.id })
+      .eq("id", trackId);
+
+    if (trackError) {
+      console.error("Error setting default file:", trackError);
+
+      // usun plik
+      const { error: deleteError } = await supabase
+        .from("track_files")
+        .delete()
+        .eq("id", trackFile.id);
+
+      if (deleteError) {
+        console.error("Error deleting file:", deleteError);
+      }
+
+      throw error(500, {
+        message:
+          trackError.message || "Nie udało się ustawić pliku domyślnego.",
+      });
+    }
   }
 
   console.log("File uploaded:", trackFile);

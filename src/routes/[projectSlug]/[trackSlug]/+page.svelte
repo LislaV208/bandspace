@@ -12,21 +12,31 @@
   import { CircleCheckBig, Plus, Send, Star } from "lucide-svelte";
   import { onDestroy, onMount } from "svelte";
   import toast from "svelte-french-toast";
+  import { fade, fly, slide } from "svelte/transition";
   import type { PageProps } from "./$types";
 
   const { data }: PageProps = $props();
 
   setSupabaseContext(data.supabase);
 
-  const { supabase, track } = data;
+  const { supabase } = data;
+
+  // TODO: po uploadzie trzeba pobrac id domyslnego pliku utworu
 
   const { categories } = data;
 
-  let comments = $state(track.comments || []);
-  let files = $state(track.files || []);
+  let track = $state(data.track);
+  let defaultFileId = $derived(track.default_file_id);
+
+  let comments = $state(data.track.comments || []);
+  let files = $state(data.track.files || []);
+
+  function isFilePrimary(file: TrackFile): boolean {
+    return file.id === defaultFileId;
+  }
 
   let selectedCategory: TrackCategory | null = $state(null);
-  let selectedFile = $state(() => files.find((file) => file.is_primary));
+  let selectedFile = $state(() => files.find((file) => isFilePrimary(file)));
 
   let commentInputValue = $state("");
   let commentError = $state<string | null>(null);
@@ -451,14 +461,31 @@
     console.log("File uploaded:", uploadedFile);
     // Dodaj nowy plik do listy plików
     if (uploadedFile) {
-      // Dodaj nowy plik do istniejącej listy
-      files = [...files, uploadedFile];
-
-      // Jeśli nie ma wybranego pliku lub nowy plik jest główny, wybierz go
-      if (!selectedFile() || uploadedFile.is_primary) {
-        selectedFile = () => uploadedFile;
-        await loadAudio();
+      const { data: trackData, error } = await supabase
+        .from("tracks")
+        .select(
+          "*, uploaded_by(*), comments:track_comments(*, user:user_id(*)), files:track_files(*, uploaded_by(*), category:category_id(*))"
+        )
+        .eq("project_id", data.project.id)
+        .eq("slug", data.track.slug)
+        .single();
+      if (error) {
+        console.error(
+          "Nie udało się pobrać danych utworu po uploadzie pliku.",
+          error
+        );
+        toast.error("Nie udało się pobrać danych utworu po uploadzie pliku.", {
+          position: "bottom-right",
+        });
+        return;
       }
+
+      track = trackData;
+      // Dodaj nowy plik do istniejącej listy
+      files = [uploadedFile, ...files];
+
+      selectedFile = () => uploadedFile;
+      await loadAudio();
 
       toast.success("Plik został dodany do utworu.", {
         position: "bottom-right",
@@ -598,11 +625,13 @@
         <div class="space-y-3">
           {#each files
             .filter((file) => selectedCategory === null || file.category.id === selectedCategory.id)
-            .sort( (a, b) => (a.is_primary ? -1 : b.is_primary ? 1 : 0) ) as file, index}
-            {#if index === 1 && files.some((f) => f.is_primary && (selectedCategory === null || f.category.id === selectedCategory.id))}
+            .sort( (a, b) => (isFilePrimary(a) ? -1 : isFilePrimary(b) ? 1 : 0) ) as file, index (file.id)}
+            {#if index === 1 && files.some((f) => isFilePrimary(f) && (selectedCategory === null || f.category.id === selectedCategory.id))}
               <div class=" border-t border-gray-700/50 m-4"></div>
             {/if}
             <div
+              in:fade={{ duration: 500 }}
+              out:slide={{ duration: 500 }}
               class="group relative bg-gray-800/50 hover:bg-gray-800/80 rounded-lg border border-gray-700/30 transition-all overflow-hidden cursor-pointer"
               onclick={() => {
                 if (selectedFile()?.id !== file.id) {
@@ -652,7 +681,7 @@
                       >
                         {file.file_name}
                       </h3>
-                      {#if file.is_primary}
+                      {#if isFilePrimary(file)}
                         <div class="inline-flex items-center ml-1">
                           <Tooltip
                             content="Plik domyślny"

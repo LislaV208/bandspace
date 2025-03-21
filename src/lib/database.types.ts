@@ -176,14 +176,14 @@ export type Database = {
           file_name: string
           file_size: number
           id: number
-          is_primary: boolean
+          is_primary: boolean | null
           storage_path: string
           track_id: number
           updated_at: string
           uploaded_by: string
         }
         Insert: {
-          category_id: number
+          category_id?: number
           created_at?: string
           description?: string | null
           duration?: number | null
@@ -191,7 +191,7 @@ export type Database = {
           file_name: string
           file_size: number
           id?: number
-          is_primary?: boolean
+          is_primary?: boolean | null
           storage_path: string
           track_id: number
           updated_at?: string
@@ -206,7 +206,7 @@ export type Database = {
           file_name?: string
           file_size?: number
           id?: number
-          is_primary?: boolean
+          is_primary?: boolean | null
           storage_path?: string
           track_id?: number
           updated_at?: string
@@ -239,6 +239,7 @@ export type Database = {
       tracks: {
         Row: {
           created_at: string
+          default_file_id: number | null
           file_name: string | null
           id: number
           name: string
@@ -249,6 +250,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          default_file_id?: number | null
           file_name?: string | null
           id?: number
           name?: string
@@ -259,6 +261,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          default_file_id?: number | null
           file_name?: string | null
           id?: number
           name?: string

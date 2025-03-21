@@ -106,6 +106,7 @@
 - usunięcie projektu tylko kiedy wszyscy go opuszczą
 - zmiana hasła użytkownika
 - przypomnienie hasła użytkownika
+- ustawienie poprawnych reguł do zasobów bazy danych i storages
 
 ### Przypisanie wielu plików do utworu
 #### Priorytet 2 (Przydatne)
