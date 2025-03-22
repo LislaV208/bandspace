@@ -147,7 +147,7 @@
               class="w-12 h-12 mr-3 mt-1 bg-gray-700/50 rounded-md flex items-center justify-center flex-shrink-0"
             >
               <div class="text-center font-medium text-sm">
-                {file.file_name.split(".").pop()}
+                {file.file_extension}
               </div>
             </div>
 

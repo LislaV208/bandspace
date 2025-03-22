@@ -1,6 +1,7 @@
 <script lang="ts">
   import FileUploadModal from "$lib/components/ui/FileUploadModal.svelte";
   import Tooltip from "$lib/components/ui/Tooltip.svelte";
+  import { DEV_FILE_UPLOAD } from "$lib/config";
   import { getSupabaseContext } from "$lib/supabase-context";
   import type { TrackCategory } from "$lib/types/track_category";
   import { CheckSquare, Info, Square, Tag } from "lucide-svelte";
@@ -27,9 +28,14 @@
 
   const supabase = getSupabaseContext();
 
-  // Funkcja obsługująca upload pliku
-  async function uploadFile(file: File): Promise<any | null> {
-    console.log("uploading file", file);
+  async function uploadToStorage(file: File) {
+    if (DEV_FILE_UPLOAD) {
+      return {
+        storagePath: "test/best-song-ever--9-_2025-03-19T225832229Z",
+        storageError: null,
+      };
+    }
+
     const storageFileName = file.name
       .replace(/\.[^.]+$/, "") // Remove file extension
       .replace(/[^a-zA-Z0-9._-]/g, "-") // Replace unsupported chars with dash
@@ -45,11 +51,19 @@
         contentType: file.type,
       });
 
+    return { storagePath, storageError };
+  }
+
+  // Funkcja obsługująca upload pliku
+  async function uploadFile(file: File) {
+    console.log("uploading file", file);
+
+    const { storagePath, storageError } = await uploadToStorage(file);
     if (storageError) {
       toast.error("Nie udało się dodać pliku do projektu.", {
         position: "bottom-right",
       });
-      return null;
+      return;
     }
 
     const response = await fetch(`/api/tracks/${trackId}/files`, {
@@ -62,7 +76,7 @@
         category_id: selectedCategory?.id,
         is_default: isDefault,
         description: description,
-        file_extension: file.type,
+        file_extension: file.name.split(".").pop() || "",
         file_name: file.name,
         file_size: file.size,
       }),
@@ -75,7 +89,7 @@
       toast.error(error.message || "Nie udało się dodać pliku do utworu.", {
         position: "bottom-right",
       });
-      return null;
+      return;
     }
 
     // Zwracamy utworzony plik

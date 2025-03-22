@@ -7,6 +7,7 @@
   import type { TrackCategory } from "$lib/types/track_category";
   import type { TrackFileCreate } from "$lib/types/track_file";
   import {
+    File as FileIcon,
     FileMusic,
     Info,
     Loader2,
@@ -32,6 +33,7 @@
 
   let selectedFile = $state<File | null>(null);
   let songName = $state("");
+  let fileName = $state("");
   let category = $state(categories[0]);
   let description = $state("");
   let isUploading = $state(false);
@@ -89,6 +91,7 @@
 
       selectedFile = file;
       songName = file.name.split(".").slice(0, -1).join(".");
+      fileName = songName;
       currentStep = 2; // Zawsze przechodzimy do drugiego kroku
     }
   }
@@ -138,6 +141,7 @@
 
       selectedFile = file;
       songName = file.name.split(".").slice(0, -1).join(".");
+      fileName = songName;
       currentStep = 2;
     }
   }
@@ -161,6 +165,7 @@
         if (!isOpen) {
           selectedFile = null;
           songName = "";
+          fileName = "";
           description = "";
           category = categories[0];
           currentStep = 1;
@@ -294,7 +299,7 @@
           duration: 0,
           file_size: selectedFile.size,
           file_extension: selectedFile.type,
-          file_name: selectedFile.name,
+          file_name: fileName,
         };
 
         try {
@@ -378,6 +383,23 @@
               type="text"
               name="name"
               bind:value={songName}
+              required
+            />
+          </div>
+        </div>
+        <div class="flex gap-4 items-start">
+          <div
+            class="w-8 h-8 mt-1 flex-shrink-0 flex items-center justify-center rounded-full bg-gray-800"
+          >
+            <FileIcon size={16} class="text-gray-400" />
+          </div>
+          <div class="flex-1">
+            <Input
+              label="Nazwa pliku"
+              id="file-name"
+              type="text"
+              name="file_name"
+              bind:value={fileName}
               required
             />
           </div>
