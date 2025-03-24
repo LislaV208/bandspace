@@ -43,41 +43,10 @@
   let isDeleteTrackModalOpen = $state(false);
   let songName = $state("");
   let selectedFile = $state<File | null>(null);
-  let isDragging = $state(false);
   let isUploading = $state(false);
   let isLeaveModalOpen = $state(false);
   let isDeleteProjectModalOpen = $state(false);
   let isUsersModalOpen = $state(false);
-
-  function handleDrop(event: DragEvent) {
-    event.preventDefault();
-    event.stopPropagation();
-    isDragging = false;
-
-    if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
-      const file = event.dataTransfer.files[0];
-      // Check if file is audio
-      if (file.type.startsWith("audio/")) {
-        selectedFile = file;
-        songName = file.name.split(".").slice(0, -1).join(".");
-
-        // Update the hidden file input to reflect the dropped file
-        const fileInput = document.getElementById(
-          "audio-file"
-        ) as HTMLInputElement;
-        if (fileInput) {
-          // Create a new DataTransfer object and add our file
-          const dataTransfer = new DataTransfer();
-          dataTransfer.items.add(file);
-          fileInput.files = dataTransfer.files;
-        }
-      } else {
-        toast.error("Wybierz plik audio (MP3, WAV, itp.)", {
-          position: "bottom-right",
-        });
-      }
-    }
-  }
 
   function formatDate(dateStr: string) {
     return new Date(dateStr).toLocaleDateString("pl", {
@@ -116,14 +85,6 @@
 
   function openCreateModal() {
     isCreateModalOpen = true;
-  }
-
-  function closeCreateModal() {
-    if (!isUploading) {
-      isCreateModalOpen = false;
-      songName = "";
-      selectedFile = null;
-    }
   }
 </script>
 

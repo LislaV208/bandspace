@@ -2,9 +2,10 @@
   import type { TrackCategory } from "$lib/types/track_category";
   import type { TrackFile } from "$lib/types/track_file";
   import { format } from "date-fns";
-  import { CircleCheckBig } from "lucide-svelte";
+  import { CircleCheckBig, Edit, FilePen } from "lucide-svelte";
   import { crossfade, fade, slide } from "svelte/transition";
   import Tooltip from "../ui/Tooltip.svelte";
+  import EditFileModal from "./EditFileModal.svelte";
 
   // Tworzę niestandardowe przejście, które łączy fade i slide
   function fadeSlide(
@@ -32,6 +33,7 @@
     onFileSelected,
     changeDefaultFile,
     downloadFile,
+    editFile,
     deleteFile,
   }: {
     files: TrackFile[];
@@ -41,6 +43,7 @@
     onFileSelected: (file: TrackFile) => void;
     changeDefaultFile: (file: TrackFile) => void;
     downloadFile: (file: TrackFile) => void;
+    editFile: (file: TrackFile) => void;
     deleteFile: (file: TrackFile) => void;
   } = $props();
   let selectedCategory = $state<TrackCategory | null>(null);
@@ -258,6 +261,16 @@
                   <CircleCheckBig size={18} />
                 </button>
               {/if}
+              <button
+                class="p-2.5 bg-blue-500/10 hover:bg-blue-500/20 text-gray-400 hover:text-gray-300 rounded-full transition-all opacity-0 group-hover:opacity-100"
+                aria-label="Edytuj plik"
+                onclick={(e) => {
+                  e.stopPropagation();
+                  editFile(file);
+                }}
+              >
+                <FilePen size={18} />
+              </button>
               <!-- Usuń plik (widoczne tylko po najechaniu) -->
               <button
                 class="p-2.5 bg-red-500/10 hover:bg-red-500/20 text-gray-400 hover:text-red-300 rounded-full transition-all opacity-0 group-hover:opacity-100"

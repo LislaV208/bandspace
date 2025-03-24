@@ -1,8 +1,8 @@
 <script lang="ts">
   import Modal from "$lib/components/ui/Modal.svelte";
   import { FileMusic, Loader2, Music, Upload } from "lucide-svelte";
-  import { onDestroy, onMount } from "svelte";
   import type { Snippet } from "svelte";
+  import { onDestroy, onMount } from "svelte";
   import toast from "svelte-french-toast";
   import Button from "./Button.svelte";
 
@@ -17,6 +17,7 @@
     beforeFilePreview,
     afterFilePreview,
     additionalFields,
+    onFileSelected,
   }: {
     isOpen: boolean;
     title?: string;
@@ -28,6 +29,7 @@
     beforeFilePreview?: Snippet;
     afterFilePreview?: Snippet;
     additionalFields?: Snippet;
+    onFileSelected?: (file: File) => void;
   } = $props();
 
   let selectedFile = $state<File | null>(null);
@@ -133,6 +135,7 @@
       }
 
       selectedFile = file;
+      onFileSelected?.(file);
     }
   }
 

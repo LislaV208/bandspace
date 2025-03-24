@@ -4,9 +4,10 @@
   import { DEV_FILE_UPLOAD } from "$lib/config";
   import { getSupabaseContext } from "$lib/supabase-context";
   import type { TrackCategory } from "$lib/types/track_category";
-  import { CheckSquare, Info, Square, Tag } from "lucide-svelte";
+  import { CheckSquare, FileIcon, Info, Square, Tag } from "lucide-svelte";
   import type { Snippet } from "svelte";
   import toast from "svelte-french-toast";
+  import Input from "../ui/Input.svelte";
 
   let {
     isOpen = $bindable(),
@@ -24,6 +25,7 @@
 
   let selectedCategory: TrackCategory | null = $state(null);
   let isDefault = $state(false);
+  let fileName = $state("");
   let description = $state("");
 
   const supabase = getSupabaseContext();
@@ -77,7 +79,7 @@
         is_default: isDefault,
         description: description,
         file_extension: file.name.split(".").pop() || "",
-        file_name: file.name,
+        file_name: fileName,
         file_size: file.size,
       }),
     });
@@ -102,6 +104,7 @@
     selectedCategory = null;
     isDefault = false;
     description = "";
+    fileName = "";
 
     // Wywołaj callback z nowo utworzonym plikiem, jeśli istnieje
     console.log("File uploaded:", uploadedFile);
@@ -109,6 +112,10 @@
       console.log("File uploaded");
       onFileUploaded(uploadedFile);
     }
+  }
+
+  function handleFileSelected(file: File) {
+    fileName = file.name.split(".").shift() || "";
   }
 </script>
 
@@ -119,9 +126,26 @@
   maxSizeInMB={50}
   {uploadFile}
   onFileUploaded={handleFileUploaded}
+  onFileSelected={handleFileSelected}
 >
   {#snippet additionalFields()}
     <div class="space-y-6 py-2">
+      <!-- Nazwa pliku -->
+      <div class="flex items-start gap-3">
+        <div class="flex-shrink-0 mt-1">
+          <FileIcon size={18} class="text-gray-400" />
+        </div>
+        <div class="flex-1">
+          <Input
+            label="Nazwa pliku"
+            id="file-name"
+            type="text"
+            name="file_name"
+            bind:value={fileName}
+            required
+          />
+        </div>
+      </div>
       <!-- Pole wyboru kategorii -->
       <div class="flex items-start gap-3">
         <div class="flex-shrink-0 mt-1">

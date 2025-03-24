@@ -1,11 +1,13 @@
 <script lang="ts">
   import Breadcrumbs from "$lib/components/Breadcrumbs.svelte";
   import TrackComments from "$lib/components/tracks/comment/TrackComments.svelte";
+  import EditFileModal from "$lib/components/tracks/EditFileModal.svelte";
   import NewFileModal from "$lib/components/tracks/NewFileModal.svelte";
   import TrackFilesList from "$lib/components/tracks/TrackFilesList.svelte";
   import AudioPlayer from "$lib/components/ui/AudioPlayer.svelte";
   import ConfirmModal from "$lib/components/ui/ConfirmModal.svelte";
   import { setSupabaseContext } from "$lib/supabase-context";
+  import type { TrackCategory } from "$lib/types/track_category";
   import type { TrackFile } from "$lib/types/track_file";
   import { Plus } from "lucide-svelte";
   import { onMount } from "svelte";
@@ -34,6 +36,10 @@
   let isFileUploadModalOpen = $state(false);
 
   let audioUrl = $state<string | null>(null);
+
+  let isEditFileModalOpen = $state(false);
+
+  let fileToEdit: TrackFile | null = $state(null);
 
   let isDeleteModalOpen = $state(false);
   let isDeleteDefaultModalOpen = $state(false);
@@ -148,9 +154,7 @@
     link.click();
     URL.revokeObjectURL(url);
 
-    toast.success("Rozpoczęto pobieranie pliku.", {
-      position: "bottom-right",
-    });
+    toast.success("Rozpoczęto pobieranie pliku.");
   }
 
   async function changeDefaultFile(file: TrackFile) {
@@ -165,9 +169,7 @@
     });
 
     if (!response.ok) {
-      toast.error("Nie udało się ustawić pliku jako domyślny.", {
-        position: "bottom-right",
-      });
+      toast.error("Nie udało się ustawić pliku jako domyślny.");
       return;
     }
 
@@ -179,9 +181,55 @@
     }
 
     defaultFileId = track.default_file_id!;
-    toast.success("Plik został ustawiony jako domyślny.", {
-      position: "bottom-right",
-    });
+    toast.success("Plik został ustawiony jako domyślny.");
+  }
+
+  async function editFile(file: {
+    file_name: string;
+    category: TrackCategory;
+    description: string;
+    isDefault: boolean;
+  }) {
+    if (!fileToEdit) {
+      console.error("Nie udało się edytować pliku.");
+      toast.error("Nie udało się edytować pliku.");
+      return;
+    }
+
+    console.trace("Edycja pliku:", file);
+
+    const response = await toast.promise(
+      fetch(`/api/files/${fileToEdit.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          file_name: file.file_name,
+          category_id: file.category.id,
+          description: file.description,
+        }),
+      }),
+      {
+        loading: "Edycja pliku...",
+        success: "Plik został zaktualizowany.",
+        error: "Nie udało się zaktualizować pliku.",
+      }
+    );
+
+    if (!response.ok) {
+      console.error("Nie udało się zaktualizować pliku.", response);
+      toast.error("Nie udało się zaktualizować pliku.");
+      return;
+    }
+
+    const updatedFile = await response.json();
+
+    if ((fileToEdit.id === defaultFileId) !== file.isDefault) {
+      changeDefaultFile(updatedFile);
+    }
+    files = files.map((f) => (f.id === fileToEdit?.id ? updatedFile : f));
+    fileToEdit = null;
   }
 
   async function deleteFile(file: TrackFile) {
@@ -287,6 +335,10 @@
           {onFileSelected}
           {changeDefaultFile}
           {downloadFile}
+          editFile={(file) => {
+            isEditFileModalOpen = true;
+            fileToEdit = file;
+          }}
           deleteFile={(file) => {
             if (file.id === defaultFileId) {
               isDeleteDefaultModalOpen = true;
@@ -310,6 +362,17 @@
   trackId={data.track.id}
   {categories}
   {onFileUploaded}
+/>
+
+<EditFileModal
+  bind:isOpen={isEditFileModalOpen}
+  selectedCategory={fileToEdit?.category || categories[0]}
+  isDefault={fileToEdit?.id === defaultFileId}
+  file={fileToEdit}
+  {categories}
+  onConfirm={(data) => {
+    editFile(data);
+  }}
 />
 
 <!-- Modal usuwania pliku -->
