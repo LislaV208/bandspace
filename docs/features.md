@@ -95,7 +95,6 @@
 
 ## BACKLOG:
 ### MUST-HAVE
-- poprawki związane z głównym plikiem utworu
 - komentarze real-time
 - komentarze do plików utworu 
 - oznaczanie użytkowników w komentarzach
