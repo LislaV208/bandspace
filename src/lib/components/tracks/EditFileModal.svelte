@@ -109,40 +109,41 @@
     </div>
 
     <!-- Checkbox czy plik jest główny -->
-    <div class="flex items-center gap-2 mt-2">
-      <button
-        type="button"
-        class=" text-gray-300 hover:text-white transition-colors flex-shrink-0"
-        onclick={() => (currentIsDefault = !currentIsDefault)}
-        aria-label="Główny plik utworu"
-        disabled={isDefault}
-      >
-        {#if currentIsDefault}
-          <CheckSquare
-            size={20}
-            class={!isDefault ? "text-blue-500" : "text-gray-300"}
-          />
-        {:else}
-          <Square size={20} />
-        {/if}
-      </button>
-      <label
-        for="primary-checkbox"
-        class="text-sm {isDefault ? 'text-gray-400' : 'text-gray-200'}"
-        >Domyślny plik utworu</label
-      >
-      <Tooltip
-        content="Domyślnie ustawiany jako wybrany plik przy wejściu na stronę utworu."
-      />
-      <input
-        id="primary-checkbox"
-        type="checkbox"
-        class="hidden"
-        bind:checked={currentIsDefault}
-        disabled={isDefault}
-      />
-    </div>
-
+    {#if !isDefault}
+      <div class="flex items-center gap-2 mt-2">
+        <button
+          type="button"
+          class=" text-gray-300 hover:text-white transition-colors flex-shrink-0"
+          onclick={() => (currentIsDefault = !currentIsDefault)}
+          aria-label="Główny plik utworu"
+          disabled={isDefault}
+        >
+          {#if currentIsDefault}
+            <CheckSquare
+              size={20}
+              class={!isDefault ? "text-blue-500" : "text-gray-300"}
+            />
+          {:else}
+            <Square size={20} />
+          {/if}
+        </button>
+        <label
+          for="primary-checkbox"
+          class="text-sm {isDefault ? 'text-gray-400' : 'text-gray-200'}"
+          >Domyślny plik utworu</label
+        >
+        <Tooltip
+          content="Domyślnie ustawiany jako wybrany plik przy wejściu na stronę utworu."
+        />
+        <input
+          id="primary-checkbox"
+          type="checkbox"
+          class="hidden"
+          bind:checked={currentIsDefault}
+          disabled={isDefault}
+        />
+      </div>
+    {/if}
     <!-- Pole opisu -->
     <div class="flex items-start gap-3 mt-2">
       <div class="flex-shrink-0 mt-1">

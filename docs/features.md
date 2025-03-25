@@ -100,6 +100,7 @@
 - komentarze do plików utworu 
 - oznaczanie użytkowników w komentarzach
 - usunięcie komentarza
+- metadane (tempo, tonacja, tekst utworu)
 - edycja nazwy utworu
 - edycja pliku (nazwa, kategoria, opis)
 - usunięcie pliku
@@ -114,7 +115,6 @@
 - Komentarze do poszczególnych plików (nie tylko do głównego utworu)
 - Filtrowanie plików po dacie, autorze
 - Sortowanie listy plików według różnych kryteriów
-- Dodatkowe metadane plików (tempo, tonacja, długość)
 
 #### Priorytet 3 (Opcjonalne)
 - Timeline pokazująca ewolucję utworu
@@ -126,3 +126,8 @@
 
 
   - komentarze do utworu - ulepszenie
+
+### Subskrypcje per projekt
+- FREE - 0 zł / 500 MB
+- PREMIUM - 12 zł / 8 GB
+- PRO - 25 zł / 25 GB
