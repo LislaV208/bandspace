@@ -10,7 +10,7 @@
   // Tworzę niestandardowe przejście, które łączy fade i slide
   function fadeSlide(
     node: HTMLElement,
-    { delay = 50, duration = 400 }: { delay?: number; duration?: number }
+    { delay = 50, duration = 400 }: { delay?: number; duration?: number },
   ) {
     return {
       delay,
@@ -87,7 +87,7 @@
     {#each categories as category}
       <button
         class="relative px-4 py-2 rounded-full text-sm transition-all {isCategorySelected(
-          category
+          category,
         )
           ? 'text-white font-semibold'
           : 'text-gray-400 hover:text-white'}"
@@ -105,9 +105,38 @@
 </div>
 
 <div class="space-y-3">
+  {#if files.filter((file) => selectedCategory === null || file.category.id === selectedCategory.id).length === 0}
+    <div
+      in:fadeSlide|local={{ duration: 300, delay: 50 }}
+      class="p-8 flex flex-col items-center justify-center text-center"
+    >
+      <svg
+        class="w-12 h-12 text-gray-500 mb-3"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="1.5"
+          d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"
+        ></path>
+      </svg>
+      <h3 class="text-lg font-medium text-gray-300 mb-1">
+        Brak plików w tej kategorii
+      </h3>
+      <p class="text-gray-400 text-sm max-w-md">
+        {selectedCategory
+          ? `W kategorii "${selectedCategory.name}" nie ma jeszcze żadnych plików.`
+          : "Nie ma jeszcze żadnych plików w tym utworze."}
+      </p>
+    </div>
+  {/if}
   {#each files
     .filter((file) => selectedCategory === null || file.category.id === selectedCategory.id)
-    .sort( (a, b) => (isFileDefault(a) ? -1 : isFileDefault(b) ? 1 : 0) ) as file, index (file.id)}
+    .sort( (a, b) => (isFileDefault(a) ? -1 : isFileDefault(b) ? 1 : 0), ) as file, index (file.id)}
     <div>
       {#if index === 1 && files.some((f) => isFileDefault(f) && (selectedCategory === null || f.category.id === selectedCategory.id))}
         <div class="border-t border-gray-700/50 my-4"></div>
