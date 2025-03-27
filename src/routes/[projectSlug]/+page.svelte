@@ -14,7 +14,6 @@
   import PopupMenuOption from "$lib/components/ui/popup/PopupMenuOption.svelte";
   import { setSupabaseContext } from "$lib/supabase-context";
   import type { Track } from "$lib/types/track";
-  import { DataTable } from "@careswitch/svelte-data-table";
   import {
     FileMusic,
     ListMusic,
@@ -56,17 +55,58 @@
 
   setSupabaseContext(supabase);
 
-  // Inicjalizacja DataTable dla listy utworów
-  const table = new DataTable({
-    data: data.tracks,
-    columns: [
-      { id: "icon", key: "id", name: "", sortable: false },
-      { id: "name", key: "name", name: "Nazwa utworu", sortable: true },
-      { id: "date", key: "created_at", name: "Data dodania", sortable: true },
-      { id: "actions", key: "id", name: "Akcje", sortable: false },
-    ],
-    initialSortDirection: "desc",
-    initialSort: "date",
+  let tracks = $state(data.tracks);
+  let sortField = $state("date");
+  let sortDirection = $state("desc");
+
+  function sortTracks(field: string) {
+    if (sortField === field) {
+      sortDirection = sortDirection === "asc" ? "desc" : "asc";
+    } else {
+      sortField = field;
+      sortDirection = "desc";
+    }
+
+    tracks = [...tracks].sort((a, b) => {
+      const valA = a[field as keyof typeof a];
+      const valB = b[field as keyof typeof b];
+
+      if (valA === null || valB === null) {
+        return valA === null ? 1 : -1;
+      }
+
+      if (typeof valA === "string" && typeof valB === "string") {
+        return sortDirection === "asc"
+          ? valA.localeCompare(valB)
+          : valB.localeCompare(valA);
+      }
+
+      if (typeof valA === "string" && typeof valB === "string") {
+        const dateA = new Date(valA);
+        const dateB = new Date(valB);
+        if (!isNaN(dateA.getTime()) && !isNaN(dateB.getTime())) {
+          return sortDirection === "asc"
+            ? dateA.getTime() - dateB.getTime()
+            : dateB.getTime() - dateA.getTime();
+        }
+      }
+
+      return 0;
+    });
+  }
+
+  let searchQuery = $state("");
+
+  $effect(() => {
+    if (!searchQuery) {
+      tracks = data.tracks;
+      return;
+    }
+
+    const query = searchQuery.toLowerCase();
+    tracks = data.tracks.filter((track) =>
+      track.name.toLowerCase().includes(query),
+    );
   });
 
   let isCreateModalOpen = $state(false);
@@ -126,182 +166,141 @@
     <NoTracksView onAddTrack={openCreateModal} />
   {:else}
     <div class="w-full">
-      <!-- Panel wyszukiwania -->
-      <div class="flex justify-end mb-4">
-        <div class="relative w-full max-w-md">
-          <input
-            type="text"
-            placeholder="Szukaj..."
-            class="w-full px-3 py-2 bg-gray-800/70 border border-gray-700/50 rounded-md text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            bind:value={table.globalFilter}
-          />
-          <div
-            class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
-          >
-            <svg
-              class="w-4 h-4 text-gray-500"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
+      <!-- class="w-full bg-gray-800/70 rounded-lg overflow-hidden border border-gray-700/50" -->
+      <div class="w-full">
+        <!-- Panel wyszukiwania -->
+        <div class="mb-4">
+          <div class="relative w-full">
+            <input
+              type="text"
+              placeholder="Szukaj..."
+              class="w-full px-3 py-2 bg-gray-800/70 border border-gray-700/50 rounded-md text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              bind:value={searchQuery}
+            />
+            <div
+              class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
             >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              ></path>
-            </svg>
+              <svg
+                class="w-4 h-4 text-gray-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                ></path>
+              </svg>
+            </div>
           </div>
         </div>
-      </div>
-      <!-- class="w-full bg-gray-800/70 rounded-lg overflow-hidden border border-gray-700/50" -->
-      <div class="w-full bg-gray-800/70 rounded-lg overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-700">
-          <thead>
-            <tr>
-              <!-- class="bg-gray-800 text-gray-300 px-4 py-4 text-left font-medium border-b border-gray-700 w-[50px]" -->
-              <th
-                class="bg-gray-800 text-gray-300 px-4 py-4 text-left font-medium w-[50px]"
-              ></th>
-              <th
-                class="bg-gray-800 text-gray-300 px-4 py-4 text-left font-medium"
-              >
-                <button
-                  class="flex items-center"
-                  onclick={() => table.toggleSort("name")}
-                  disabled={!table.isSortable("name")}
-                >
-                  Nazwa utworu
-                  {#if table.isSortable("name")}
-                    <span class="ml-2 text-blue-400">
-                      {#if table.getSortState("name") === "asc"}
-                        ↑
-                      {:else if table.getSortState("name") === "desc"}
-                        ↓
-                      {:else}
-                        ↕
-                      {/if}
-                    </span>
-                  {/if}
-                </button>
-              </th>
-              <th
-                class="bg-gray-800 text-gray-300 px-4 py-4 text-left font-medium"
-              >
-                <button
-                  class="flex items-center"
-                  onclick={() => table.toggleSort("date")}
-                  disabled={!table.isSortable("date")}
-                >
-                  Data dodania
-                  {#if table.isSortable("date")}
-                    <span class="ml-2 text-blue-400">
-                      {#if table.getSortState("date") === "asc"}
-                        ↑
-                      {:else if table.getSortState("date") === "desc"}
-                        ↓
-                      {:else}
-                        ↕
-                      {/if}
-                    </span>
-                  {/if}
-                </button>
-              </th>
-              <th
-                class="bg-gray-800 text-gray-300 px-4 py-4 text-right font-medium"
-                >Akcje</th
-              >
-            </tr>
-          </thead>
-          <tbody>
-            {#if data.tracks.length === 0}
-              <tr>
-                <td colspan="4" class="px-4 py-8 text-center text-gray-400">
-                  <div
-                    class="flex flex-col items-center justify-center space-y-2"
+
+        <!-- Nagłówki sortowania -->
+        <div class="flex items-center justify-between mb-2 px-2">
+          <button
+            class="flex items-center text-gray-300 hover:text-blue-400 transition-colors"
+            onclick={() => sortTracks("name")}
+          >
+            Nazwa utworu
+            <span class="ml-2">
+              {#if sortField === "name"}
+                {sortDirection === "asc" ? "↑" : "↓"}
+              {:else}
+                ↕
+              {/if}
+            </span>
+          </button>
+
+          <button
+            class="flex items-center text-gray-300 hover:text-blue-400 transition-colors"
+            onclick={() => sortTracks("created_at")}
+          >
+            Data dodania
+            <span class="ml-2">
+              {#if sortField === "created_at"}
+                {sortDirection === "asc" ? "↑" : "↓"}
+              {:else}
+                ↕
+              {/if}
+            </span>
+          </button>
+        </div>
+
+        <!-- Lista utworów -->
+        <div class="space-y-2">
+          {#if tracks.length === 0}
+            <div class="px-4 py-8 text-center text-gray-400">
+              <div class="flex flex-col items-center justify-center space-y-2">
+                <ListMusic size={40} class="text-gray-600" />
+                {#if searchQuery}
+                  <p>Nie znaleziono utworów pasujących do wyszukiwania</p>
+                  <button
+                    class="mt-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md text-sm font-medium transition-colors"
+                    onclick={() => (searchQuery = "")}
                   >
-                    <ListMusic size={40} class="text-gray-600" />
-                    <p>Brak utworów w tym projekcie</p>
-                  </div>
-                </td>
-              </tr>
-            {:else if table.rows.length === 0}
-              <tr>
-                <td colspan="4" class="px-4 py-8 text-center text-gray-400">
-                  <div
-                    class="flex flex-col items-center justify-center space-y-2"
-                  >
-                    <ListMusic size={40} class="text-gray-600" />
-                    <p>Nie znaleziono utworów pasujących do wyszukiwania</p>
-                    <button
-                      class="mt-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md text-sm font-medium transition-colors"
-                      onclick={() => (table.globalFilter = "")}
-                    >
-                      Wyczyść filtr
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            {:else}
-              {#each table.rows as row (row.id)}
-                {@const track = row}
-                {@const trackSlug = "slug" in track ? track.slug : ""}
-                <tr
-                  class="hover:bg-gray-700/50 transition-colors cursor-pointer"
-                  onclick={() => goto(`/${data.project.slug}/${trackSlug}`)}
-                  onkeydown={(e) =>
-                    e.key === "Enter" &&
-                    goto(`/${data.project.slug}/${trackSlug}`)}
-                  tabindex="0"
-                >
-                  <td class="px-4 py-4">
-                    <FileMusic size={20} class="text-blue-400" />
-                  </td>
-                  <td class="px-4 py-4 font-medium">
-                    {"name" in track ? track.name : "-"}
-                  </td>
-                  <td class="px-4 py-4 text-gray-400">
-                    {"created_at" in track ? formatDate(track.created_at) : ""}
-                  </td>
-                  <td class="px-4 py-4 text-right">
-                    <div class="flex items-center justify-end gap-2">
-                      <button
-                        class="p-2 text-gray-400 hover:text-blue-500 transition-colors rounded hover:bg-gray-600/50"
-                        onclick={(e) => {
-                          e.stopPropagation();
-                          trackToEdit = track;
-                          isEditTrackModalOpen = true;
-                        }}
-                        title="Edytuj utwór"
-                      >
-                        <Pencil size={18} />
-                      </button>
-                      <button
-                        class="p-2 text-gray-400 hover:text-red-500 transition-colors rounded hover:bg-gray-600/50"
-                        onclick={(e) => {
-                          e.stopPropagation();
-                          trackToDelete = track;
-                          isDeleteTrackModalOpen = true;
-                        }}
-                        title="Usuń utwór"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                {#if row !== table.rows[table.rows.length - 1]}
-                  <tr>
-                    <td colspan="4">
-                      <div class="border-b border-gray-700"></div>
-                    </td>
-                  </tr>
+                    Wyczyść filtr
+                  </button>
+                {:else}
+                  <p>Brak utworów w tym projekcie</p>
                 {/if}
-              {/each}
-            {/if}
-          </tbody>
-        </table>
+              </div>
+            </div>
+          {:else}
+            {#each tracks as track (track.id)}
+              {@const trackSlug = "slug" in track ? track.slug : ""}
+              <div
+                class="flex items-center justify-between p-3 bg-gray-800/40 hover:bg-gray-800/60 rounded-lg transition-colors cursor-pointer border border-gray-700/30"
+                onclick={() => goto(`/${data.project.slug}/${trackSlug}`)}
+                onkeydown={(e) =>
+                  e.key === "Enter" &&
+                  goto(`/${data.project.slug}/${trackSlug}`)}
+                tabindex="0"
+              >
+                <div class="flex items-center gap-3">
+                  <FileMusic size={20} class="text-blue-400" />
+                  <div>
+                    <div class="font-medium">
+                      {"name" in track ? track.name : "-"}
+                    </div>
+                    <div class="text-sm text-gray-400">
+                      {"created_at" in track
+                        ? formatDate(track.created_at)
+                        : ""}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                  <button
+                    class="p-2 text-gray-400 hover:text-blue-500 transition-colors rounded hover:bg-gray-600/50"
+                    onclick={(e) => {
+                      e.stopPropagation();
+                      trackToEdit = track;
+                      isEditTrackModalOpen = true;
+                    }}
+                    title="Edytuj utwór"
+                  >
+                    <Pencil size={18} />
+                  </button>
+                  <button
+                    class="p-2 text-gray-400 hover:text-red-500 transition-colors rounded hover:bg-gray-600/50"
+                    onclick={(e) => {
+                      e.stopPropagation();
+                      trackToDelete = track;
+                      isDeleteTrackModalOpen = true;
+                    }}
+                    title="Usuń utwór"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              </div>
+            {/each}
+          {/if}
+        </div>
       </div>
     </div>
   {/if}
