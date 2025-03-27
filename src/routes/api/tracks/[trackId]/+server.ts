@@ -23,19 +23,25 @@ export const PATCH: RequestHandler = async ({
   locals: { supabase },
   params,
 }) => {
+  console.log("Edycja utworu: PATCH");
   const trackId = parseInt(params.trackId ?? "");
   const body = await request.json();
 
-  const { defaultFileId } = body;
+  const { defaultFileId, name }: {defaultFileId?: number, name?: string} = body;
 
-  if (!trackId || !defaultFileId) {
-    throw error(400, { message: "Nie podano ID utworu lub pliku" });
+  console.log("defaultFileId: ", defaultFileId);
+  console.log("name: ", name);
+
+  if (!trackId) {
+    throw error(400, { message: "Nie podano ID utworu" });
   }
 
   const { data: track, error: trackError } = await supabase
     .from("tracks")
+    // update fields only if they exists
     .update({
-      default_file_id: defaultFileId,
+      ...(defaultFileId && { default_file_id: defaultFileId }),
+      ...(name && { name }),
     })
     .eq("id", trackId)
     .select(
@@ -46,7 +52,7 @@ export const PATCH: RequestHandler = async ({
   if (!track || trackError) {
     throw error(500, {
       message:
-        "Błąd podczas ustawiania pliku domyślnego: " + trackError?.message,
+        "Błąd podczas edycji utworu: " + trackError?.message,
     });
   }
 

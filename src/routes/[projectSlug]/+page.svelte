@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { enhance } from "$app/forms";
   import { goto } from "$app/navigation";
   import Breadcrumbs from "$lib/components/Breadcrumbs.svelte";
   import DeleteProjectModal from "$lib/components/projects/DeleteProjectModal.svelte";
@@ -7,6 +6,7 @@
   import ProjectInviteModal from "$lib/components/projects/ProjectInviteModal.svelte";
   import ProjectMembersModal from "$lib/components/projects/ProjectMembersModal.svelte";
   import DeleteTrackModal from "$lib/components/tracks/DeleteTrackModal.svelte";
+  import EditTrackModal from "$lib/components/tracks/EditTrackModal.svelte";
   import NewTrackModal from "$lib/components/tracks/NewTrackModal.svelte";
   import NoTracksView from "$lib/components/tracks/NoTracksView.svelte";
   import Button from "$lib/components/ui/Button.svelte";
@@ -18,32 +18,21 @@
   import {
     FileMusic,
     ListMusic,
-    Loader2,
     LogOut,
+    Pencil,
     Plus,
     Settings,
     Share2,
     Trash2,
     Users,
   } from "lucide-svelte";
-  import { setContext } from "svelte";
-  import toast, { Toaster } from "svelte-french-toast";
-  import {
-    blur,
-    crossfade,
-    draw,
-    fade,
-    fly,
-    scale,
-    slide,
-  } from "svelte/transition";
+  import { Toaster } from "svelte-french-toast";
   import type { PageProps } from "./$types";
 
   let trackToDelete: Track | null = $state(null);
+  let trackToEdit: Track | null = $state(null);
   let isDeleteTrackModalOpen = $state(false);
-  let songName = $state("");
-  let selectedFile = $state<File | null>(null);
-  let isUploading = $state(false);
+  let isEditTrackModalOpen = $state(false);
   let isLeaveModalOpen = $state(false);
   let isDeleteProjectModalOpen = $state(false);
   let isUsersModalOpen = $state(false);
@@ -278,6 +267,17 @@
                   <td class="px-4 py-4 text-right">
                     <div class="flex items-center justify-end gap-2">
                       <button
+                        class="p-2 text-gray-400 hover:text-blue-500 transition-colors rounded hover:bg-gray-600/50"
+                        onclick={(e) => {
+                          e.stopPropagation();
+                          trackToEdit = track;
+                          isEditTrackModalOpen = true;
+                        }}
+                        title="Edytuj utwór"
+                      >
+                        <Pencil size={18} />
+                      </button>
+                      <button
                         class="p-2 text-gray-400 hover:text-red-500 transition-colors rounded hover:bg-gray-600/50"
                         onclick={(e) => {
                           e.stopPropagation();
@@ -321,3 +321,12 @@
   }}
 />
 <NewTrackModal bind:isOpen={isCreateModalOpen} {project} {categories} />
+<EditTrackModal
+  track={trackToEdit}
+  bind:isOpen={isEditTrackModalOpen}
+  onClose={() => {
+    isEditTrackModalOpen = false;
+    trackToEdit = null;
+    window.location.reload();
+  }}
+/>
