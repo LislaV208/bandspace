@@ -230,7 +230,7 @@
         </div>
 
         <!-- Lista utworów -->
-        <div class="space-y-2">
+        <div class="space-y-2 max-h-[70vh] overflow-y-auto pr-1 pb-4">
           {#if tracks.length === 0}
             <div class="px-4 py-8 text-center text-gray-400">
               <div class="flex flex-col items-center justify-center space-y-2">
