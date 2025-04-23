@@ -32,6 +32,7 @@
     "@careswitch/svelte-data-table": "^0.6.3",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.49.1",
+    "@tabler/icons-svelte": "^3.31.0",
     "@uppy/core": "^4.4.2",
     "@uppy/status-bar": "^4.1.2",
     "@uppy/svelte": "^4.3.0",
