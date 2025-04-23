@@ -112,52 +112,56 @@
   <NewProjectModal bind:isOpen={isCreateProjectModalOpened} />
 {:else}
   <!-- Widok dla niezalogowanych użytkowników -->
-  <div class="fixed inset-0 flex h-screen">
-    <!-- Lewa strona - niebieskie tło -->
-    <div class="w-1/2 bg-[#273486] p-16 flex flex-col">
-      <div class="flex items-center mb-16">
+  <div class="fixed inset-0 flex flex-col md:flex-row h-screen">
+    <!-- Lewa strona - niebieskie tło (ukryta na mobilnych) -->
+    <div
+      class="hidden md:flex md:w-1/2 lg:w-1/2 bg-[#273486] p-6 md:p-10 lg:p-16 flex-col"
+    >
+      <div class="flex items-center mb-8 md:mb-12 lg:mb-16">
         <Music class="text-white mr-2" size={28} />
         <h1 class="text-2xl font-bold text-white">BandSpace</h1>
       </div>
 
       <div class="flex-grow">
-        <h2 class="text-4xl font-bold text-white mb-4">
+        <h2
+          class="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-3 md:mb-4"
+        >
           Twórz muzykę razem, gdziekolwiek jesteś.
         </h2>
-        <p class="text-white/90 mb-12">
+        <p class="text-white/90 mb-6 md:mb-8 lg:mb-12 text-sm md:text-base">
           Współpracuj nad utworami, udostępniaj pliki i twórz niesamowitą muzykę
           ze swoim zespołem — wszystko w jednym miejscu.
         </p>
 
-        <div class="grid grid-cols-2 gap-6">
-          <div class="bg-[#414791] p-6 rounded-lg">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+          <div class="bg-[#414791] p-4 md:p-6 rounded-lg">
             <h3 class="font-semibold text-white mb-2">Płynna współpraca</h3>
-            <p class="text-sm text-white/80">
+            <p class="text-xs md:text-sm text-white/80">
               Pracujcie razem w czasie rzeczywistym, bez względu na to, gdzie
               jesteście.
             </p>
           </div>
-          <div class="bg-[#414791] p-6 rounded-lg">
+          <div class="bg-[#414791] p-4 md:p-6 rounded-lg">
             <h3 class="font-semibold text-white mb-2">
               Zorganizowany przepływ pracy
             </h3>
-            <p class="text-sm text-white/80">
+            <p class="text-xs md:text-sm text-white/80">
               Przechowuj wszystkie projekty i utwory w jednym miejscu.
             </p>
           </div>
-          <div class="bg-[#414791] p-6 rounded-lg">
+          <div class="bg-[#414791] p-4 md:p-6 rounded-lg">
             <h3 class="font-semibold text-white mb-2">
               System informacji zwrotnej
             </h3>
-            <p class="text-sm text-white/80">
+            <p class="text-xs md:text-sm text-white/80">
               Komentuj utwory, aby zapewnić szczegółową informację zwrotną.
             </p>
           </div>
-          <div class="bg-[#414791] p-6 rounded-lg">
+          <div class="bg-[#414791] p-4 md:p-6 rounded-lg">
             <h3 class="font-semibold text-white mb-2">
               Bezpieczne udostępnianie
             </h3>
-            <p class="text-sm text-white/80">
+            <p class="text-xs md:text-sm text-white/80">
               Kontroluj, kto ma dostęp do Twojej muzyki i plików.
             </p>
           </div>
@@ -165,15 +169,23 @@
       </div>
 
       <div class="mt-auto">
-        <p class="text-white/70 text-sm">
+        <p class="text-white/70 text-xs md:text-sm">
           © 2025 BandSpace. Wszelkie prawa zastrzeżone.
         </p>
       </div>
     </div>
 
+    <!-- Logo na mobilnych urządzeniach (widoczne tylko na małych ekranach) -->
+    <div class="flex md:hidden bg-[#273486] p-6 items-center">
+      <Music class="text-white mr-2" size={24} />
+      <h1 class="text-xl font-bold text-white">BandSpace</h1>
+    </div>
+
     <!-- Prawa strona - ciemne tło -->
-    <div class="w-1/2 bg-gray-900 p-16 flex items-center justify-center">
-      <div class="w-full max-w-md relative min-h-[500px]">
+    <div
+      class="flex-1 md:w-1/2 bg-gray-900 p-6 md:p-10 lg:p-16 flex items-center justify-center overflow-y-auto"
+    >
+      <div class="w-full max-w-md relative min-h-[450px] md:min-h-[500px]">
         <div class="absolute inset-0">
           <!-- Nagłówek i podpis z animacją -->
           <div class="h-28 relative">
@@ -227,7 +239,7 @@
           <form
             method="POST"
             action={activeTab === "login" ? "?/login" : "?/register"}
-            class="space-y-5"
+            class="space-y-4 md:space-y-5 w-full"
             use:enhance={() => {
               loading = true;
               return async ({ update }) => {
@@ -337,7 +349,7 @@
                 <button
                   type="submit"
                   disabled={loading}
-                  class="w-full flex items-center justify-center py-2 px-4 border border-transparent rounded shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all relative"
+                  class="w-full flex items-center justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all relative"
                 >
                   <!-- Ikona z animacją -->
                   <div
@@ -432,7 +444,9 @@
             </button>
 
             <!-- Link do przełączania między logowaniem a rejestracją -->
-            <div class="text-center text-gray-500 text-sm h-6 relative mt-6">
+            <div
+              class="text-center text-gray-500 text-xs sm:text-sm h-6 relative mt-6"
+            >
               {#if activeTab === "login"}
                 <div
                   class="absolute inset-0 flex justify-center items-center"
