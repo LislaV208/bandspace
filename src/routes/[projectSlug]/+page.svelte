@@ -12,6 +12,7 @@
   import Button from "$lib/components/ui/Button.svelte";
   import PopupMenu from "$lib/components/ui/popup/PopupMenu.svelte";
   import PopupMenuOption from "$lib/components/ui/popup/PopupMenuOption.svelte";
+  import { toast } from "$lib/components/ui/toast";
   import { setSupabaseContext } from "$lib/supabase-context";
   import type { Track } from "$lib/types/track";
   import { DataTable } from "@careswitch/svelte-data-table";
@@ -27,7 +28,6 @@
     Users,
   } from "lucide-svelte";
   import { setContext } from "svelte";
-  import toast, { Toaster } from "svelte-french-toast";
   import {
     blur,
     crossfade,
@@ -72,9 +72,7 @@
           fileInput.files = dataTransfer.files;
         }
       } else {
-        toast.error("Wybierz plik audio (MP3, WAV, itp.)", {
-          position: "bottom-right",
-        });
+        toast.error("Wybierz plik audio (MP3, WAV, itp.)");
       }
     }
   }
@@ -126,8 +124,6 @@
     }
   }
 </script>
-
-<Toaster />
 
 <div
   class="p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-6 sm:mb-8"

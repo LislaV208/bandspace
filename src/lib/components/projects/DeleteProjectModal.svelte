@@ -2,8 +2,8 @@
   import { enhance } from "$app/forms";
   import Button from "$lib/components/ui/Button.svelte";
   import Modal from "$lib/components/ui/Modal.svelte";
+  import { toast } from "$lib/components/ui/toast";
   import type { Project } from "$lib/types/project";
-  import toast, { Toaster } from "svelte-french-toast";
   let { isOpen = $bindable(), project }: { isOpen: boolean; project: Project } =
     $props();
   let isLoading = $state(false);
@@ -23,10 +23,7 @@
       return async ({ result, update }) => {
         if (result.type === "error") {
           toast.error(
-            result.error?.message || "Wystąpił błąd podczas usuwania projektu",
-            {
-              position: "bottom-right",
-            }
+            result.error?.message || "Wystąpił błąd podczas usuwania projektu"
           );
           isLoading = false;
         }

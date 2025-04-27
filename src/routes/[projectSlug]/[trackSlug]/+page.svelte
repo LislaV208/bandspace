@@ -3,14 +3,14 @@
   import NewFileModal from "$lib/components/tracks/NewFileModal.svelte";
   import Button from "$lib/components/ui/Button.svelte";
   import FileUploadModal from "$lib/components/ui/FileUploadModal.svelte";
+  import { toast } from "$lib/components/ui/toast";
   import UserAvatar from "$lib/components/UserAvatar.svelte";
   import { setSupabaseContext } from "$lib/supabase-context";
   import type { TrackCategory } from "$lib/types/track_category";
   import type { TrackFile } from "$lib/types/track_file";
   import { format } from "date-fns";
   import { Plus, Send } from "lucide-svelte";
-  import { onMount, onDestroy } from "svelte";
-  import toast from "svelte-french-toast";
+  import { onDestroy, onMount } from "svelte";
   import type { PageProps } from "./$types";
 
   const { data }: PageProps = $props();
@@ -53,7 +53,7 @@
       audioElement.src = "";
       isPlaying = false;
     }
-    
+
     // Czyszczenie interwałów, jeśli istnieją
     if (seekInterval !== null) {
       clearInterval(seekInterval);
@@ -63,10 +63,10 @@
 
   function autoResizeTextarea() {
     if (!commentTextarea) return;
-    
+
     // Resetuj wysokość, aby uzyskać prawidłową wysokość scrollHeight
-    commentTextarea.style.height = 'auto';
-    
+    commentTextarea.style.height = "auto";
+
     // Ustaw nową wysokość na podstawie zawartości, ale z maksymalną wysokością
     const newHeight = Math.min(commentTextarea.scrollHeight, 128); // 128px to około 4 linii
     commentTextarea.style.height = `${newHeight}px`;
@@ -171,10 +171,7 @@
     } catch (err) {
       console.error("Błąd podczas ładowania audio:", err);
       toast.error(
-        err instanceof Error ? err.message : "Nie udało się załadować audio",
-        {
-          position: "bottom-right",
-        }
+        err instanceof Error ? err.message : "Nie udało się załadować audio"
       );
     }
   }
@@ -192,9 +189,7 @@
     } else {
       audioElement.play().catch((err) => {
         console.error("Błąd odtwarzania:", err);
-        toast.error("Nie można odtworzyć pliku audio", {
-          position: "bottom-right",
-        });
+        toast.error("Nie można odtworzyć pliku audio");
       });
       isPlaying = true;
     }
@@ -459,9 +454,7 @@
         await loadAudio();
       }
 
-      toast.success("Plik został dodany do utworu.", {
-        position: "bottom-right",
-      });
+      toast.success("Plik został dodany do utworu.");
     }
   }
 
@@ -471,9 +464,7 @@
       .download(file.storage_path);
 
     if (error) {
-      toast.error("Nie udało się pobrać pliku.", {
-        position: "bottom-right",
-      });
+      toast.error("Nie udało się pobrać pliku.");
       return;
     }
 
@@ -484,9 +475,7 @@
     link.click();
     URL.revokeObjectURL(url);
 
-    toast.success("Rozpoczęto pobieranie pliku.", {
-      position: "bottom-right",
-    });
+    toast.success("Rozpoczęto pobieranie pliku.");
   }
 </script>
 
@@ -1167,7 +1156,7 @@
             rows="1"
             oninput={autoResizeTextarea}
             onkeydown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
+              if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
                 if (commentInputValue.trim()) {
                   handleAddComment();

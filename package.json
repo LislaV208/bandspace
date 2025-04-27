@@ -38,7 +38,6 @@
     "@uppy/svelte": "^4.3.0",
     "@uppy/tus": "^4.2.2",
     "date-fns": "^4.1.0",
-    "lucide-svelte": "^0.477.0",
-    "svelte-french-toast": "^2.0.0-alpha.0"
+    "lucide-svelte": "^0.477.0"
   }
 }

@@ -1,9 +1,9 @@
 <script lang="ts">
   import Input from "$lib/components/ui/Input.svelte";
   import Modal from "$lib/components/ui/Modal.svelte";
+  import { toast } from "$lib/components/ui/toast";
   import type { Project } from "$lib/types/project";
   import { CheckIcon, Link2, Loader2 } from "lucide-svelte";
-  import toast, { Toaster } from "svelte-french-toast";
 
   let { isOpen = $bindable(), project }: { isOpen: boolean; project: Project } =
     $props();
@@ -40,9 +40,7 @@
       isCopied = false;
     } catch (error) {
       console.error("Error generating invite link:", error);
-      toast.error("Nie udało się wygenerować linku zapraszającego", {
-        position: "bottom-right",
-      });
+      toast.error("Nie udało się wygenerować linku zapraszającego");
     }
   }
 
@@ -52,10 +50,7 @@
         .writeText(inviteUrl)
         .then(() => {
           isCopied = true;
-          toast.success("Link skopiowany do schowka", {
-            position: "bottom-right",
-            duration: 3000,
-          });
+          toast.success("Link skopiowany do schowka", 3000);
 
           // Reset stanu po 3 sekundach
           setTimeout(() => {
@@ -63,17 +58,13 @@
           }, 3000);
         })
         .catch(() => {
-          toast.error("Nie udało się skopiować linku", {
-            position: "bottom-right",
-          });
+          toast.error("Nie udało się skopiować linku");
         });
     }
   }
 </script>
 
-<Toaster />
-
-<Modal title="Zaproś do projektu" bind:isOpen maxWidth="max-w-2xl">
+<Modal title="Zaproś do projektu" bind:isOpen size="lg">
   <div class="space-y-4">
     <p class="text-gray-300">
       Skopiuj link zapraszający i udostępnij go osobom, które chcesz zaprosić do

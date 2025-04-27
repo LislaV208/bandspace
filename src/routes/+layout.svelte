@@ -2,6 +2,7 @@
   import "../app.css";
 
   import { invalidate } from "$app/navigation";
+  import { ToastContainer } from "$lib/components/ui/toast";
   import UserProfileMenu from "$lib/components/user-profile/UserProfileMenu.svelte";
   import { setAuthState } from "$lib/state/auth-state.svelte";
   import { onMount } from "svelte";
@@ -76,4 +77,6 @@
   >
     <p>BandSpace v{version}</p>
   </footer> -->
+
+  <ToastContainer />
 </div>

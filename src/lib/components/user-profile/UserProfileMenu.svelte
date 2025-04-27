@@ -2,11 +2,11 @@
   import { goto } from "$app/navigation";
   import PopupMenu from "$lib/components/ui/popup/PopupMenu.svelte";
   import PopupMenuOption from "$lib/components/ui/popup/PopupMenuOption.svelte";
+  import { toast } from "$lib/components/ui/toast";
   import EditProfileModal from "$lib/components/user-profile/EditProfileModal.svelte";
   import { getAuthState } from "$lib/state/auth-state.svelte";
   import type { User } from "$lib/types/user";
   import { LogOut, Pencil, UserIcon } from "lucide-svelte";
-  import toast from "svelte-french-toast";
 
   const { user }: { user: User } = $props();
   const authState = getAuthState();
@@ -56,7 +56,7 @@
         goto("/");
       } catch (error) {
         console.error("Error signing out:", error);
-        toast.error("Nie udało się wylogować", { position: "bottom-right" });
+        toast.error("Nie udało się wylogować");
       }
     }}
   />
