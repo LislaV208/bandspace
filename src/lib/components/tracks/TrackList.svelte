@@ -75,9 +75,11 @@
 </script>
 
 <div>
-  <div class="flex items-center justify-between mb-4">
+  <div
+    class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4"
+  >
     <!-- Panel wyszukiwania -->
-    <div class="relative w-full max-w-md">
+    <div class="relative w-full sm:max-w-md">
       <input
         type="text"
         placeholder="Szukaj utworów..."
@@ -107,7 +109,7 @@
     <Button
       icon={Plus}
       onclick={onNewTrack}
-      class="bg-blue-600 hover:bg-blue-500 text-white ml-4"
+      class="bg-blue-600 hover:bg-blue-500 text-white sm:ml-4 w-full sm:w-auto"
       primary
     >
       Nowy utwór

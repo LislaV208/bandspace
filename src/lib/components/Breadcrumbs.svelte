@@ -16,10 +16,11 @@
 
 <div>
   <!-- Wersja mobilna - pokazuje tylko ostatni element -->
-  <div class="lg:hidden w-full flex items-center gap-x-2 mb-2">
+  <div class="md:hidden w-full flex items-center gap-x-2 mb-2">
     <a
-      href={track?.slug ? `/${project.slug}/${track.slug}` : `/${project.slug}`}
-      class="text-xl font-medium text-white flex items-center"
+      href="/dashboard"
+      class="text-gray-400 hover:text-white transition-colors flex items-center"
+      aria-label="Powrót do listy projektów"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -35,12 +36,24 @@
       >
         <path d="M15 18l-6-6 6-6" />
       </svg>
-      {track?.name || project.name}
     </a>
+
+    {#if track?.slug}
+      <a
+        href={`/${project.slug}`}
+        class="text-gray-400 hover:text-white transition-colors"
+      >
+        {project.name}
+      </a>
+      <ChevronRight size={16} class="text-gray-500" />
+      <span class="text-lg font-medium text-white">{track.name}</span>
+    {:else}
+      <span class="text-lg font-medium text-white">{project.name}</span>
+    {/if}
   </div>
 
   <!-- Wersja desktopowa - pełna ścieżka -->
-  <div class="hidden lg:block">
+  <div class="hidden md:block">
     <div class="flex items-center text-lg text-gray-400 mb-1">
       <a href="/dashboard" class="hover:text-white transition-colors">
         Projekty

@@ -45,35 +45,41 @@
   class="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-500"
 >
   <div class="p-6 sm:p-8 max-w-7xl mx-auto">
-    <div class="flex justify-between items-center mb-10">
+    <div
+      class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-10"
+    >
       <div>
         <Breadcrumbs project={data.project} />
       </div>
 
-      <div class="flex gap-2">
+      <div class="flex flex-wrap gap-2 w-full sm:w-auto justify-end">
         <ProjectActionButton
           icon={Share2}
           onclick={() => (isInviteModalOpen = true)}
         >
-          Udostępnij
+          <span class="sm:hidden md:inline">Udostępnij</span>
+          <span class="hidden sm:inline md:hidden">Udostępnij</span>
         </ProjectActionButton>
         <ProjectActionButton
           icon={Users}
           onclick={() => (isUsersModalOpen = true)}
         >
-          Członkowie
+          <span class="sm:hidden md:inline">Członkowie</span>
+          <span class="hidden sm:inline md:hidden">Członkowie</span>
         </ProjectActionButton>
         <ProjectActionButton
           icon={LogOut}
           onclick={() => (isLeaveModalOpen = true)}
         >
-          Opuść
+          <span class="sm:hidden md:inline">Opuść</span>
+          <span class="hidden sm:inline md:hidden">Opuść</span>
         </ProjectActionButton>
         <ProjectActionButton
           icon={Trash2}
           onclick={() => (isDeleteProjectModalOpen = true)}
         >
-          Usuń
+          <span class="sm:hidden md:inline">Usuń</span>
+          <span class="hidden sm:inline md:hidden">Usuń</span>
         </ProjectActionButton>
       </div>
     </div>
