@@ -240,8 +240,11 @@
             method="POST"
             action={activeTab === "login" ? "?/login" : "?/register"}
             class="space-y-4 md:space-y-5 w-full"
-            use:enhance={() => {
-              loading = true;
+            use:enhance={({ action }) => {
+              // Nie ustawiaj loading=true dla akcji googleLogin
+              if (!action || !action.toString().includes("googleLogin")) {
+                loading = true;
+              }
               return async ({ update }) => {
                 loading = false;
                 await update();
