@@ -53,7 +53,7 @@
     onclick={async () => {
       try {
         await authState.signOut();
-        goto("/login");
+        goto("/");
       } catch (error) {
         console.error("Error signing out:", error);
         toast.error("Nie udało się wylogować", { position: "bottom-right" });
