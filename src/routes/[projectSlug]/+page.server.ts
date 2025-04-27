@@ -1,9 +1,7 @@
 import type { Database } from "$lib/database.types";
 import type { Project } from "$lib/types/project";
-import type { TrackFile, TrackFileCreate } from "$lib/types/track_file";
 import type { User } from "$lib/types/user";
-import { error, redirect, type Actions } from "@sveltejs/kit";
-import file from "lucide-svelte/icons/file";
+import { redirect, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 
 type Track = Database["public"]["Tables"]["tracks"]["Row"];
@@ -28,10 +26,15 @@ export const load: PageServerLoad = async ({
     throw projectError;
   }
 
-  // Pobranie utworów dla projektu
+  // Pobranie utworów dla projektu wraz z liczbą plików
   const { data: tracks, error } = await supabase
     .from("tracks")
-    .select()
+    .select(
+      `
+      *,
+      files_count:track_files(count)
+    `
+    )
     .eq("project_id", project.id);
 
   if (error) {
@@ -41,6 +44,12 @@ export const load: PageServerLoad = async ({
     );
     throw error;
   }
+
+  // Przekształcamy dane utworów, dodając liczbę plików
+  const transformedTracks = tracks.map((track) => ({
+    ...track,
+    files_count: track.files_count?.[0]?.count || 0,
+  }));
 
   // Pobranie użytkowników przypisanych do projektu
   const { data: projectUsers, error: usersError } = await supabase
@@ -74,7 +83,7 @@ export const load: PageServerLoad = async ({
 
   return {
     project: project as Project,
-    tracks,
+    tracks: transformedTracks,
     categories,
     projectUsers: projectUsers.map((pu) => pu.user as User),
   };
