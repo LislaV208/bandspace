@@ -14,9 +14,9 @@
   const { project, track }: BreadcrumbsProps = $props();
 </script>
 
-<nav class="flex flex-wrap items-center gap-x-2 gap-y-1">
+<div>
   <!-- Wersja mobilna - pokazuje tylko ostatni element -->
-  <div class="lg:hidden w-full flex items-center gap-x-2">
+  <div class="lg:hidden w-full flex items-center gap-x-2 mb-2">
     <a
       href={track?.slug ? `/${project.slug}/${track.slug}` : `/${project.slug}`}
       class="text-xl font-medium text-white flex items-center"
@@ -40,28 +40,25 @@
   </div>
 
   <!-- Wersja desktopowa - pełna ścieżka -->
-  <div class="hidden lg:flex items-center space-x-2">
-    <a
-      href="/"
-      class="text-2xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-gray-300 via-gray-100 to-gray-300"
-    >
-      Projekty
-    </a>
-    <ChevronRight class="w-5 h-5 text-gray-500" />
-    <a
-      href={`/${project.slug}`}
-      class="text-2xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-gray-300 via-gray-100 to-gray-300"
-    >
-      {project.name}
-    </a>
-    {#if track?.slug}
-      <ChevronRight class="w-5 h-5 text-gray-500" />
-      <a
-        href={`/${project.slug}/${track.slug}`}
-        class="text-2xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-gray-300 via-gray-100 to-gray-300"
-      >
-        {track.name}
+  <div class="hidden lg:block">
+    <div class="flex items-center text-lg text-gray-400 mb-1">
+      <a href="/dashboard" class="hover:text-white transition-colors">
+        Projekty
       </a>
-    {/if}
+      <ChevronRight size={16} class="mx-1" />
+
+      {#if track?.slug}
+        <!-- Jeśli jesteśmy na stronie utworu, nazwa projektu jest tylko linkiem -->
+        <a href={`/${project.slug}`} class="hover:text-white transition-colors">
+          {project.name}
+        </a>
+        <ChevronRight size={16} class="mx-1" />
+        <!-- Nazwa utworu jest aktualną częścią -->
+        <span class="text-white">{track.name}</span>
+      {:else}
+        <!-- Jeśli jesteśmy na stronie projektu, nazwa projektu jest aktualną częścią -->
+        <span class="text-white">{project.name}</span>
+      {/if}
+    </div>
   </div>
-</nav>
+</div>

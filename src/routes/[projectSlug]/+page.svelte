@@ -41,41 +41,43 @@
   }
 </script>
 
-<div class="h-full overflow-y-auto">
-  <div
-    class="p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-6 sm:mb-8"
-  >
-    <Breadcrumbs project={data.project} />
+<div
+  class="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-500"
+>
+  <div class="p-6 sm:p-8 max-w-7xl mx-auto">
+    <div class="flex justify-between items-center mb-10">
+      <div>
+        <Breadcrumbs project={data.project} />
+      </div>
 
-    <div class="flex gap-2">
-      <ProjectActionButton
-        icon={Share2}
-        onclick={() => (isInviteModalOpen = true)}
-      >
-        Udostępnij
-      </ProjectActionButton>
-      <ProjectActionButton
-        icon={Users}
-        onclick={() => (isUsersModalOpen = true)}
-      >
-        Członkowie
-      </ProjectActionButton>
-      <ProjectActionButton
-        icon={LogOut}
-        onclick={() => (isLeaveModalOpen = true)}
-      >
-        Opuść
-      </ProjectActionButton>
-      <ProjectActionButton
-        icon={Trash2}
-        onclick={() => (isDeleteProjectModalOpen = true)}
-      >
-        Usuń
-      </ProjectActionButton>
+      <div class="flex gap-2">
+        <ProjectActionButton
+          icon={Share2}
+          onclick={() => (isInviteModalOpen = true)}
+        >
+          Udostępnij
+        </ProjectActionButton>
+        <ProjectActionButton
+          icon={Users}
+          onclick={() => (isUsersModalOpen = true)}
+        >
+          Członkowie
+        </ProjectActionButton>
+        <ProjectActionButton
+          icon={LogOut}
+          onclick={() => (isLeaveModalOpen = true)}
+        >
+          Opuść
+        </ProjectActionButton>
+        <ProjectActionButton
+          icon={Trash2}
+          onclick={() => (isDeleteProjectModalOpen = true)}
+        >
+          Usuń
+        </ProjectActionButton>
+      </div>
     </div>
-  </div>
 
-  <div class="container mx-auto my-4 pb-8">
     <TrackList
       tracks={data.tracks}
       categories={data.categories}

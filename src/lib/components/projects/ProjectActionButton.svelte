@@ -20,7 +20,11 @@
 
 <button
   {onclick}
-  class="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white rounded-md transition-colors text-sm {className}"
+  class="gap-3
+        font-medium rounded-md transition-all duration-200 focus:outline-none flex items-center justify-center
+        bg-transparent border border-gray-600 hover:bg-gray-800 text-gray-300 hover:text-white
+        text-xs px-3 py-1.5 {className}
+      "
   {...props}
 >
   {#if IconComponent}
