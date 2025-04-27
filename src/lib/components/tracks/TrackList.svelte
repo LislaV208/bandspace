@@ -138,119 +138,123 @@
     </div>
   {:else}
     <div class="bg-gray-800 rounded-lg overflow-hidden">
-      <table class="min-w-full divide-y divide-gray-700">
-        <thead class="bg-gray-700/30">
-          <tr>
-            <th
-              scope="col"
-              class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider"
-            >
-              <button
-                class="flex items-center"
-                onclick={() => toggleSort("name")}
-              >
-                Nazwa utworu
-                <span class="ml-2 text-blue-400">
-                  {#if sortField === "name"}
-                    {sortDirection === "asc" ? "↑" : "↓"}
-                  {:else}
-                    ↕
-                  {/if}
-                </span>
-              </button>
-            </th>
-            <th
-              scope="col"
-              class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider hidden sm:table-cell"
-            >
-              Kategoria
-            </th>
-            <th
-              scope="col"
-              class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider hidden md:table-cell"
-            >
-              <button
-                class="flex items-center"
-                onclick={() => toggleSort("created_at")}
-              >
-                Data dodania
-                <span class="ml-2 text-blue-400">
-                  {#if sortField === "created_at"}
-                    {sortDirection === "asc" ? "↑" : "↓"}
-                  {:else}
-                    ↕
-                  {/if}
-                </span>
-              </button>
-            </th>
-            <th
-              scope="col"
-              class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider hidden md:table-cell"
-            >
-              <button
-                class="flex items-center"
-                onclick={() => toggleSort("files_count")}
-              >
-                Pliki
-                <span class="ml-2 text-blue-400">
-                  {#if sortField === "files_count"}
-                    {sortDirection === "asc" ? "↑" : "↓"}
-                  {:else}
-                    ↕
-                  {/if}
-                </span>
-              </button>
-            </th>
-            <th scope="col" class="relative px-6 py-3">
-              <span class="sr-only">Akcje</span>
-            </th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-700">
-          {#each filteredTracks as track (track.id)}
-            <tr
-              class="hover:bg-gray-700/30 cursor-pointer transition-colors"
-              onclick={() => goto(`/${projectSlug}/${track.slug}`)}
-            >
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="flex items-center">
-                  <Headphones size={16} class="mr-2 text-gray-400" />
-                  <div class="text-sm font-medium text-white">{track.name}</div>
-                </div>
-              </td>
-              <td
-                class="px-6 py-4 whitespace-nowrap text-sm text-gray-400 hidden sm:table-cell"
-              >
-                {getCategoryName()}
-              </td>
-              <td
-                class="px-6 py-4 whitespace-nowrap text-sm text-gray-400 hidden md:table-cell"
-              >
-                {formatDate(track.created_at)}
-              </td>
-              <td
-                class="px-6 py-4 whitespace-nowrap text-sm text-gray-400 hidden md:table-cell"
-              >
-                {track.files_count || 0}
-              </td>
-              <td
-                class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
+      <div class="w-full overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-700">
+          <thead class="bg-gray-700/30">
+            <tr>
+              <th
+                scope="col"
+                class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider"
               >
                 <button
-                  class="text-gray-400 hover:text-red-500 transition-colors p-2 rounded hover:bg-gray-600/50"
-                  onclick={(e) => {
-                    e.stopPropagation();
-                    onDeleteTrack(track);
-                  }}
-                  title="Usuń utwór"
+                  class="flex items-center"
+                  onclick={() => toggleSort("name")}
                 >
-                  <Trash2 size={16} />
+                  Nazwa utworu
+                  <span class="ml-2 text-blue-400">
+                    {#if sortField === "name"}
+                      {sortDirection === "asc" ? "↑" : "↓"}
+                    {:else}
+                      ↕
+                    {/if}
+                  </span>
                 </button>
-              </td>
+              </th>
+              <th
+                scope="col"
+                class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider hidden sm:table-cell"
+              >
+                Kategoria
+              </th>
+              <th
+                scope="col"
+                class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider hidden md:table-cell"
+              >
+                <button
+                  class="flex items-center"
+                  onclick={() => toggleSort("created_at")}
+                >
+                  Data dodania
+                  <span class="ml-2 text-blue-400">
+                    {#if sortField === "created_at"}
+                      {sortDirection === "asc" ? "↑" : "↓"}
+                    {:else}
+                      ↕
+                    {/if}
+                  </span>
+                </button>
+              </th>
+              <th
+                scope="col"
+                class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider hidden md:table-cell"
+              >
+                <button
+                  class="flex items-center"
+                  onclick={() => toggleSort("files_count")}
+                >
+                  Pliki
+                  <span class="ml-2 text-blue-400">
+                    {#if sortField === "files_count"}
+                      {sortDirection === "asc" ? "↑" : "↓"}
+                    {:else}
+                      ↕
+                    {/if}
+                  </span>
+                </button>
+              </th>
+              <th scope="col" class="relative px-6 py-3">
+                <span class="sr-only">Akcje</span>
+              </th>
             </tr>
-          {/each}
-        </tbody>
-      </table>
+          </thead>
+          <tbody class="divide-y divide-gray-700">
+            {#each filteredTracks as track (track.id)}
+              <tr
+                class="hover:bg-gray-700/30 cursor-pointer transition-colors"
+                onclick={() => goto(`/${projectSlug}/${track.slug}`)}
+              >
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <Headphones size={16} class="mr-2 text-gray-400" />
+                    <div class="text-sm font-medium text-white">
+                      {track.name}
+                    </div>
+                  </div>
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-400 hidden sm:table-cell"
+                >
+                  {getCategoryName()}
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-400 hidden md:table-cell"
+                >
+                  {formatDate(track.created_at)}
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-400 hidden md:table-cell"
+                >
+                  {track.files_count || 0}
+                </td>
+                <td
+                  class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
+                >
+                  <button
+                    class="text-gray-400 hover:text-red-500 transition-colors p-2 rounded hover:bg-gray-600/50"
+                    onclick={(e) => {
+                      e.stopPropagation();
+                      onDeleteTrack(track);
+                    }}
+                    title="Usuń utwór"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
     </div>
   {/if}
 </div>

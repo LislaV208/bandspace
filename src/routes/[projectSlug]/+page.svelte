@@ -43,50 +43,50 @@
   }
 </script>
 
-<div
-  class="p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-6 sm:mb-8"
->
-  <Breadcrumbs project={data.project} />
+<div class="h-full overflow-y-auto">
+  <div
+    class="p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-6 sm:mb-8"
+  >
+    <Breadcrumbs project={data.project} />
 
-  <div class="flex flex-col sm:flex-row w-full sm:w-auto gap-4">
-    {#if data.tracks.length !== 0}
-      <button
-        onclick={openCreateModal}
-        class="w-full h-10 sm:w-auto bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
+    <div class="flex flex-col sm:flex-row w-full sm:w-auto gap-4">
+      {#if data.tracks.length !== 0}
+        <button
+          onclick={openCreateModal}
+          class="w-full h-10 sm:w-auto bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
+        >
+          <Plus size={20} />
+          Nowy utwór
+        </button>
+      {/if}
+      <Button icon={Share2} onclick={() => (isInviteModalOpen = true)}
+        >Zaproś do projektu</Button
       >
-        <Plus size={20} />
-        Nowy utwór
-      </button>
-    {/if}
-    <Button icon={Share2} onclick={() => (isInviteModalOpen = true)}
-      >Zaproś do projektu</Button
-    >
-    <PopupMenu>
-      {#snippet triggerContent(onclick)}
-        <Button icon={Settings} {onclick}></Button>
-      {/snippet}
-      <PopupMenuOption
-        icon={Users}
-        text="Członkowie projektu"
-        onclick={() => (isUsersModalOpen = true)}
-      />
-      <PopupMenuOption
-        icon={LogOut}
-        text="Opuść projekt"
-        onclick={() => (isLeaveModalOpen = true)}
-      />
-      <PopupMenuOption
-        icon={Trash2}
-        className="hover:text-red-500"
-        text="Usuń projekt"
-        onclick={() => (isDeleteProjectModalOpen = true)}
-      />
-    </PopupMenu>
+      <PopupMenu>
+        {#snippet triggerContent(onclick)}
+          <Button icon={Settings} {onclick}></Button>
+        {/snippet}
+        <PopupMenuOption
+          icon={Users}
+          text="Członkowie projektu"
+          onclick={() => (isUsersModalOpen = true)}
+        />
+        <PopupMenuOption
+          icon={LogOut}
+          text="Opuść projekt"
+          onclick={() => (isLeaveModalOpen = true)}
+        />
+        <PopupMenuOption
+          icon={Trash2}
+          className="hover:text-red-500"
+          text="Usuń projekt"
+          onclick={() => (isDeleteProjectModalOpen = true)}
+        />
+      </PopupMenu>
+    </div>
   </div>
-</div>
 
-<div class="container mx-auto flex flex-col lg:flex-row my-4 gap-6">
-  <div class="w-full">
+  <div class="container mx-auto my-4 pb-8">
     <TrackList
       tracks={data.tracks}
       categories={data.categories}
