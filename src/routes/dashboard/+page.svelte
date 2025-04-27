@@ -13,34 +13,32 @@
   const hasProjects = $derived(projects.length > 0);
 </script>
 
-<div
-  class="p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-6 sm:mb-8"
->
-  <h1 class="text-2xl">Projekty</h1>
-  {#if hasProjects}
-    <div class="flex flex-col sm:flex-row w-full sm:w-auto gap-4">
-      <Button onclick={() => (isCreateProjectModalOpened = true)} primary>
-        <Plus size={20} />
-        Nowy projekt
-      </Button>
+<div class="p-6 sm:p-8 max-w-7xl mx-auto">
+  <div class="flex justify-between items-center mb-4">
+    <div>
+      <h1 class="text-2xl font-bold">Moje Projekty</h1>
+      <p class="text-gray-400 mt-1">
+        Zarządzaj i organizuj swoje projekty muzyczne
+      </p>
     </div>
-  {/if}
-</div>
 
-<div class="container mx-auto">
-  <div
-    class="grid grid-cols-1 lg:grid-cols-3 md:grid-cols-2 gap-4 sm:gap-6 mx-auto"
-  >
-    {#each projects as project (project.id)}
-      <ProjectCard {project} />
-    {/each}
-
-    {#if projects.length === 0}
-      <NoProjectsView
-        onCreateProject={() => (isCreateProjectModalOpened = true)}
-      />
-    {/if}
+    <Button onclick={() => (isCreateProjectModalOpened = true)} primary>
+      <Plus size={20} />
+      Nowy Projekt
+    </Button>
   </div>
+
+  {#if hasProjects}
+    <div class="grid grid-cols-1 lg:grid-cols-4 md:grid-cols-2 gap-6 mt-6">
+      {#each projects as project (project.id)}
+        <ProjectCard {project} />
+      {/each}
+    </div>
+  {:else}
+    <NoProjectsView
+      onCreateProject={() => (isCreateProjectModalOpened = true)}
+    />
+  {/if}
 </div>
 
 <NewProjectModal bind:isOpen={isCreateProjectModalOpened} />

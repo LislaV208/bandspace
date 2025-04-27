@@ -4,12 +4,14 @@ import type { PageServerLoad } from "./$types";
 import type { DashboardProject } from "$lib/types/project";
 import type { Track } from "$lib/types/track";
 
-export const load: PageServerLoad = async ({ locals: { supabase, user, session } }) => {
+export const load: PageServerLoad = async ({
+  locals: { supabase, user, session },
+}) => {
   // Sprawdzamy, czy użytkownik jest zalogowany
   if (!session) {
-    redirect(303, '/');
+    redirect(303, "/");
   }
-  
+
   // Pobieramy projekty użytkownika wraz z liczbą członków
   const { data, error: projectsError } = await supabase
     .from("projects")
@@ -32,10 +34,12 @@ export const load: PageServerLoad = async ({ locals: { supabase, user, session }
     ...project,
     members_count: project.members_count[0]?.count || 0,
     recent_tracks: [] as Track[], // Inicjalizujemy pustą tablicę dla utworów z właściwym typem
+    members: [], // Inicjalizujemy pustą tablicę dla członków projektu
   })) as DashboardProject[];
 
-  // Dla każdego projektu pobieramy 5 ostatnich utworów
+  // Dla każdego projektu pobieramy 5 ostatnich utworów i członków projektu
   for (const project of transformedData) {
+    // Pobieramy utwory
     const { data: tracks, error: tracksError } = await supabase
       .from("tracks")
       .select()
@@ -52,6 +56,23 @@ export const load: PageServerLoad = async ({ locals: { supabase, user, session }
     }
 
     project.recent_tracks = tracks || [];
+
+    // Pobieramy członków projektu
+    const { data: projectUsers, error: usersError } = await supabase
+      .from("projects_users")
+      .select(`user:users(*)`)
+      .eq("project_id", project.id)
+      .limit(6); // Pobieramy maksymalnie 6 członków (5 do wyświetlenia + 1 do liczenia pozostałych)
+
+    if (usersError) {
+      console.error(
+        `Error fetching project users for project ${project.id}:`,
+        usersError
+      );
+      continue;
+    }
+
+    project.members = projectUsers.map((pu) => pu.user);
   }
 
   return { data: transformedData };
@@ -61,9 +82,11 @@ export const actions = {
   create: async ({ request, locals: { supabase, session } }) => {
     // Sprawdzamy czy użytkownik jest zalogowany
     if (!session) {
-      return error(401, { message: "Musisz być zalogowany, aby utworzyć projekt" });
+      return error(401, {
+        message: "Musisz być zalogowany, aby utworzyć projekt",
+      });
     }
-    
+
     const formData = await request.formData();
     const name = formData.get("name")?.toString();
 
@@ -84,13 +107,15 @@ export const actions = {
 
     redirect(303, `/${data.slug}`);
   },
-  
+
   delete: async ({ request, locals: { supabase, session } }) => {
     // Sprawdzamy czy użytkownik jest zalogowany
     if (!session) {
-      return error(401, { message: "Musisz być zalogowany, aby usunąć projekt" });
+      return error(401, {
+        message: "Musisz być zalogowany, aby usunąć projekt",
+      });
     }
-    
+
     const formData = await request.formData();
     const id = formData.get("id")?.toString();
     const slug = formData.get("slug")?.toString();

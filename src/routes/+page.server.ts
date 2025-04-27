@@ -34,10 +34,12 @@ export const load: PageServerLoad = async ({
     ...project,
     members_count: project.members_count[0]?.count || 0,
     recent_tracks: [] as Track[], // Inicjalizujemy pustą tablicę dla utworów z właściwym typem
+    members: [], // Inicjalizujemy pustą tablicę dla członków projektu
   })) as DashboardProject[];
 
-  // Dla każdego projektu pobieramy 5 ostatnich utworów
+  // Dla każdego projektu pobieramy 5 ostatnich utworów i członków projektu
   for (const project of transformedData) {
+    // Pobieramy utwory
     const { data: tracks, error: tracksError } = await supabase
       .from("tracks")
       .select()
@@ -54,6 +56,23 @@ export const load: PageServerLoad = async ({
     }
 
     project.recent_tracks = tracks || [];
+
+    // Pobieramy członków projektu
+    const { data: projectUsers, error: usersError } = await supabase
+      .from("projects_users")
+      .select(`user:users(*)`)
+      .eq("project_id", project.id)
+      .limit(6); // Pobieramy maksymalnie 6 członków (5 do wyświetlenia + 1 do liczenia pozostałych)
+
+    if (usersError) {
+      console.error(
+        `Error fetching project users for project ${project.id}:`,
+        usersError
+      );
+      continue;
+    }
+
+    project.members = projectUsers.map((pu) => pu.user);
   }
 
   return { data: transformedData };

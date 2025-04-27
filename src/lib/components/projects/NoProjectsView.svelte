@@ -7,11 +7,11 @@
 </script>
 
 <div
-  class="col-span-full flex flex-col items-center justify-center py-12 sm:py-16 space-y-6"
+  class="col-span-full flex flex-col items-center justify-center py-12 sm:py-16 space-y-8"
   transition:fade
 >
   <div
-    class="w-32 h-32 sm:w-48 sm:h-48 text-gray-600 flex items-center justify-center"
+    class="w-32 h-32 sm:w-48 sm:h-48 text-blue-400/50 flex items-center justify-center"
   >
     <svg
       class="w-full h-full"
@@ -27,11 +27,12 @@
       />
     </svg>
   </div>
-  <div class="space-y-2 text-center px-4">
-    <h3 class="text-lg sm:text-xl font-semibold text-gray-200">
-      Brak projektów
-    </h3>
-    <p class="text-gray-400">Nie czekaj - utwórz swój pierwszy projekt!</p>
+  <div class="space-y-3 text-center px-4">
+    <h3 class="text-xl sm:text-2xl font-semibold text-white">Brak projektów</h3>
+    <p class="text-gray-400 max-w-md">
+      Utwórz swój pierwszy projekt muzyczny i zacznij współpracę z innymi
+      muzykami.
+    </p>
   </div>
   <Button primary onclick={onCreateProject}>
     <Plus size={20} />
