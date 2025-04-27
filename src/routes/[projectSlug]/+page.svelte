@@ -86,7 +86,6 @@
 
     <TrackList
       tracks={data.tracks}
-      categories={data.categories}
       projectSlug={project.slug}
       onNewTrack={openCreateModal}
       onDeleteTrack={(track) => {

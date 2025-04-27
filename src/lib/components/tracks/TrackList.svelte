@@ -1,7 +1,7 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import type { Track } from "$lib/types/track";
-  import type { TrackCategory } from "$lib/types/track_category";
+
   import { formatDistanceToNow } from "date-fns";
   import { pl } from "date-fns/locale";
   import { Headphones, MoreVertical, Plus, Trash2, X } from "lucide-svelte";
@@ -10,13 +10,11 @@
 
   let {
     tracks,
-    categories,
     projectSlug,
     onNewTrack,
     onDeleteTrack,
   }: {
     tracks: Track[];
-    categories: TrackCategory[];
     projectSlug: string;
     onNewTrack: () => void;
     onDeleteTrack: (track: Track) => void;
@@ -66,12 +64,6 @@
         return sortDirection === "asc" ? comparison : -comparison;
       })
   );
-
-  // Funkcja do pobierania nazwy kategorii
-  function getCategoryName() {
-    // W tej wersji nie mamy jeszcze kategorii, więc zwracamy domyślną wartość
-    return "Inne";
-  }
 </script>
 
 <div>
@@ -171,12 +163,7 @@
                   </span>
                 </button>
               </th>
-              <th
-                scope="col"
-                class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider hidden sm:table-cell"
-              >
-                Kategoria
-              </th>
+
               <th
                 scope="col"
                 class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider hidden md:table-cell"
@@ -232,11 +219,7 @@
                     </div>
                   </div>
                 </td>
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-sm text-gray-400 hidden sm:table-cell"
-                >
-                  {getCategoryName()}
-                </td>
+
                 <td
                   class="px-6 py-4 whitespace-nowrap text-sm text-gray-400 hidden md:table-cell"
                 >
