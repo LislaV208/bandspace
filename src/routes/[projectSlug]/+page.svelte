@@ -8,14 +8,12 @@
   import DeleteTrackModal from "$lib/components/tracks/DeleteTrackModal.svelte";
   import NewTrackModal from "$lib/components/tracks/NewTrackModal.svelte";
 
+  import ProjectActionButton from "$lib/components/projects/ProjectActionButton.svelte";
   import TrackList from "$lib/components/tracks/TrackList.svelte";
-  import Button from "$lib/components/ui/Button.svelte";
-  import PopupMenu from "$lib/components/ui/popup/PopupMenu.svelte";
-  import PopupMenuOption from "$lib/components/ui/popup/PopupMenuOption.svelte";
 
   import { setSupabaseContext } from "$lib/supabase-context";
   import type { Track } from "$lib/types/track";
-  import { LogOut, Plus, Settings, Share2, Trash2, Users } from "lucide-svelte";
+  import { LogOut, Share2, Trash2, Users } from "lucide-svelte";
   import type { PageProps } from "./$types";
 
   let trackToDelete: Track | null = $state(null);
@@ -49,40 +47,31 @@
   >
     <Breadcrumbs project={data.project} />
 
-    <div class="flex flex-col sm:flex-row w-full sm:w-auto gap-4">
-      {#if data.tracks.length !== 0}
-        <button
-          onclick={openCreateModal}
-          class="w-full h-10 sm:w-auto bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
-        >
-          <Plus size={20} />
-          Nowy utwór
-        </button>
-      {/if}
-      <Button icon={Share2} onclick={() => (isInviteModalOpen = true)}
-        >Zaproś do projektu</Button
+    <div class="flex gap-2">
+      <ProjectActionButton
+        icon={Share2}
+        onclick={() => (isInviteModalOpen = true)}
       >
-      <PopupMenu>
-        {#snippet triggerContent(onclick)}
-          <Button icon={Settings} {onclick}></Button>
-        {/snippet}
-        <PopupMenuOption
-          icon={Users}
-          text="Członkowie projektu"
-          onclick={() => (isUsersModalOpen = true)}
-        />
-        <PopupMenuOption
-          icon={LogOut}
-          text="Opuść projekt"
-          onclick={() => (isLeaveModalOpen = true)}
-        />
-        <PopupMenuOption
-          icon={Trash2}
-          className="hover:text-red-500"
-          text="Usuń projekt"
-          onclick={() => (isDeleteProjectModalOpen = true)}
-        />
-      </PopupMenu>
+        Udostępnij
+      </ProjectActionButton>
+      <ProjectActionButton
+        icon={Users}
+        onclick={() => (isUsersModalOpen = true)}
+      >
+        Członkowie
+      </ProjectActionButton>
+      <ProjectActionButton
+        icon={LogOut}
+        onclick={() => (isLeaveModalOpen = true)}
+      >
+        Opuść
+      </ProjectActionButton>
+      <ProjectActionButton
+        icon={Trash2}
+        onclick={() => (isDeleteProjectModalOpen = true)}
+      >
+        Usuń
+      </ProjectActionButton>
     </div>
   </div>
 

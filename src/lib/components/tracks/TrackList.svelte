@@ -4,7 +4,8 @@
   import type { TrackCategory } from "$lib/types/track_category";
   import { formatDistanceToNow } from "date-fns";
   import { pl } from "date-fns/locale";
-  import { Headphones, MoreVertical, Plus, Trash2 } from "lucide-svelte";
+  import { Headphones, MoreVertical, Plus, Trash2, X } from "lucide-svelte";
+  import ProjectActionButton from "../projects/ProjectActionButton.svelte";
   import Button from "../ui/Button.svelte";
 
   let {
@@ -76,7 +77,12 @@
 <div>
   <div class="flex items-center justify-between mb-4">
     <h2 class="text-lg font-medium text-white">Utwory</h2>
-    <Button size="sm" icon={Plus} onclick={onNewTrack} primary>
+    <Button
+      icon={Plus}
+      onclick={onNewTrack}
+      class="bg-blue-600 hover:bg-blue-500 text-white"
+      primary
+    >
       Nowy utwór
     </Button>
   </div>
@@ -122,9 +128,13 @@
       <p class="text-gray-400 text-sm mb-4">
         Dodaj pierwszy utwór do tego projektu
       </p>
-      <Button size="sm" icon={Plus} onclick={onNewTrack} primary>
+      <ProjectActionButton
+        icon={Plus}
+        onclick={onNewTrack}
+        class="bg-blue-600 hover:bg-blue-500 text-white"
+      >
         Dodaj utwór
-      </Button>
+      </ProjectActionButton>
     </div>
   {:else if filteredTracks.length === 0}
     <div class="bg-gray-800 rounded-lg p-6 text-center">
@@ -132,9 +142,9 @@
       <p class="text-gray-400 text-sm mb-4">
         Nie znaleziono utworów pasujących do wyszukiwania
       </p>
-      <Button size="sm" onclick={() => (searchQuery = "")}>
+      <ProjectActionButton icon={X} onclick={() => (searchQuery = "")}>
         Wyczyść wyszukiwanie
-      </Button>
+      </ProjectActionButton>
     </div>
   {:else}
     <div class="bg-gray-800 rounded-lg overflow-hidden">
