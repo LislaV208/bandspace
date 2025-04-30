@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { enhance } from "$app/forms";
   import NewProjectModal from "$lib/components/projects/NewProjectModal.svelte";
   import NoProjectsView from "$lib/components/projects/NoProjectsView.svelte";
   import ProjectCard from "$lib/components/projects/ProjectCard.svelte";
@@ -11,7 +10,6 @@
     IconPlus,
     IconUserPlus,
   } from "@tabler/icons-svelte";
-  import BrandGoogle from "@tabler/icons-svelte/icons/brand-google";
   import BrandGoogleFilled from "@tabler/icons-svelte/icons/brand-google-filled";
   import { Music } from "lucide-svelte";
   import { onMount } from "svelte";
@@ -65,14 +63,117 @@
     }
   });
 
-  // Funkcja zapisująca docelowy URL do localStorage przed logowaniem przez Google
-  function saveRedirectToLocalStorage() {
-    if (redirectParam && typeof localStorage !== "undefined") {
-      localStorage.setItem("redirectAfterLogin", redirectParam);
-      console.log(
-        "Zapisano URL do przekierowania w localStorage:",
-        redirectParam
-      );
+  // Funkcja do logowania
+  async function handleLogin(e: Event) {
+    e.preventDefault();
+    loading = true;
+    error = null;
+
+    try {
+      console.log("Sending login request with email:", email);
+
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      // Sprawdź, czy odpowiedź jest w formacie JSON
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        console.error("Non-JSON response received:", await response.text());
+        error =
+          "Serwer zwrócił nieprawidłową odpowiedź. Spróbuj ponownie później.";
+        loading = false;
+        return;
+      }
+
+      const result = await response.json();
+      console.log("Login response:", result);
+
+      if (!result.success) {
+        error = result.error;
+        loading = false;
+        return;
+      }
+
+      // Przekierowanie po udanym logowaniu
+      window.location.href = redirectParam || "/dashboard";
+    } catch (err) {
+      console.error("Login error:", err);
+      error = "Wystąpił błąd podczas logowania. Spróbuj ponownie.";
+      loading = false;
+    }
+  }
+
+  // Funkcja do rejestracji
+  async function handleRegister(e: Event) {
+    e.preventDefault();
+    loading = true;
+    error = null;
+
+    try {
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password, confirmPassword }),
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        error = result.error;
+        loading = false;
+        return;
+      }
+
+      // Przekierowanie po udanej rejestracji
+      window.location.href = redirectParam || "/dashboard";
+    } catch (err) {
+      console.error("Registration error:", err);
+      error = "Wystąpił błąd podczas rejestracji. Spróbuj ponownie.";
+      loading = false;
+    }
+  }
+
+  // Funkcja do logowania przez Google
+  async function handleGoogleLogin(e: Event) {
+    e.preventDefault();
+
+    try {
+      // Zapisz URL do przekierowania w localStorage
+      if (redirectParam && typeof localStorage !== "undefined") {
+        localStorage.setItem("redirectAfterLogin", redirectParam);
+      }
+
+      const response = await fetch("/api/auth/google", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          redirectUrl: redirectParam
+            ? `${window.location.origin}/auth/callback?redirect=${redirectParam}`
+            : undefined,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        error = result.error;
+        return;
+      }
+
+      // Przekierowanie do URL Google OAuth
+      window.location.href = result.url;
+    } catch (err) {
+      console.error("Google login error:", err);
+      error = "Wystąpił błąd podczas logowania przez Google. Spróbuj ponownie.";
     }
   }
 </script>
@@ -238,18 +339,8 @@
           <!-- Wspólny formularz z dynamiczną akcją -->
           <form
             method="POST"
-            action={activeTab === "login" ? "?/login" : "?/register"}
             class="space-y-4 md:space-y-5 w-full"
-            use:enhance={({ action }) => {
-              // Nie ustawiaj loading=true dla akcji googleLogin
-              if (!action || !action.toString().includes("googleLogin")) {
-                loading = true;
-              }
-              return async ({ update }) => {
-                loading = false;
-                await update();
-              };
-            }}
+            onsubmit={activeTab === "login" ? handleLogin : handleRegister}
           >
             <!-- Pola formularza -->
             <div>
@@ -432,10 +523,8 @@
             </div>
 
             <button
-              type="submit"
-              formnovalidate
-              formaction="?/googleLogin"
-              onclick={saveRedirectToLocalStorage}
+              type="button"
+              onclick={handleGoogleLogin}
               class="w-full flex items-center justify-center px-4 py-2 border border-gray-600 shadow-sm text-sm font-medium rounded text-gray-300 hover:bg-gray-700/20 transition-all mt-4"
             >
               <div class="flex items-center justify-center w-full">

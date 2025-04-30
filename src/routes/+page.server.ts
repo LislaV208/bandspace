@@ -179,7 +179,27 @@ export const actions = {
     });
 
     if (error) {
-      return fail(401, { error: error.message });
+      console.error("Login error:", error);
+
+      // Mapowanie komunikatów błędów na przyjazne dla użytkownika komunikaty w języku polskim
+      let userFriendlyError = "Wystąpił błąd podczas logowania";
+
+      if (error.message.includes("Invalid login credentials")) {
+        userFriendlyError = "Nieprawidłowy email lub hasło";
+      } else if (error.message.includes("Email not confirmed")) {
+        userFriendlyError =
+          "Adres email nie został potwierdzony. Sprawdź swoją skrzynkę email.";
+      } else if (error.message.includes("Too many requests")) {
+        userFriendlyError =
+          "Zbyt wiele prób logowania. Spróbuj ponownie później.";
+      } else if (error.message.includes("User not found")) {
+        userFriendlyError =
+          "Nie znaleziono użytkownika o podanym adresie email";
+      } else if (error.message.includes("Invalid email")) {
+        userFriendlyError = "Nieprawidłowy format adresu email";
+      }
+
+      return fail(401, { error: userFriendlyError });
     }
 
     // Przekierowujemy do wcześniej żądanej strony lub do dashboardu
@@ -216,7 +236,23 @@ export const actions = {
     });
 
     if (error) {
-      return fail(401, { error: error.message });
+      console.error("Registration error:", error);
+
+      // Mapowanie komunikatów błędów na przyjazne dla użytkownika komunikaty w języku polskim
+      let userFriendlyError = "Wystąpił błąd podczas rejestracji";
+
+      if (error.message.includes("already registered")) {
+        userFriendlyError = "Ten adres email jest już zarejestrowany";
+      } else if (error.message.includes("weak password")) {
+        userFriendlyError = "Hasło jest zbyt słabe. Użyj silniejszego hasła.";
+      } else if (error.message.includes("Invalid email")) {
+        userFriendlyError = "Nieprawidłowy format adresu email";
+      } else if (error.message.includes("Too many requests")) {
+        userFriendlyError =
+          "Zbyt wiele prób rejestracji. Spróbuj ponownie później.";
+      }
+
+      return fail(401, { error: userFriendlyError });
     }
 
     // Przekierowujemy do wcześniej żądanej strony lub do dashboardu
@@ -238,9 +274,23 @@ export const actions = {
     });
 
     if (error) {
-      return fail(400, {
-        message: "Wystąpił błąd podczas logowania Google",
-      });
+      console.error("Google login error:", error);
+
+      // Mapowanie komunikatów błędów na przyjazne dla użytkownika komunikaty w języku polskim
+      let userFriendlyError = "Wystąpił błąd podczas logowania przez Google";
+
+      if (error.message.includes("popup blocked")) {
+        userFriendlyError =
+          "Wyskakujące okienko zostało zablokowane. Zezwól na wyskakujące okienka dla tej strony.";
+      } else if (error.message.includes("popup closed")) {
+        userFriendlyError =
+          "Proces logowania został przerwany. Spróbuj ponownie.";
+      } else if (error.message.includes("Too many requests")) {
+        userFriendlyError =
+          "Zbyt wiele prób logowania. Spróbuj ponownie później.";
+      }
+
+      return fail(400, { error: userFriendlyError });
     }
 
     redirect(303, data.url);

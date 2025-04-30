@@ -79,35 +79,26 @@ const authGuard: Handle = async ({ event, resolve }) => {
     return resolve(event);
   }
 
-  const publicPathnames = ["/", "/login", "/signup"];
+  const publicPathnames = ["/"]; // Tylko strona główna jest publiczna
 
   if (
     !event.locals.session &&
     !publicPathnames.includes(event.url.pathname) &&
-    !event.url.pathname.startsWith("/auth")
+    !event.url.pathname.startsWith("/auth") &&
+    !event.url.pathname.startsWith("/api/auth")
   ) {
-    console.log("redirecting to login");
+    console.log("redirecting to homepage for login");
     // Zapisujemy bieżący URL jako parametr redirect
     const currentPath = event.url.pathname + event.url.search;
     // Enkodujemy URL, aby uniknąć problemów z znakami specjalnymi
     const encodedPath = encodeURIComponent(currentPath);
-    // Przekierowujemy do strony logowania z parametrem redirect
-    redirect(303, `/login?redirect=${encodedPath}`);
+    // Przekierowujemy do strony głównej z parametrem redirect
+    redirect(303, `/?redirect=${encodedPath}`);
   }
 
   if (event.locals.session) {
-    // Jeśli użytkownik jest zalogowany i próbuje wejść na stronę główną, przekieruj go do dashboardu
-    if (event.url.pathname === "/") {
-      console.log("redirecting to /dashboard");
-      redirect(303, "/dashboard");
-    }
-
-    // Jeśli użytkownik jest zalogowany i próbuje wejść na stronę logowania lub rejestracji, przekieruj go do dashboardu
-    if (
-      event.url.pathname === "/login" ||
-      event.url.pathname === "/signup" ||
-      event.url.pathname.startsWith("/auth")
-    ) {
+    // Jeśli użytkownik jest zalogowany i próbuje wejść na stronę główną lub ścieżkę autoryzacji, przekieruj go do dashboardu
+    if (event.url.pathname === "/" || event.url.pathname.startsWith("/auth")) {
       console.log("redirecting to /dashboard");
       redirect(303, "/dashboard");
     }
