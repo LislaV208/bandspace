@@ -263,7 +263,7 @@
                 <td
                   class="px-6 py-4 whitespace-nowrap text-sm text-gray-400 hidden md:table-cell"
                 >
-                  {(track as any).files_count || 0}
+                  {track.files_count || 0}
                 </td>
                 <td
                   class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
