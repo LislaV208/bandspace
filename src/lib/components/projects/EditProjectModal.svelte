@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { enhance } from "$app/forms";
+  import { goto } from "$app/navigation";
   import Button from "$lib/components/ui/Button.svelte";
   import Input from "$lib/components/ui/Input.svelte";
   import Modal from "$lib/components/ui/Modal.svelte";
@@ -30,20 +30,61 @@
       error = "Nazwa projektu jest wymagana";
       return false;
     }
-    
+
     if (projectName.trim() === project.name) {
       error = "Podaj inną nazwę projektu";
       return false;
     }
-    
+
     error = "";
     return true;
   }
 
-  function handleSubmit(event: SubmitEvent) {
+  async function handleSubmit() {
     if (!validateForm()) {
-      event.preventDefault();
       return;
+    }
+
+    isLoading = true;
+
+    try {
+      const response = await fetch(`/api/projects/${project.id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: projectName.trim(),
+          oldSlug: project.slug,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Wystąpił błąd podczas aktualizacji projektu"
+        );
+      }
+
+      toast.success("Nazwa projektu została zaktualizowana");
+
+      // Jeśli slug się zmienił, przekieruj na nowy URL
+      if (data.redirect) {
+        goto(data.redirect);
+      }
+
+      isOpen = false;
+      reset();
+    } catch (err) {
+      console.error("Błąd podczas aktualizacji projektu:", err);
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : "Wystąpił błąd podczas aktualizacji projektu"
+      );
+    } finally {
+      isLoading = false;
     }
   }
 </script>
@@ -55,33 +96,9 @@
   size="sm"
   onClose={() => reset()}
 >
-  <form
-    action="?/updateProject"
-    method="POST"
-    onsubmit={handleSubmit}
-    use:enhance={() => {
-      isLoading = true;
-      return async ({ result, update }) => {
-        if (result.type === "error") {
-          toast.error(
-            result.error?.message || "Wystąpił błąd podczas aktualizacji projektu"
-          );
-          isLoading = false;
-        } else {
-          await update();
-          toast.success("Nazwa projektu została zaktualizowana");
-          isOpen = false;
-          reset();
-        }
-      };
-    }}
-  >
-    <input type="hidden" name="id" value={project.id} />
-    <input type="hidden" name="slug" value={project.slug} />
-    
+  <div>
     <Input
       type="text"
-      name="name"
       label="Nazwa projektu"
       bind:value={projectName}
       placeholder="Wprowadź nową nazwę projektu"
@@ -105,12 +122,15 @@
       <Button
         primary
         {isLoading}
-        type="submit"
+        type="button"
+        onclick={handleSubmit}
         class="disabled:opacity-50 disabled:cursor-not-allowed"
-        disabled={!projectName.trim() || projectName.trim() === project.name || isLoading}
+        disabled={!projectName.trim() ||
+          projectName.trim() === project.name ||
+          isLoading}
       >
         Zapisz zmiany
       </Button>
     </div>
-  </form>
+  </div>
 </Modal>
