@@ -1,8 +1,9 @@
 <script lang="ts">
   import "../app.css";
+  import "../scrollbar-fix.css";
 
-  import { version } from "$app/environment";
   import { invalidate } from "$app/navigation";
+  import { ToastContainer } from "$lib/components/ui/toast";
   import UserProfileMenu from "$lib/components/user-profile/UserProfileMenu.svelte";
   import { setAuthState } from "$lib/state/auth-state.svelte";
   import { onMount } from "svelte";
@@ -25,7 +26,7 @@
   });
 
   onMount(() => {
-    const { data } = supabase.auth.onAuthStateChange((event, newSession) => {
+    const { data } = supabase.auth.onAuthStateChange((_event, newSession) => {
       authState.updateState({
         session: newSession,
         supabase,
@@ -47,21 +48,18 @@
   });
 </script>
 
-<div
-  class="h-screen flex flex-col bg-gradient-to-b from-gray-900 to-gray-800 text-white relative"
->
+<div class="h-screen flex flex-col bg-[#101827] text-white relative">
   {#if user != null}
-    <header
-      class="bg-gray-800/70 shadow-lg top-0 z-50 border-b border-gray-600/50"
-    >
-      <nav class="px-6 py-3">
+    <header class="bg-[#101827] shadow-lg top-0 z-40 border-b border-[#1F2937]">
+      <nav class="px-6 py-3 max-w-7xl mx-auto">
         <div class="flex items-center justify-between">
-          <div class="flex items-center space-x-6">
-            <button
-              class="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-gray-400 to-gray-300"
-            >
-              <a href="/"> BandSpace </a>
-            </button>
+          <div class="flex items-center space-x-2">
+            <a href="/" class="flex items-center">
+              <span
+                class="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-gray-400 to-gray-300"
+                >BandSpace</span
+              >
+            </a>
           </div>
           <div class="flex items-center">
             <UserProfileMenu {user} />
@@ -71,7 +69,7 @@
     </header>
   {/if}
 
-  <main class="flex-1 overflow-hidden">
+  <main class="flex-1 overflow-y-auto scrollbar-stable">
     {@render children?.()}
   </main>
 
@@ -80,4 +78,6 @@
   >
     <p>BandSpace v{version}</p>
   </footer> -->
+
+  <ToastContainer />
 </div>

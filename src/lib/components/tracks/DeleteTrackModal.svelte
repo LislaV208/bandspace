@@ -2,8 +2,8 @@
   import { enhance } from "$app/forms";
   import Button from "$lib/components/ui/Button.svelte";
   import Modal from "$lib/components/ui/Modal.svelte";
+  import { toast } from "$lib/components/ui/toast";
   import type { Track } from "$lib/types/track";
-  import toast, { Toaster } from "svelte-french-toast";
 
   let {
     isOpen = $bindable(),
@@ -14,7 +14,6 @@
   let isLoading = $state(false);
 </script>
 
-<Toaster />
 <Modal bind:isOpen title="Usuń utwór" {isLoading}>
   <p class="text-gray-300 mb-6">
     Czy na pewno chcesz usunąć utwór
@@ -29,10 +28,7 @@
       return async ({ result, update }) => {
         if (result.type === "error") {
           toast.error(
-            result.error?.message || "Wystąpił błąd podczas usuwania utworu",
-            {
-              position: "bottom-right",
-            }
+            result.error?.message || "Wystąpił błąd podczas usuwania utworu"
           );
           isLoading = false;
         } else {

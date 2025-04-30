@@ -100,7 +100,7 @@
 
   <!-- Lista komentarzy z przewijaniem -->
   <div
-    class="flex-1 overflow-y-auto px-4 py-3 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-500"
+    class="flex-1 overflow-y-scroll px-4 py-3 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-500"
   >
     {#if comments.length === 0}
       <div class="text-gray-400 text-center py-8 flex flex-col items-center">

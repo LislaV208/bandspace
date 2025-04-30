@@ -45,7 +45,7 @@
 
   {#if isOpen}
     <div
-      class="absolute right-0 mt-2 bg-gray-800 rounded-lg shadow-lg z-50 border border-gray-600/50 transition-all duration-200 ease-in-out items-center"
+      class="absolute right-0 mt-2 w-56 bg-gray-800 rounded-lg shadow-lg z-50 border border-gray-700 transition-all duration-200 ease-in-out animate-in fade-in-50 zoom-in-95"
       transition:slide={{ duration: 300 }}
     >
       <div transition:fade={{ duration: 300 }}>

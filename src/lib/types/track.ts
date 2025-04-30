@@ -1,4 +1,12 @@
 import type { Database } from "$lib/database.types";
 
-export type Track = Database["public"]["Tables"]["tracks"]["Row"];
-export type TrackCreate = Omit<Track, "id" | "slug" | "created_at">;
+// Bazowy typ Track z bazy danych
+export type BaseTrack = Database["public"]["Tables"]["tracks"]["Row"];
+
+// Rozszerzony typ Track z dodatkowymi polami
+export interface Track extends BaseTrack {
+  files_count?: number;
+  category_id?: number | null;
+}
+
+export type TrackCreate = Omit<BaseTrack, "id" | "slug" | "created_at">;

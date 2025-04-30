@@ -2,8 +2,8 @@
   import Button from "$lib/components/ui/Button.svelte";
   import Input from "$lib/components/ui/Input.svelte";
   import Modal from "$lib/components/ui/Modal.svelte";
+  import { toast } from "$lib/components/ui/toast";
   import type { User } from "$lib/types/user";
-  import toast, { Toaster } from "svelte-french-toast";
 
   let { isOpen = $bindable(), user }: { isOpen: boolean; user: User } =
     $props();
@@ -12,7 +12,7 @@
 
   async function updateProfile() {
     if (!userName.trim()) {
-      toast.error("Nazwa nie może być pusta", { position: "bottom-right" });
+      toast.error("Nazwa nie może być pusta");
       return;
     }
 
@@ -36,10 +36,10 @@
         );
       }
 
-      const updatedUser = await response.json();
+      await response.json();
 
       // Wyświetl powiadomienie o sukcesie
-      toast.success("Zaktualizowano profil", { position: "bottom-right" });
+      toast.success("Zaktualizowano profil");
 
       // Zamknij modal i odśwież stronę
       isOpen = false;
@@ -51,16 +51,13 @@
       toast.error(
         error instanceof Error
           ? error.message
-          : "Błąd podczas aktualizacji profilu",
-        { position: "bottom-right" }
+          : "Błąd podczas aktualizacji profilu"
       );
     } finally {
       isLoading = false;
     }
   }
 </script>
-
-<Toaster />
 
 <Modal bind:isOpen title="Edytuj profil">
   <div>

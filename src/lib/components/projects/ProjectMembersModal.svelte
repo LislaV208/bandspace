@@ -9,7 +9,7 @@
 </script>
 
 <Modal bind:isOpen title="Członkowie projektu">
-  <div class="space-y-4 max-h-96 overflow-y-auto pr-2">
+  <div class="space-y-4 max-h-96 overflow-y-scroll pr-2">
     <ul class="space-y-3">
       {#each projectUsers as projectUser}
         <li

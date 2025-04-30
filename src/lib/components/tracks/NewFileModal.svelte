@@ -1,11 +1,11 @@
 <script lang="ts">
   import FileUploadModal from "$lib/components/ui/FileUploadModal.svelte";
+  import { toast } from "$lib/components/ui/toast";
   import Tooltip from "$lib/components/ui/Tooltip.svelte";
   import { getSupabaseContext } from "$lib/supabase-context";
   import type { TrackCategory } from "$lib/types/track_category";
   import { CheckSquare, Info, Square, Tag } from "lucide-svelte";
   import type { Snippet } from "svelte";
-  import toast from "svelte-french-toast";
 
   let {
     isOpen = $bindable(),
@@ -46,9 +46,7 @@
       });
 
     if (storageError) {
-      toast.error("Nie udało się dodać pliku do projektu.", {
-        position: "bottom-right",
-      });
+      toast.error("Nie udało się dodać pliku do projektu.");
       return null;
     }
 
@@ -72,9 +70,7 @@
       // Usuń plik ze storage w razie niepowodzenia
       await supabase.storage.from("project_files").remove([storagePath]);
       const error = await response.json();
-      toast.error(error.message || "Nie udało się dodać pliku do utworu.", {
-        position: "bottom-right",
-      });
+      toast.error(error.message || "Nie udało się dodać pliku do utworu.");
       return null;
     }
 

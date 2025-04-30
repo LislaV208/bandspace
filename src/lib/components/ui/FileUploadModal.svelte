@@ -1,9 +1,9 @@
 <script lang="ts">
   import Modal from "$lib/components/ui/Modal.svelte";
+  import { toast } from "$lib/components/ui/toast";
   import { FileMusic, Loader2, Music, Upload } from "lucide-svelte";
-  import { onDestroy, onMount } from "svelte";
   import type { Snippet } from "svelte";
-  import toast from "svelte-french-toast";
+  import { onDestroy, onMount } from "svelte";
   import Button from "./Button.svelte";
 
   let {
@@ -93,20 +93,14 @@
 
       if (!isAcceptedFileType) {
         toast.error(
-          `Nieobsługiwany format pliku. Obsługiwane formaty: ${acceptedFileTypes}`,
-          {
-            position: "bottom-right",
-          }
+          `Nieobsługiwany format pliku. Obsługiwane formaty: ${acceptedFileTypes}`
         );
         return;
       }
 
       if (file.size > maxSizeInBytes) {
         toast.error(
-          `Plik jest zbyt duży. Maksymalny rozmiar to ${maxSizeInMB} MB`,
-          {
-            position: "bottom-right",
-          }
+          `Plik jest zbyt duży. Maksymalny rozmiar to ${maxSizeInMB} MB`
         );
         return;
       }
@@ -124,10 +118,7 @@
 
       if (file.size > maxSizeInBytes) {
         toast.error(
-          `Plik jest zbyt duży. Maksymalny rozmiar to ${maxSizeInMB} MB`,
-          {
-            position: "bottom-right",
-          }
+          `Plik jest zbyt duży. Maksymalny rozmiar to ${maxSizeInMB} MB`
         );
         return;
       }
@@ -186,7 +177,7 @@
 
     if (!selectedFile) {
       isUploading = false;
-      toast.error("Nie wybrano pliku", { position: "bottom-right" });
+      toast.error("Nie wybrano pliku");
       throw new Error("Nie wybrano pliku");
     }
 
@@ -220,8 +211,7 @@
   bind:isOpen
   {title}
   isLoading={isUploading}
-  hideTitle={isUploading}
-  maxWidth="max-w-xl"
+  size="lg"
   onClose={handleClose}
 >
   <!-- Input file zawsze dostępny -->

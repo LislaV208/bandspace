@@ -1,8 +1,8 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import Modal from "$lib/components/ui/Modal.svelte";
+  import { toast } from "$lib/components/ui/toast";
   import type { Project } from "$lib/types/project";
-  import toast, { Toaster } from "svelte-french-toast";
   import Button from "../ui/Button.svelte";
   let { isOpen = $bindable(), project }: { isOpen: boolean; project: Project } =
     $props();
@@ -33,10 +33,7 @@
 
       // Wyświetl komunikat o powodzeniu
       toast.success(
-        responseData.message || `Nie należysz do projektu ${project.name}`,
-        {
-          position: "bottom-right",
-        }
+        responseData.message || `Nie należysz do projektu ${project.name}`
       );
 
       // Przekieruj do strony głównej po opuszczeniu projektu
@@ -48,10 +45,7 @@
       toast.error(
         error instanceof Error
           ? error.message
-          : "Nie udało się opuścić projektu",
-        {
-          position: "bottom-right",
-        }
+          : "Nie udało się opuścić projektu"
       );
 
       isLoading = false;
@@ -59,7 +53,6 @@
   }
 </script>
 
-<Toaster />
 <Modal bind:isOpen title="Opuść projekt" {isLoading}>
   <p class="text-gray-300 mb-6">
     Czy na pewno chcesz opuścić projekt

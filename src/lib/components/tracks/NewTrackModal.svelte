@@ -1,6 +1,7 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import Modal from "$lib/components/ui/Modal.svelte";
+  import { toast } from "$lib/components/ui/toast";
   import { getSupabaseContext } from "$lib/supabase-context";
   import type { Project } from "$lib/types/project";
   import type { Track } from "$lib/types/track";
@@ -16,7 +17,6 @@
     User,
   } from "lucide-svelte";
   import { onDestroy, onMount } from "svelte";
-  import toast from "svelte-french-toast";
   import Button from "../ui/Button.svelte";
   import Input from "../ui/Input.svelte";
 
@@ -74,16 +74,12 @@
       const maxSizeInBytes = 50 * 1024 * 1024; // 50 MB
 
       if (!file.type.startsWith("audio/")) {
-        toast.error("Wybierz plik audio (MP3, WAV, itp.)", {
-          position: "bottom-right",
-        });
+        toast.error("Wybierz plik audio (MP3, WAV, itp.)");
         return;
       }
 
       if (file.size > maxSizeInBytes) {
-        toast.error("Plik jest zbyt duży. Maksymalny rozmiar to 50 MB", {
-          position: "bottom-right",
-        });
+        toast.error("Plik jest zbyt duży. Maksymalny rozmiar to 50 MB");
         return;
       }
 
@@ -121,17 +117,13 @@
       const maxSizeInBytes = 50 * 1024 * 1024; // 50 MB
 
       if (!file.type.startsWith("audio/")) {
-        toast.error("Wybierz plik audio (MP3, WAV, itp.)", {
-          position: "bottom-right",
-        });
+        toast.error("Wybierz plik audio (MP3, WAV, itp.)");
         input.value = "";
         return;
       }
 
       if (file.size > maxSizeInBytes) {
-        toast.error("Plik jest zbyt duży. Maksymalny rozmiar to 50 MB", {
-          position: "bottom-right",
-        });
+        toast.error("Plik jest zbyt duży. Maksymalny rozmiar to 50 MB");
         input.value = "";
         return;
       }
@@ -212,8 +204,7 @@
   bind:isOpen
   title={currentStep === 1 ? "Dodaj nowy utwór" : "Szczegóły utworu"}
   isLoading={isUploading}
-  hideTitle={isUploading}
-  maxWidth="max-w-xl"
+  size="lg"
 >
   <!-- Input file zawsze dostępny, niezależnie od kroku -->
   <input
@@ -275,7 +266,7 @@
 
         if (!selectedFile) {
           isUploading = false;
-          toast.error("Nie wybrano pliku", { position: "bottom-right" });
+          toast.error("Nie wybrano pliku");
           return;
         }
 
@@ -283,7 +274,7 @@
 
         if (storageError) {
           isUploading = false;
-          toast.error(storageError.message, { position: "bottom-right" });
+          toast.error(storageError.message);
           return;
         }
 
@@ -315,7 +306,7 @@
             console.error("Error creating track:", error);
             await supabase.storage.from("project_files").remove([storagePath]);
             isUploading = false;
-            toast.error(error.message, { position: "bottom-right" });
+            toast.error(error.message);
             return;
           }
 
@@ -328,8 +319,7 @@
           toast.error(
             error instanceof Error
               ? error.message
-              : "Błąd podczas tworzenia utworu",
-            { position: "bottom-right" }
+              : "Błąd podczas tworzenia utworu"
           );
           await supabase.storage.from("project_files").remove([storagePath]);
           isUploading = false;

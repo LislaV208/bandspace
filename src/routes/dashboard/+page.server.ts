@@ -1,4 +1,4 @@
-import { error, fail, redirect, type Actions } from "@sveltejs/kit";
+import { error, redirect, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 
 import type { DashboardProject } from "$lib/types/project";
@@ -7,13 +7,13 @@ import type { Track } from "$lib/types/track";
 export const load: PageServerLoad = async ({
   locals: { supabase, user, session },
 }) => {
-  // Jeśli użytkownik nie jest zalogowany, zwracamy pusty obiekt
+  // Sprawdzamy, czy użytkownik jest zalogowany
   if (!session) {
-    return {};
+    redirect(303, "/");
   }
 
   // Pobieramy projekty użytkownika wraz z liczbą członków
-  const { data, error } = await supabase
+  const { data, error: projectsError } = await supabase
     .from("projects")
     .select(
       `
@@ -24,9 +24,9 @@ export const load: PageServerLoad = async ({
     )
     .eq("projects_users.user_id", user!.id);
 
-  if (error) {
-    console.error("Error fetching projects:", error);
-    throw error;
+  if (projectsError) {
+    console.error("Error fetching projects:", projectsError);
+    throw error(500, { message: projectsError.message });
   }
 
   // Przekształcamy members_count z tablicy [{ count: liczba }] na samą liczbę
@@ -79,12 +79,11 @@ export const load: PageServerLoad = async ({
 };
 
 export const actions = {
-  // Akcje dla zalogowanych użytkowników
   create: async ({ request, locals: { supabase, session } }) => {
     // Sprawdzamy czy użytkownik jest zalogowany
     if (!session) {
-      return fail(401, {
-        error: "Musisz być zalogowany, aby utworzyć projekt",
+      return error(401, {
+        message: "Musisz być zalogowany, aby utworzyć projekt",
       });
     }
 
@@ -112,7 +111,9 @@ export const actions = {
   delete: async ({ request, locals: { supabase, session } }) => {
     // Sprawdzamy czy użytkownik jest zalogowany
     if (!session) {
-      return fail(401, { error: "Musisz być zalogowany, aby usunąć projekt" });
+      return error(401, {
+        message: "Musisz być zalogowany, aby usunąć projekt",
+      });
     }
 
     const formData = await request.formData();
@@ -158,91 +159,5 @@ export const actions = {
     }
 
     return { success: true };
-  },
-
-  // Akcje dla niezalogowanych użytkowników
-  login: async ({ request, url, locals: { supabase } }) => {
-    // Pobieramy parametr redirect z URL
-    const redirectTo = url.searchParams.get("redirect") || "/dashboard";
-
-    const formData = await request.formData();
-    const email = formData.get("email")?.toString();
-    const password = formData.get("password")?.toString();
-
-    if (!email || !password) {
-      return fail(400, { error: "Email i hasło są wymagane" });
-    }
-
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      return fail(401, { error: error.message });
-    }
-
-    // Przekierowujemy do wcześniej żądanej strony lub do dashboardu
-    redirect(303, redirectTo);
-  },
-
-  register: async ({ request, url, locals: { supabase } }) => {
-    // Pobieramy parametr redirect z URL
-    const redirectTo = url.searchParams.get("redirect") || "/dashboard";
-
-    const formData = await request.formData();
-    const email = formData.get("email")?.toString();
-    const password = formData.get("password")?.toString();
-    const confirmPassword = formData.get("confirm-password")?.toString();
-
-    if (!email || !password) {
-      return fail(400, { error: "Email i hasło są wymagane" });
-    }
-
-    if (password !== confirmPassword) {
-      return fail(400, { error: "Podane hasła różnią się od siebie" });
-    }
-
-    // Używamy adresu email jako tymczasowej nazwy użytkownika
-    // Użytkownik będzie mógł zaktualizować swoją nazwę później
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          name: email.split("@")[0], // Używamy części adresu email przed @ jako tymczasowej nazwy
-        },
-      },
-    });
-
-    if (error) {
-      return fail(401, { error: error.message });
-    }
-
-    // Przekierowujemy do wcześniej żądanej strony lub do dashboardu
-    redirect(303, redirectTo);
-  },
-
-  googleLogin: async ({ request, locals: { supabase } }) => {
-    // Pobierz bazowy URL z aktualnego żądania
-    const requestUrl = new URL(request.url);
-    const baseUrl = `${requestUrl.protocol}//${requestUrl.host}`;
-
-    // Dla Google OAuth nie przekazujemy parametru redirect w URL
-    // Zamiast tego używamy localStorage (zaimplementowane w +page.svelte)
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${baseUrl}/auth/callback`,
-      },
-    });
-
-    if (error) {
-      return fail(400, {
-        message: "Wystąpił błąd podczas logowania Google",
-      });
-    }
-
-    redirect(303, data.url);
   },
 } satisfies Actions;
