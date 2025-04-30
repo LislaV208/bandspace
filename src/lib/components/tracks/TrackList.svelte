@@ -1,10 +1,18 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import type { Track } from "$lib/types/track";
+  import { fade } from "svelte/transition";
 
   import { formatDistanceToNow } from "date-fns";
   import { pl } from "date-fns/locale";
-  import { Headphones, MoreVertical, Plus, Trash2, X } from "lucide-svelte";
+  import {
+    Headphones,
+    ListMusic,
+    Plus,
+    Search,
+    Trash2,
+    X,
+  } from "lucide-svelte";
   import ProjectActionButton from "../projects/ProjectActionButton.svelte";
   import Button from "../ui/Button.svelte";
 
@@ -66,7 +74,7 @@
   );
 </script>
 
-<div>
+<div class="relative">
   <div
     class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4"
   >
@@ -110,17 +118,21 @@
 
   {#if tracks.length === 0}
     <div
-      class="bg-gray-800 border-2 border-dashed border-gray-700 rounded-lg p-6 text-center"
+      class="bg-gray-800 border-2 border-dashed border-gray-700 rounded-lg p-8 flex flex-col items-center justify-center text-center w-full"
+      in:fade={{ duration: 300 }}
+      out:fade={{ duration: 200 }}
     >
       <div
-        class="mx-auto w-16 h-16 bg-gray-700/50 rounded-full flex items-center justify-center mb-3"
+        class="bg-gray-700/50 w-20 h-20 rounded-full flex items-center justify-center mb-4"
       >
-        <Headphones size={24} class="text-gray-400" />
+        <ListMusic size={36} class="text-gray-400" />
       </div>
-      <h3 class="text-white font-medium mb-2">Brak utworów</h3>
-      <p class="text-gray-400 text-sm mb-4">
-        Dodaj pierwszy utwór do tego projektu
+
+      <h3 class="text-lg font-medium text-white mb-2">Brak utworów</h3>
+      <p class="text-gray-400 mb-6 max-w-md">
+        Dodaj pierwszy utwór do tego projektu, aby rozpocząć pracę
       </p>
+
       <ProjectActionButton
         icon={Plus}
         onclick={onNewTrack}
@@ -130,17 +142,38 @@
       </ProjectActionButton>
     </div>
   {:else if filteredTracks.length === 0}
-    <div class="bg-gray-800 rounded-lg p-6 text-center">
-      <h3 class="text-white font-medium mb-2">Nie znaleziono utworów</h3>
-      <p class="text-gray-400 text-sm mb-4">
-        Nie znaleziono utworów pasujących do wyszukiwania
+    <div
+      class="bg-gray-800 border-2 border-dashed border-gray-700 rounded-lg p-8 flex flex-col items-center justify-center text-center w-full"
+      in:fade={{ duration: 300 }}
+      out:fade={{ duration: 200 }}
+    >
+      <div
+        class="bg-gray-700/50 w-20 h-20 rounded-full flex items-center justify-center mb-4"
+      >
+        <Search size={36} class="text-gray-400" />
+      </div>
+
+      <h3 class="text-lg font-medium text-white mb-2">
+        Nie znaleziono utworów
+      </h3>
+      <p class="text-gray-400 mb-6 max-w-md">
+        Nie znaleziono utworów pasujących do wyszukiwania "{searchQuery}"
       </p>
-      <ProjectActionButton icon={X} onclick={() => (searchQuery = "")}>
+
+      <ProjectActionButton
+        icon={X}
+        onclick={() => (searchQuery = "")}
+        class="bg-blue-600 hover:bg-blue-500 text-white"
+      >
         Wyczyść wyszukiwanie
       </ProjectActionButton>
     </div>
   {:else}
-    <div class="bg-gray-800 rounded-lg overflow-hidden">
+    <div
+      class="bg-gray-800 rounded-lg overflow-hidden w-full"
+      in:fade={{ duration: 200, delay: 200 }}
+      out:fade={{ duration: 150 }}
+    >
       <div class="w-full overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-700">
           <thead class="bg-gray-700/30">
