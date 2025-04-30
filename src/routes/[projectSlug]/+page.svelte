@@ -31,6 +31,8 @@
   const projectUsers = data.projectUsers;
   const categories = data.categories;
 
+  // Usunięto pobieranie sluga projektu z parametrów URL, ponieważ nie jest już potrzebne
+
   setSupabaseContext(supabase);
 
   // Usunięto inicjalizację DataTable, używamy teraz komponentu TrackList
@@ -93,7 +95,6 @@
 
     <TrackList
       tracks={data.tracks}
-      projectSlug={project.slug}
       onNewTrack={openCreateModal}
       onDeleteTrack={(track) => {
         trackToDelete = track;

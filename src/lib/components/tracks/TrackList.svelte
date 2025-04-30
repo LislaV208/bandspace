@@ -18,12 +18,10 @@
 
   let {
     tracks,
-    projectSlug,
     onNewTrack,
     onDeleteTrack,
   }: {
     tracks: Track[];
-    projectSlug: string;
     onNewTrack: () => void;
     onDeleteTrack: (track: Track) => void;
   } = $props();
@@ -242,7 +240,11 @@
             {#each filteredTracks as track (track.id)}
               <tr
                 class="hover:bg-gray-700/30 cursor-pointer transition-colors"
-                onclick={() => goto(`/${projectSlug}/${track.slug}`)}
+                onclick={() => {
+                  // Workaround - nalezy to zrobic jakos lepiej
+                  const projectPath = window.location.pathname;
+                  goto(`${projectPath}/${track.slug}`);
+                }}
               >
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-center">
@@ -261,7 +263,7 @@
                 <td
                   class="px-6 py-4 whitespace-nowrap text-sm text-gray-400 hidden md:table-cell"
                 >
-                  {track.files_count || 0}
+                  {(track as any).files_count || 0}
                 </td>
                 <td
                   class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"
