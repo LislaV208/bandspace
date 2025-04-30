@@ -143,6 +143,32 @@ export const actions = {
     console.log("usunieto rekord z bazy danych");
   },
 
+  // Aktualizacja nazwy projektu
+  updateProject: async ({ request, locals: { supabase }, params }) => {
+    const formData = await request.formData();
+    const id = formData.get("id")?.toString();
+    const name = formData.get("name")?.toString();
+
+    if (!id || !name) {
+      return { error: "ID projektu i nazwa są wymagane" };
+    }
+
+    // Aktualizacja nazwy projektu w bazie danych
+    const { data, error } = await supabase
+      .from("projects")
+      .update({ name, updated_at: new Date().toISOString() })
+      .eq("id", parseInt(id))
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Błąd podczas aktualizacji projektu:", error);
+      return { error: error.message };
+    }
+
+    return { success: true, project: data };
+  },
+
   // Usuwanie projektu
   deleteProject: async ({ request, locals: { supabase }, params }) => {
     const formData = await request.formData();

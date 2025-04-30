@@ -2,6 +2,7 @@
   import { enhance } from "$app/forms";
   import Breadcrumbs from "$lib/components/Breadcrumbs.svelte";
   import DeleteProjectModal from "$lib/components/projects/DeleteProjectModal.svelte";
+  import EditProjectModal from "$lib/components/projects/EditProjectModal.svelte";
   import LeaveProjectModal from "$lib/components/projects/LeaveProjectModal.svelte";
   import ProjectInviteModal from "$lib/components/projects/ProjectInviteModal.svelte";
   import ProjectMembersModal from "$lib/components/projects/ProjectMembersModal.svelte";
@@ -13,7 +14,7 @@
 
   import { setSupabaseContext } from "$lib/supabase-context";
   import type { Track } from "$lib/types/track";
-  import { LogOut, Share2, Trash2, Users } from "lucide-svelte";
+  import { Edit, LogOut, Share2, Trash2, Users } from "lucide-svelte";
   import type { PageProps } from "./$types";
 
   let trackToDelete: Track | null = $state(null);
@@ -22,6 +23,7 @@
   let isLeaveModalOpen = $state(false);
   let isDeleteProjectModalOpen = $state(false);
   let isUsersModalOpen = $state(false);
+  let isEditProjectModalOpen = $state(false);
 
   const { data }: PageProps = $props();
   const supabase = data.supabase;
@@ -51,6 +53,13 @@
       </div>
 
       <div class="flex flex-wrap gap-2 w-full sm:w-auto justify-end">
+        <ProjectActionButton
+          icon={Edit}
+          onclick={() => (isEditProjectModalOpen = true)}
+        >
+          <span class="sm:hidden md:inline">Edytuj</span>
+          <span class="hidden sm:inline md:hidden">Edytuj</span>
+        </ProjectActionButton>
         <ProjectActionButton
           icon={Share2}
           onclick={() => (isInviteModalOpen = true)}
@@ -98,6 +107,7 @@
 <ProjectMembersModal bind:isOpen={isUsersModalOpen} {projectUsers} />
 <LeaveProjectModal {project} bind:isOpen={isLeaveModalOpen} />
 <DeleteProjectModal {project} bind:isOpen={isDeleteProjectModalOpen} />
+<EditProjectModal {project} bind:isOpen={isEditProjectModalOpen} />
 <DeleteTrackModal
   track={trackToDelete}
   bind:isOpen={isDeleteTrackModalOpen}
