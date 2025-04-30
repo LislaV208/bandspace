@@ -69,7 +69,7 @@
     </header>
   {/if}
 
-  <main class="flex-1 overflow-hidden">
+  <main class="flex-1 overflow-y-auto scrollbar-stable">
     {@render children?.()}
   </main>
 
