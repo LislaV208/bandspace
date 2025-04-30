@@ -489,7 +489,7 @@
   >
     <!-- Główna zawartość z przewijaniem -->
     <div
-      class="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-500"
+      class="flex-1 overflow-y-scroll scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-500 scrollbar-stable"
     >
       <!-- Nagłówek strony -->
       <div class="p-4 sm:p-6">
@@ -1094,7 +1094,8 @@
 
     <!-- Lista komentarzy z przewijaniem -->
     <div
-      class="flex-1 overflow-y-auto px-4 py-3 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-500"
+      class="flex-1 overflow-y-scroll px-4 py-3 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-500 scrollbar-stable"
+      style="scrollbar-gutter: stable;"
     >
       <!-- Przykładowe komentarze -->
       <div class="space-y-0">

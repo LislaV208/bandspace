@@ -1,5 +1,6 @@
 <script lang="ts">
   import "../app.css";
+  import "../scrollbar-fix.css";
 
   import { invalidate } from "$app/navigation";
   import { ToastContainer } from "$lib/components/ui/toast";

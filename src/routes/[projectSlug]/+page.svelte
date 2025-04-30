@@ -42,7 +42,7 @@
 </script>
 
 <div
-  class="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-500"
+  class="h-full overflow-y-scroll scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-500"
 >
   <div class="p-6 sm:p-8 max-w-7xl mx-auto">
     <div
