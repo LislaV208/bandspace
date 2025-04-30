@@ -4,6 +4,7 @@
   import PopupMenuOption from "$lib/components/ui/popup/PopupMenuOption.svelte";
   import { toast } from "$lib/components/ui/toast";
   import EditProfileModal from "$lib/components/user-profile/EditProfileModal.svelte";
+  import UserSettingsModal from "$lib/components/user-profile/UserSettingsModal.svelte";
   import { getAuthState } from "$lib/state/auth-state.svelte";
   import type { User } from "$lib/types/user";
   import { ChevronDown, LogOut, Settings, UserIcon } from "lucide-svelte";
@@ -12,6 +13,7 @@
   const authState = getAuthState();
 
   let isEditProfileModalOpen = $state(false);
+  let isSettingsModalOpen = $state(false);
 </script>
 
 <PopupMenu>
@@ -65,7 +67,7 @@
       icon={Settings}
       text="Ustawienia"
       onclick={() => {
-        isEditProfileModalOpen = true;
+        isSettingsModalOpen = true;
       }}
     />
   </div>
@@ -87,3 +89,4 @@
 </PopupMenu>
 
 <EditProfileModal bind:isOpen={isEditProfileModalOpen} {user} />
+<UserSettingsModal bind:isOpen={isSettingsModalOpen} {user} />
