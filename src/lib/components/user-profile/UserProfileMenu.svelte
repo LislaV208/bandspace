@@ -6,7 +6,7 @@
   import EditProfileModal from "$lib/components/user-profile/EditProfileModal.svelte";
   import { getAuthState } from "$lib/state/auth-state.svelte";
   import type { User } from "$lib/types/user";
-  import { LogOut, Pencil, UserIcon } from "lucide-svelte";
+  import { ChevronDown, LogOut, Settings, UserIcon } from "lucide-svelte";
 
   const { user }: { user: User } = $props();
   const authState = getAuthState();
@@ -14,52 +14,76 @@
   let isEditProfileModalOpen = $state(false);
 </script>
 
-<!-- <Toaster /> -->
 <PopupMenu>
   {#snippet triggerContent(onclick)}
     <button
       {onclick}
-      class="p-3 hover:bg-gray-700/80 rounded-full transition-all duration-200 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-500/40 flex items-center justify-center"
+      class="flex items-center space-x-2 text-sm rounded-full hover:bg-gray-800 transition-colors p-1 pr-2"
     >
       {#if user?.avatar_url}
-        <img
-          src={user?.avatar_url}
-          alt="Awatar użytkownika"
-          class="w-8 h-8 rounded-full object-cover"
-        />
+        <div
+          class="h-8 w-8 rounded-full overflow-hidden bg-gray-700 flex items-center justify-center"
+        >
+          <img
+            src={user?.avatar_url}
+            alt={user?.name || user?.email || "Użytkownik"}
+            class="h-full w-full object-cover"
+          />
+        </div>
       {:else}
-        <UserIcon size={32} />
+        <div
+          class="h-8 w-8 rounded-full overflow-hidden bg-gray-700 flex items-center justify-center text-white font-medium"
+        >
+          {user?.name
+            ? user.name.charAt(0).toUpperCase()
+            : user?.email
+              ? user.email.charAt(0).toUpperCase()
+              : "U"}
+        </div>
       {/if}
+      <span class="hidden md:inline text-white"
+        >{user?.name || user?.email}</span
+      >
+      <ChevronDown size={16} class="text-gray-400" />
     </button>
   {/snippet}
   {#snippet staticContent()}
-    <div class="px-4 py-3 border-b border-gray-600">
-      <div class="font-medium truncate">
-        {user?.name || user?.email}
-      </div>
-      <div class="text-sm text-gray-300 truncate">{user?.email}</div>
+    <div class="p-3 border-b border-gray-700">
+      <p class="text-sm font-medium text-white">{user?.name || "Użytkownik"}</p>
+      <p class="text-xs text-gray-400 truncate">{user?.email}</p>
     </div>
   {/snippet}
-  <PopupMenuOption
-    icon={Pencil}
-    text="Edytuj profil"
-    onclick={() => {
-      isEditProfileModalOpen = true;
-    }}
-  />
-  <PopupMenuOption
-    icon={LogOut}
-    text="Wyloguj się"
-    onclick={async () => {
-      try {
-        await authState.signOut();
-        goto("/");
-      } catch (error) {
-        console.error("Error signing out:", error);
-        toast.error("Nie udało się wylogować");
-      }
-    }}
-  />
+  <div class="py-2">
+    <PopupMenuOption
+      icon={UserIcon}
+      text="Profil"
+      onclick={() => {
+        isEditProfileModalOpen = true;
+      }}
+    />
+    <PopupMenuOption
+      icon={Settings}
+      text="Ustawienia"
+      onclick={() => {
+        isEditProfileModalOpen = true;
+      }}
+    />
+  </div>
+  <div class="py-2 border-t border-gray-700">
+    <PopupMenuOption
+      icon={LogOut}
+      text="Wyloguj się"
+      onclick={async () => {
+        try {
+          await authState.signOut();
+          goto("/");
+        } catch (error) {
+          console.error("Error signing out:", error);
+          toast.error("Nie udało się wylogować");
+        }
+      }}
+    />
+  </div>
 </PopupMenu>
 
 <EditProfileModal bind:isOpen={isEditProfileModalOpen} {user} />

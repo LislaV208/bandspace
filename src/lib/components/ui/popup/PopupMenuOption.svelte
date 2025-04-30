@@ -16,9 +16,9 @@
 
 <button class="w-full" {onclick}>
   <div
-    class=" text-left px-4 py-3 text-sm hover:bg-gray-700/80 transition-all duration-200 ease-in-out text-gray-100 flex items-center whitespace-nowrap {className}"
+    class="text-left px-4 py-2 text-sm hover:bg-gray-700 transition-colors text-gray-300 flex items-center whitespace-nowrap {className}"
   >
-    <div class="mr-3">
+    <div class="mr-2 text-gray-400">
       <IconComponent size={16} />
     </div>
     {text}
