@@ -49,7 +49,7 @@
 
 <div class="h-screen flex flex-col bg-[#101827] text-white relative">
   {#if user != null}
-    <header class="bg-[#101827] shadow-lg top-0 z-50 border-b border-[#1F2937]">
+    <header class="bg-[#101827] shadow-lg top-0 z-40 border-b border-[#1F2937]">
       <nav class="px-6 py-3 max-w-7xl mx-auto">
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-2">

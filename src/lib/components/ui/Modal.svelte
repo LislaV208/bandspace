@@ -77,7 +77,7 @@
 {#if isOpen}
   <!-- Backdrop -->
   <div
-    class="fixed inset-0 z-40 bg-black bg-opacity-70 backdrop-blur-sm transition-opacity"
+    class="fixed inset-0 z-[100] bg-black bg-opacity-70 backdrop-blur-sm transition-opacity"
     onclick={handleBackdropClick}
     onkeydown={handleBackdropKeydown}
     role="presentation"
@@ -86,7 +86,7 @@
   ></div>
 
   <!-- Modal -->
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="fixed inset-0 z-[110] flex items-center justify-center p-4">
     <div
       class="w-full {sizeClasses[
         size
