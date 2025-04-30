@@ -154,28 +154,12 @@ export const actions = {
       return { error: "ID projektu i nazwa są wymagane" };
     }
 
-    // Generowanie nowego sluga na podstawie nazwy projektu
-    const { data: slugData, error: slugError } = await supabase.rpc(
-      "generate_unique_slug",
-      {
-        table_name: "projects",
-        base_name: name,
-      }
-    );
-
-    if (slugError) {
-      console.error("Błąd podczas generowania sluga:", slugError);
-      return { error: slugError.message };
-    }
-
-    const newSlug = slugData;
-
-    // Aktualizacja nazwy i sluga projektu w bazie danych
+    // Aktualizacja nazwy projektu w bazie danych
+    // Slug zostanie automatycznie zaktualizowany przez trigger w bazie danych
     const { data, error } = await supabase
       .from("projects")
       .update({
         name,
-        slug: newSlug,
         updated_at: new Date().toISOString(),
       })
       .eq("id", parseInt(id))
@@ -188,8 +172,8 @@ export const actions = {
     }
 
     // Jeśli slug się zmienił, przekieruj na nowy URL
-    if (oldSlug && oldSlug !== newSlug) {
-      redirect(303, `/${newSlug}`);
+    if (oldSlug && oldSlug !== data.slug) {
+      redirect(303, `/${data.slug}`);
     }
 
     return { success: true, project: data };
