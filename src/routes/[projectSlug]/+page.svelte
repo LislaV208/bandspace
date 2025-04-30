@@ -41,9 +41,7 @@
   }
 </script>
 
-<div
-  class="h-full overflow-y-scroll scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent hover:scrollbar-thumb-gray-500"
->
+<div class="h-full scrollbar-stable">
   <div class="p-6 sm:p-8 max-w-7xl mx-auto">
     <div
       class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-10"

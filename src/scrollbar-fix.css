@@ -3,19 +3,9 @@ html {
   scrollbar-gutter: stable;
 }
 
-/* Ensure consistent scrollbar width across the app */
-.scrollbar-stable {
-  scrollbar-gutter: stable;
-  overflow-y: scroll !important;
-}
-
 /* For Firefox */
 @supports not (scrollbar-gutter: stable) {
   html {
     overflow-y: scroll;
-  }
-  
-  .scrollbar-stable {
-    overflow-y: scroll !important;
   }
 }
