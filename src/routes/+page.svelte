@@ -3,6 +3,7 @@
   import NoProjectsView from "$lib/components/projects/NoProjectsView.svelte";
   import ProjectCard from "$lib/components/projects/ProjectCard.svelte";
   import Button from "$lib/components/ui/Button.svelte";
+  import Input from "$lib/components/ui/Input.svelte";
   import {
     IconLock,
     IconLogin,
@@ -343,53 +344,37 @@
             onsubmit={activeTab === "login" ? handleLogin : handleRegister}
           >
             <!-- Pola formularza -->
-            <div>
-              <label
-                for="email"
-                class="block text-sm font-medium text-gray-400 mb-1"
-                >Email</label
-              >
-              <div class="relative">
-                <div
-                  class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
-                >
-                  <IconMail class="h-5 w-5 text-gray-500" />
-                </div>
-                <input
-                  id="email"
-                  type="email"
-                  name="email"
-                  bind:value={email}
-                  required
-                  class="block w-full pl-10 pr-3 py-2 bg-gray-800 border border-gray-700 rounded text-gray-300 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                  placeholder="Wprowadź swój email"
-                />
-              </div>
-            </div>
+            <Input
+              id="email"
+              type="email"
+              name="email"
+              bind:value={email}
+              required
+              label="Email"
+              placeholder="Wprowadź swój email"
+              className="bg-gray-800 border border-gray-700 text-gray-300 placeholder-gray-500"
+              autocomplete="email"
+            >
+              {#snippet prefix()}
+                <IconMail class="h-5 w-5 text-gray-500" />
+              {/snippet}
+            </Input>
 
-            <div>
-              <label
-                for="password"
-                class="block text-sm font-medium text-gray-400 mb-1"
-                >Hasło</label
-              >
-              <div class="relative">
-                <div
-                  class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
-                >
-                  <IconLock class="h-5 w-5 text-gray-500" />
-                </div>
-                <input
-                  id="password"
-                  type="password"
-                  name="password"
-                  bind:value={password}
-                  required
-                  class="block w-full pl-10 pr-3 py-2 bg-gray-800 border border-gray-700 rounded text-gray-300 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                  placeholder="Wprowadź swoje hasło"
-                />
-              </div>
-            </div>
+            <Input
+              id="password"
+              type="password"
+              name="password"
+              bind:value={password}
+              required
+              label="Hasło"
+              placeholder="Wprowadź swoje hasło"
+              className="bg-gray-800 border border-gray-700 text-gray-300 placeholder-gray-500"
+              autocomplete="current-password"
+            >
+              {#snippet prefix()}
+                <IconLock class="h-5 w-5 text-gray-500" />
+              {/snippet}
+            </Input>
 
             <!-- Kontener dla pola potwierdzenia hasła i przycisku -->
             <div
@@ -409,28 +394,22 @@
                   ? 'auto'
                   : '0'}; overflow: hidden;"
               >
-                <label
-                  for="confirm-password"
-                  class="block text-sm font-medium text-gray-400 mb-1"
-                  >Potwierdź hasło</label
+                <Input
+                  id="confirm-password"
+                  type="password"
+                  name="confirm-password"
+                  bind:value={confirmPassword}
+                  required={activeTab === "register"}
+                  disabled={activeTab !== "register"}
+                  label="Potwierdź hasło"
+                  placeholder="Potwierdź hasło"
+                  className="bg-gray-800 border border-gray-700 text-gray-300 placeholder-gray-500"
+                  autocomplete="new-password"
                 >
-                <div class="relative">
-                  <div
-                    class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
-                  >
+                  {#snippet prefix()}
                     <IconLock class="h-5 w-5 text-gray-500" />
-                  </div>
-                  <input
-                    id="confirm-password"
-                    type="password"
-                    name="confirm-password"
-                    bind:value={confirmPassword}
-                    required={activeTab === "register"}
-                    disabled={activeTab !== "register"}
-                    class="block w-full pl-10 pr-3 py-2 bg-gray-800 border border-gray-700 rounded text-gray-300 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                    placeholder="Potwierdź hasło"
-                  />
-                </div>
+                  {/snippet}
+                </Input>
               </div>
 
               <!-- Przycisk logowania/rejestracji z animacją -->
