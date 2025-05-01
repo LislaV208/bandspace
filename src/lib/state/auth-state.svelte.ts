@@ -19,6 +19,7 @@ export class AuthState {
   }
 
   updateState(props: AuthStateProps) {
+    console.log("Updating auth state:", props);
     this.session = props.session;
     this.supabase = props.supabase;
     this.user = props.user;

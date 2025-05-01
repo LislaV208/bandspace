@@ -1,10 +1,13 @@
 <script lang="ts">
+  import ResetPasswordModal from "$lib/components/auth/ResetPasswordModal.svelte";
   import NewProjectModal from "$lib/components/projects/NewProjectModal.svelte";
   import NoProjectsView from "$lib/components/projects/NoProjectsView.svelte";
   import ProjectCard from "$lib/components/projects/ProjectCard.svelte";
   import Button from "$lib/components/ui/Button.svelte";
   import Input from "$lib/components/ui/Input.svelte";
   import {
+    IconEye,
+    IconEyeOff,
     IconLock,
     IconLogin,
     IconMail,
@@ -43,6 +46,8 @@
   // Dla niezalogowanych użytkowników
   let activeTab = $state("login"); // "login" lub "register"
   let loading = $state(false);
+  let isResetPasswordModalOpen = $state(false);
+  let showPassword = $state(false);
 
   // Pobieramy parametr redirect z URL (jeśli istnieje)
   let redirectParam = $state<string | null>(null);
@@ -362,7 +367,7 @@
 
             <Input
               id="password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               name="password"
               bind:value={password}
               required
@@ -374,7 +379,33 @@
               {#snippet prefix()}
                 <IconLock class="h-5 w-5 text-gray-500" />
               {/snippet}
+              {#snippet suffix()}
+                <button
+                  type="button"
+                  class="text-gray-500 hover:text-gray-300 transition-colors"
+                  onclick={() => (showPassword = !showPassword)}
+                >
+                  {#if showPassword}
+                    <IconEyeOff class="h-5 w-5" />
+                  {:else}
+                    <IconEye class="h-5 w-5" />
+                  {/if}
+                </button>
+              {/snippet}
             </Input>
+
+            <!-- Link do resetowania hasła (tylko dla logowania) -->
+            {#if activeTab === "login"}
+              <div class="flex justify-end">
+                <button
+                  type="button"
+                  class="text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                  onclick={() => (isResetPasswordModalOpen = true)}
+                >
+                  Zapomniałeś hasła?
+                </button>
+              </div>
+            {/if}
 
             <!-- Kontener dla pola potwierdzenia hasła i przycisku -->
             <div
@@ -561,3 +592,5 @@
     </div>
   </div>
 {/if}
+
+<ResetPasswordModal bind:isOpen={isResetPasswordModalOpen} />

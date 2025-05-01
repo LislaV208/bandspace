@@ -12,6 +12,7 @@
   let { supabase, user } = $derived(data);
 
   $effect(() => {
+    console.log("Updating auth state in effect:", data);
     authState.updateState({
       supabase: data.supabase,
       session: data.session,
@@ -27,6 +28,7 @@
 
   onMount(() => {
     const { data } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      console.log("Auth state changed:", _event);
       authState.updateState({
         session: newSession,
         supabase,
