@@ -107,4 +107,45 @@ const authGuard: Handle = async ({ event, resolve }) => {
   return resolve(event);
 };
 
-export const handle: Handle = sequence(supabase, authGuard);
+// Middleware do obsługi CORS
+const cors: Handle = async ({ event, resolve }) => {
+  // Sprawdź, czy żądanie dotyczy API
+  const isApiRequest = event.url.pathname.startsWith("/api");
+
+  // Obsługa żądań OPTIONS (preflight) dla API
+  if (isApiRequest && event.request.method === "OPTIONS") {
+    // Zwróć odpowiedź 204 No Content dla żądań OPTIONS
+    return new Response(null, {
+      status: 204,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods":
+          "GET, POST, PUT, DELETE, PATCH, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        "Access-Control-Allow-Credentials": "true",
+      },
+    });
+  }
+
+  // Przygotuj odpowiedź dla innych żądań
+  const response = await resolve(event);
+
+  // Dodaj nagłówki CORS tylko dla żądań API
+  if (isApiRequest) {
+    // Dodaj nagłówki CORS
+    response.headers.set("Access-Control-Allow-Origin", "*");
+    response.headers.set(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+    );
+    response.headers.set(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization"
+    );
+    response.headers.set("Access-Control-Allow-Credentials", "true");
+  }
+
+  return response;
+};
+
+export const handle: Handle = sequence(cors, supabase, authGuard);

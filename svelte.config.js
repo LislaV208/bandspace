@@ -12,6 +12,10 @@ const config = {
     version: {
       name: process.env.npm_package_version
     },
+    csrf: {
+      // Wyłączamy sprawdzanie pochodzenia dla żądań API
+      checkOrigin: false
+    },
   },
   preprocess: vitePreprocess()
 };
