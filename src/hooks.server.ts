@@ -70,17 +70,79 @@ const supabase: Handle = async ({ event, resolve }) => {
 };
 
 const authGuard: Handle = async ({ event, resolve }) => {
-  const { session, user } = await event.locals.safeGetSession();
-  event.locals.session = session;
-  event.locals.user = user;
+  // Sprawdzamy, czy żądanie pochodzi z API (np. z aplikacji mobilnej)
+  const isApiRequest = event.url.pathname.startsWith("/api");
 
+  // Sprawdzamy, czy to jest publiczny endpoint API (np. /api/auth)
+  const isPublicApiEndpoint = event.url.pathname.startsWith("/api/auth");
+
+  // Sprawdzamy nagłówek Authorization dla żądań API
+  let apiTokenValid = false;
+  if (isApiRequest && !isPublicApiEndpoint) {
+    const authHeader = event.request.headers.get("Authorization");
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      const token = authHeader.substring(7); // Usuwamy "Bearer " z początku
+      try {
+        // Weryfikujemy token JWT
+        const { data, error } = await event.locals.supabase.auth.getUser(token);
+        if (!error && data.user) {
+          // Token jest prawidłowy, ustawiamy użytkownika w locals
+          event.locals.user = data.user;
+          apiTokenValid = true;
+
+          // Pobieramy sesję na podstawie tokenu
+          const { data: sessionData } =
+            await event.locals.supabase.auth.getSession();
+          event.locals.session = sessionData.session;
+        }
+      } catch (error) {
+        console.error("Błąd weryfikacji tokenu JWT:", error);
+      }
+    }
+  } else {
+    // Dla żądań nie-API używamy standardowej weryfikacji sesji opartej na ciasteczkach
+    const { session, user } = await event.locals.safeGetSession();
+    event.locals.session = session;
+    event.locals.user = user;
+  }
+
+  // Obsługa favicon.png
   if (event.url.pathname.includes("favicon.png")) {
     console.log("favicon.png");
     return resolve(event);
   }
 
+  // Publiczne ścieżki dostępne bez logowania
   const publicPathnames = ["/"]; // Tylko strona główna jest publiczna
 
+  // Dla żądań API
+  if (isApiRequest) {
+    // Jeśli to publiczny endpoint API, pozwalamy na dostęp
+    if (isPublicApiEndpoint) {
+      return resolve(event);
+    }
+
+    // Dla niepublicznych endpointów API wymagamy ważnego tokenu
+    if (!apiTokenValid && !event.locals.session) {
+      return new Response(
+        JSON.stringify({
+          error: "Nieautoryzowany dostęp",
+          message: "Wymagane uwierzytelnienie",
+        }),
+        {
+          status: 401,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+    }
+
+    // Jeśli token jest ważny, kontynuujemy
+    return resolve(event);
+  }
+
+  // Dla żądań nie-API (aplikacja webowa)
   if (
     !event.locals.session &&
     !publicPathnames.includes(event.url.pathname) &&
@@ -121,8 +183,11 @@ const cors: Handle = async ({ event, resolve }) => {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods":
           "GET, POST, PUT, DELETE, PATCH, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        "Access-Control-Allow-Headers":
+          "Content-Type, Authorization, Accept, X-Requested-With, X-Client-Info",
         "Access-Control-Allow-Credentials": "true",
+        "Access-Control-Expose-Headers":
+          "Content-Range, X-Supabase-Api-Version",
       },
     });
   }
@@ -140,9 +205,13 @@ const cors: Handle = async ({ event, resolve }) => {
     );
     response.headers.set(
       "Access-Control-Allow-Headers",
-      "Content-Type, Authorization"
+      "Content-Type, Authorization, Accept, X-Requested-With, X-Client-Info"
     );
     response.headers.set("Access-Control-Allow-Credentials", "true");
+    response.headers.set(
+      "Access-Control-Expose-Headers",
+      "Content-Range, X-Supabase-Api-Version"
+    );
   }
 
   return response;
