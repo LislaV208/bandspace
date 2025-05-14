@@ -127,9 +127,9 @@
 
       success = true;
 
-      // Po 3 sekundach przekieruj na stronę główną
+      // Po 3 sekundach przekieruj na dashboard
       setTimeout(() => {
-        goto("/");
+        goto("/dashboard");
       }, 3000);
     } catch (err) {
       console.error("Error updating password:", err);
@@ -216,10 +216,10 @@
             class="p-4 mb-6 bg-green-500/20 border border-green-500/50 rounded text-green-400"
           >
             Hasło zostało pomyślnie zaktualizowane. Za chwilę zostaniesz
-            przekierowany na stronę logowania.
+            przekierowany do panelu.
           </div>
-          <Button onclick={() => goto("/")} primary
-            >Wróć do strony głównej</Button
+          <Button onclick={() => goto("/dashboard")} primary
+            >Przejdź do panelu</Button
           >
         </div>
       {:else}
