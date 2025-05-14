@@ -29,7 +29,7 @@
 
 <!-- Główny kontener strony -->
 <div
-  class="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 bg-[#171923] text-slate-200"
+  class="h-full flex flex-col items-center justify-center p-4 sm:p-6 bg-[#171923] text-slate-200"
 >
   <!-- Karta Błędu -->
   <div
