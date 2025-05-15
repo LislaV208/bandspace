@@ -1,3 +1,8 @@
+# 0.4.0
+- poprawki z autoryzacją
+- update UI
+- duzo rzeczy ale juz nie pamietam
+
 # 0.3.0
 - przypisanie wielu plików do utworu
 - zmiany w layoucie strony
