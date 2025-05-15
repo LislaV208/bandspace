@@ -70,25 +70,26 @@ const supabase: Handle = async ({ event, resolve }) => {
 };
 
 const authGuard: Handle = async ({ event, resolve }) => {
-  // Sprawdzamy, czy żądanie pochodzi z API (np. z aplikacji mobilnej)
+  // Sprawdzamy, czy żądanie pochodzi z API
   const isApiRequest = event.url.pathname.startsWith("/api");
 
-  // Sprawdzamy, czy to jest publiczny endpoint API (np. /api/auth)
+  // Sprawdzamy, czy to jest publiczny endpoint API
   const isPublicApiEndpoint = event.url.pathname.startsWith("/api/auth");
 
-  // Sprawdzamy nagłówek Authorization dla żądań API
-  let apiTokenValid = false;
-  if (isApiRequest && !isPublicApiEndpoint) {
+  // Dla wszystkich żądań najpierw sprawdzamy sesję z cookies
+  const { session, user } = await event.locals.safeGetSession();
+  event.locals.session = session;
+  event.locals.user = user;
+
+  // Jeśli nie mamy sesji z cookies, a to jest żądanie API, sprawdzamy nagłówek Authorization
+  if (!session && isApiRequest && !isPublicApiEndpoint) {
     const authHeader = event.request.headers.get("Authorization");
     if (authHeader && authHeader.startsWith("Bearer ")) {
-      const token = authHeader.substring(7); // Usuwamy "Bearer " z początku
+      const token = authHeader.substring(7);
       try {
-        // Weryfikujemy token JWT
         const { data, error } = await event.locals.supabase.auth.getUser(token);
         if (!error && data.user) {
-          // Token jest prawidłowy, ustawiamy użytkownika w locals
           event.locals.user = data.user;
-          apiTokenValid = true;
 
           // Pobieramy sesję na podstawie tokenu
           const { data: sessionData } =
@@ -99,21 +100,7 @@ const authGuard: Handle = async ({ event, resolve }) => {
         console.error("Błąd weryfikacji tokenu JWT:", error);
       }
     }
-  } else {
-    // Dla żądań nie-API używamy standardowej weryfikacji sesji opartej na ciasteczkach
-    const { session, user } = await event.locals.safeGetSession();
-    event.locals.session = session;
-    event.locals.user = user;
   }
-
-  // Obsługa favicon.png
-  if (event.url.pathname.includes("favicon.png")) {
-    console.log("favicon.png");
-    return resolve(event);
-  }
-
-  // Publiczne ścieżki dostępne bez logowania
-  const publicPathnames = ["/"]; // Tylko strona główna jest publiczna
 
   // Dla żądań API
   if (isApiRequest) {
@@ -122,8 +109,8 @@ const authGuard: Handle = async ({ event, resolve }) => {
       return resolve(event);
     }
 
-    // Dla niepublicznych endpointów API wymagamy ważnego tokenu
-    if (!apiTokenValid && !event.locals.session) {
+    // Dla niepublicznych endpointów API wymagamy ważnej sesji
+    if (!event.locals.session) {
       return new Response(
         JSON.stringify({
           error: "Nieautoryzowany dostęp",
@@ -138,14 +125,13 @@ const authGuard: Handle = async ({ event, resolve }) => {
       );
     }
 
-    // Jeśli token jest ważny, kontynuujemy
+    // Jeśli sesja jest ważna, kontynuujemy
     return resolve(event);
   }
 
   // Dla żądań nie-API (aplikacja webowa)
   if (
     !event.locals.session &&
-    !publicPathnames.includes(event.url.pathname) &&
     !event.url.pathname.startsWith("/auth") &&
     !event.url.pathname.startsWith("/api/auth")
   ) {
