@@ -1,6 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
 import { type Handle, redirect } from "@sveltejs/kit";
-import { sequence } from "@sveltejs/kit/hooks";
 
 import {
   PUBLIC_SUPABASE_ANON_KEY,
@@ -8,6 +7,7 @@ import {
 } from "$env/static/public";
 import { ServiceFactory } from "$lib/factories/ServiceFactory";
 import { AuthError } from "@supabase/supabase-js";
+import { sequence } from "@sveltejs/kit/hooks";
 
 const supabase: Handle = async ({ event, resolve }) => {
   /**
@@ -162,6 +162,7 @@ const authGuard: Handle = async ({ event, resolve }) => {
   // Dla żądań nie-API (aplikacja webowa)
   if (
     !event.locals.session &&
+    event.url.pathname !== "/" &&
     !event.url.pathname.startsWith("/auth") &&
     !event.url.pathname.startsWith("/api/auth")
   ) {
@@ -234,3 +235,4 @@ const cors: Handle = async ({ event, resolve }) => {
 };
 
 export const handle: Handle = sequence(cors, supabase, authGuard);
+// export const handle: Handle = sequence(supabase);
