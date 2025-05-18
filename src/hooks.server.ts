@@ -6,6 +6,7 @@ import {
   PUBLIC_SUPABASE_ANON_KEY,
   PUBLIC_SUPABASE_URL,
 } from "$env/static/public";
+import { ServiceFactory } from "$lib/factories/ServiceFactory";
 import { AuthError } from "@supabase/supabase-js";
 
 const supabase: Handle = async ({ event, resolve }) => {
@@ -57,6 +58,14 @@ const supabase: Handle = async ({ event, resolve }) => {
     }
 
     return { session, user };
+  };
+
+  // Inicjalizacja fabryki serwisów
+  ServiceFactory.initialize(event.locals.supabase);
+
+  // Dodanie serwisów do locals
+  event.locals.services = {
+    projectService: ServiceFactory.getProjectService(),
   };
 
   return resolve(event, {
