@@ -6,6 +6,7 @@ import {
   PUBLIC_SUPABASE_ANON_KEY,
   PUBLIC_SUPABASE_URL,
 } from "$env/static/public";
+import { AuthError } from "@supabase/supabase-js";
 
 const supabase: Handle = async ({ event, resolve }) => {
   /**
@@ -88,16 +89,36 @@ const authGuard: Handle = async ({ event, resolve }) => {
       const token = authHeader.substring(7);
       try {
         const { data, error } = await event.locals.supabase.auth.getUser(token);
-        if (!error && data.user) {
-          event.locals.user = data.user;
-
-          // Pobieramy sesję na podstawie tokenu
-          const { data: sessionData } =
-            await event.locals.supabase.auth.getSession();
-          event.locals.session = sessionData.session;
+        if (error) {
+          throw error;
         }
+
+        if (!data.user) {
+          throw new AuthError("User not found");
+        }
+
+        event.locals.user = data.user;
+
+        // Pobieramy sesję na podstawie tokenu
+        const { data: sessionData } =
+          await event.locals.supabase.auth.getSession();
+        event.locals.session = sessionData.session;
+
+        return resolve(event);
       } catch (error) {
         console.error("Błąd weryfikacji tokenu JWT:", error);
+        return new Response(
+          JSON.stringify({
+            error: "Nieautoryzowany dostęp",
+            message: "Wymagane uwierzytelnienie",
+          }),
+          {
+            status: 401,
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
       }
     }
   }
