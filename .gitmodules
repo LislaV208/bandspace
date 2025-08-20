@@ -1,0 +1,9 @@
+[submodule "bandspace-nestjs"]
+	path = bandspace-nestjs
+	url = https://github.com/LislaV208/bandspace-nestjs.git
+[submodule "bandspace_mobile"]
+	path = bandspace_mobile
+	url = https://github.com/LislaV208/bandspace_mobile.git
+[submodule "bandspace_web"]
+	path = bandspace_web
+	url = https://github.com/LislaV208/bandspace_web.git
